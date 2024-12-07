@@ -6,15 +6,15 @@ const router = express.Router();
 
 // Ruta de login
 router.post('/login', async (req, res) => {
-  const { email, password } = req.body;
+  const { username, password } = req.body; // Cambié email por username
 
-  if (!email || !password) {
-    return res.status(400).json({ message: 'Email y contraseña son requeridos.' });
+  if (!username || !password) {
+    return res.status(400).json({ message: 'Username y contraseña son requeridos.' }); // Actualicé el mensaje de error
   }
 
   try {
-    // Verificar que el email exista en la base de datos
-    const user = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+    // Verificar que el username exista en la base de datos
+    const user = await pool.query('SELECT * FROM public."users" WHERE username = $1', [username]);
 
     if (user.rows.length === 0) {
       return res.status(401).json({ message: 'Credenciales inválidas.' });
@@ -29,7 +29,7 @@ router.post('/login', async (req, res) => {
 
     // Crear un token JWT
     const token = jwt.sign(
-      { userId: user.rows[0].id, email: user.rows[0].email },
+      { userId: user.rows[0].id, username: user.rows[0].username },
       process.env.JWT_SECRET, // Asegúrate de definir JWT_SECRET en tus variables de entorno
       { expiresIn: '1h' } // Expira en 1 hora
     );
