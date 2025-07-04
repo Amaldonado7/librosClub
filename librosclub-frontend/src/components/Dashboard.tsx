@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { booksAPI, Book } from '../utils/api';
@@ -8,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BookOpen, Search, Heart, LogOut, Rss } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { jwtDecode } from 'jwt-decode';
 
 const Dashboard: React.FC = () => {
   const [allBooks, setAllBooks] = useState<Book[]>([]);
@@ -16,9 +16,15 @@ const Dashboard: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('feed');
+  const [title, setTitle] = useState('');
+  const [author, setAuthor] = useState('');
+  const [genre, setGenre] = useState('');
 
   const { token, logout } = useAuth();
   const { toast } = useToast();
+
+  const decoded = token ? jwtDecode<{ role: string }>(token) : null;
+  const isAdmin = decoded?.role === 'admin';
 
   useEffect(() => {
     if (token) {
@@ -28,17 +34,12 @@ const Dashboard: React.FC = () => {
 
   const loadAllBooks = async () => {
     if (!token) return;
-
     setIsLoading(true);
     try {
       const books = await booksAPI.getAllBooks(token);
       setAllBooks(books);
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "No se pudieron cargar los libros.",
-        variant: "destructive",
-      });
+    } catch {
+      toast({ title: 'Error', description: 'No se pudieron cargar los libros.', variant: 'destructive' });
     } finally {
       setIsLoading(false);
     }
@@ -46,17 +47,12 @@ const Dashboard: React.FC = () => {
 
   const loadFeedBooks = async () => {
     if (!token) return;
-
     setIsLoading(true);
     try {
       const books = await booksAPI.getBooksFeed(token);
       setFeedBooks(books);
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "No se pudo cargar el feed de libros.",
-        variant: "destructive",
-      });
+    } catch {
+      toast({ title: 'Error', description: 'No se pudo cargar el feed de libros.', variant: 'destructive' });
     } finally {
       setIsLoading(false);
     }
@@ -67,17 +63,12 @@ const Dashboard: React.FC = () => {
       setSearchResults([]);
       return;
     }
-
     setIsLoading(true);
     try {
       const books = await booksAPI.searchBooks(token, query);
       setSearchResults(books);
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Error en la búsqueda de libros.",
-        variant: "destructive",
-      });
+    } catch {
+      toast({ title: 'Error', description: 'Error en la búsqueda de libros.', variant: 'destructive' });
     } finally {
       setIsLoading(false);
     }
@@ -92,10 +83,31 @@ const Dashboard: React.FC = () => {
 
   const handleLogout = () => {
     logout();
-    toast({
-      title: "Sesión cerrada",
-      description: "Has cerrado sesión correctamente.",
-    });
+    toast({ title: 'Sesión cerrada', description: 'Has cerrado sesión correctamente.' });
+  };
+
+  const handleAddBook = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const res = await fetch('http://localhost:3000/api/books', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ title, author, genre }),
+      });
+
+      if (!res.ok) throw new Error('Error al agregar libro');
+
+      toast({ title: 'Libro agregado', description: 'El libro fue agregado correctamente' });
+      setTitle('');
+      setAuthor('');
+      setGenre('');
+      loadAllBooks();
+    } catch (err: any) {
+      toast({ title: 'Error', description: err.message, variant: 'destructive' });
+    }
   };
 
   const renderBooks = (books: Book[]) => {
@@ -128,12 +140,7 @@ const Dashboard: React.FC = () => {
               <Heart className="h-6 w-6 text-red-500" />
               <h1 className="text-2xl font-bold text-amber-900">LibrosClub</h1>
             </div>
-
-            <Button
-              onClick={handleLogout}
-              variant="outline"
-              className="border-amber-200 text-amber-700 hover:bg-amber-50"
-            >
+            <Button onClick={handleLogout} variant="outline" className="border-amber-200 text-amber-700 hover:bg-amber-50">
               <LogOut className="h-4 w-4 mr-2" />
               Cerrar Sesión
             </Button>
@@ -144,13 +151,23 @@ const Dashboard: React.FC = () => {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
-          <h2 className="text-3xl font-bold text-amber-900 mb-2">
-            Descubre tu próxima lectura
-          </h2>
-          <p className="text-amber-700">
-            Explora nuestra colección de libros y encuentra historias increíbles
-          </p>
+          <h2 className="text-3xl font-bold text-amber-900 mb-2">Descubre tu próxima lectura</h2>
+          <p className="text-amber-700">Explora nuestra colección de libros y encuentra historias increíbles</p>
         </div>
+
+        {isAdmin && (
+          <div className="mb-8 p-6 bg-white rounded-md shadow border border-amber-100">
+            <h3 className="text-xl font-semibold text-amber-900 mb-4">Agregar nuevo libro</h3>
+            <form onSubmit={handleAddBook} className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Input placeholder="Título" value={title} onChange={(e) => setTitle(e.target.value)} />
+              <Input placeholder="Autor" value={author} onChange={(e) => setAuthor(e.target.value)} />
+              <Input placeholder="Género" value={genre} onChange={(e) => setGenre(e.target.value)} />
+              <Button type="submit" className="md:col-span-3 bg-amber-700 hover:bg-amber-800 text-white">
+                Agregar libro
+              </Button>
+            </form>
+          </div>
+        )}
 
         {/* Search Bar */}
         <div className="mb-8">
@@ -187,61 +204,9 @@ const Dashboard: React.FC = () => {
           </TabsList>
 
           <div className="mt-8">
-            <TabsContent value="feed" className="mt-0">
-              <div className="mb-4">
-                <h3 className="text-xl font-semibold text-amber-900 mb-2">Últimos 10 libros</h3>
-                <p className="text-amber-700">Las últimas adiciones a nuestra biblioteca</p>
-              </div>
-              {isLoading ? (
-                <div className="text-center py-12">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-700 mx-auto"></div>
-                  <p className="mt-4 text-amber-700">Cargando libros...</p>
-                </div>
-              ) : (
-                renderBooks(feedBooks)
-              )}
-            </TabsContent>
-
-            <TabsContent value="search" className="mt-0">
-              <div className="mb-4">
-                <h3 className="text-xl font-semibold text-amber-900 mb-2">Resultados de búsqueda</h3>
-                {searchQuery && (
-                  <p className="text-amber-700">
-                    Resultados para: "<span className="font-medium">{searchQuery}</span>"
-                  </p>
-                )}
-              </div>
-              {searchQuery ? (
-                isLoading ? (
-                  <div className="text-center py-12">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-700 mx-auto"></div>
-                    <p className="mt-4 text-amber-700">Buscando...</p>
-                  </div>
-                ) : (
-                  renderBooks(searchResults)
-                )
-              ) : (
-                <div className="text-center py-12">
-                  <Search className="h-16 w-16 text-amber-300 mx-auto mb-4" />
-                  <p className="text-amber-700 text-lg">Escribe algo en el buscador para encontrar libros</p>
-                </div>
-              )}
-            </TabsContent>
-
-            <TabsContent value="all" className="mt-0">
-              <div className="mb-4">
-                <h3 className="text-xl font-semibold text-amber-900 mb-2">Todos los libros</h3>
-                <p className="text-amber-700">Explora toda nuestra colección</p>
-              </div>
-              {isLoading ? (
-                <div className="text-center py-12">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-700 mx-auto"></div>
-                  <p className="mt-4 text-amber-700">Cargando todos los libros...</p>
-                </div>
-              ) : (
-                renderBooks(allBooks)
-              )}
-            </TabsContent>
+            <TabsContent value="feed">{renderBooks(feedBooks)}</TabsContent>
+            <TabsContent value="search">{renderBooks(searchResults)}</TabsContent>
+            <TabsContent value="all">{renderBooks(allBooks)}</TabsContent>
           </div>
         </Tabs>
       </main>

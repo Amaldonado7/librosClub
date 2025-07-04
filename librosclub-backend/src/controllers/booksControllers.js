@@ -23,7 +23,7 @@ exports.getBooks = async (req, res) => {
   }
 };
 
-// Obtener feed (últimos libros)
+// Obtener feed (últimos 10 libros)
 exports.getFeed = async (req, res) => {
   try {
     const result = await pool.query(
@@ -33,5 +33,25 @@ exports.getFeed = async (req, res) => {
   } catch (error) {
     console.error('Error en getFeed:', error);
     res.status(500).json({ error: 'Error al obtener el feed' });
+  }
+};
+
+// Agregar libro (solo para admins)
+exports.createBook = async (req, res) => {
+  const { title, author, genre } = req.body;
+
+  if (!title || !author) {
+    return res.status(400).json({ message: 'Título y autor son requeridos.' });
+  }
+
+  try {
+    await pool.query(
+      'INSERT INTO public.books (title, author, genre) VALUES ($1, $2, $3)',
+      [title, author, genre]
+    );
+    res.status(201).json({ message: 'Libro agregado exitosamente.' });
+  } catch (error) {
+    console.error('Error al agregar libro:', error);
+    res.status(500).json({ message: 'Error del servidor.' });
   }
 };
