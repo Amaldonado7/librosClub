@@ -33,6 +33,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // Configurar rutas
+app.use('/api', protectedRoutes);
 app.use('/api/auth', authRoutes); // Rutas de autenticación
 app.use('/api/books', booksRoutes); // Rutas de libros
 app.use('/api/protected', protectedRoutes); // Rutas protegidas
