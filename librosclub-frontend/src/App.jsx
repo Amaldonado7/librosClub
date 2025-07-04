@@ -1,34 +1,39 @@
-import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import LoginPage from "./pages/LoginPage";
-import SearchPage from "./pages/SearchPage";
-import FeedPage from "./pages/FeedPage";
-import ProtectedRoute from "./components/ProtectedRoute";
+import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider, useAuth } from "./contexts/AuthContext";
+import Login from "./components/Login";
+import Dashboard from "./components/Dashboard";
 
-const App = () => {
+const queryClient = new QueryClient();
+
+const AppContent = () => {
+  const { isAuthenticated } = useAuth();
+
   return (
-    <Router>
+    <BrowserRouter>
       <Routes>
-        <Route path="/" element={<LoginPage />} />
         <Route
-          path="/search"
-          element={
-            <ProtectedRoute>
-              <SearchPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/feed"
-          element={
-            <ProtectedRoute>
-              <FeedPage />
-            </ProtectedRoute>
-          }
+          path="/*"
+          element={isAuthenticated ? <Dashboard /> : <Login />}
         />
       </Routes>
-    </Router>
+    </BrowserRouter>
   );
 };
+
+const App = () => (
+  <QueryClientProvider client={queryClient}>
+    <TooltipProvider>
+      <AuthProvider>
+        <Toaster />
+        <Sonner />
+        <AppContent />
+      </AuthProvider>
+    </TooltipProvider>
+  </QueryClientProvider>
+);
 
 export default App;
