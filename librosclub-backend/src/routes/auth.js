@@ -5,19 +5,19 @@ const pool = require('../config/db'); // Configuración de la base de datos
 const router = express.Router();
 
 router.post('/login', async (req, res) => {
-  console.log('Request recibido:', req.body); // Log inicial para verificar los datos recibidos
+  console.log('Request recibido:', req.body);
 
   const { username, password } = req.body;
 
   if (!username || !password) {
-    console.log('Faltan credenciales en el body'); // Log para verificar el error
+    console.log('Faltan credenciales en el body');
     return res.status(400).json({ message: 'Usuario y contraseña son requeridos.' });
   }
 
   try {
     console.log('Buscando usuario en la base de datos...');
     const user = await pool.query('SELECT * FROM public.users WHERE username = $1', [username]);
-    console.log('Resultado de la consulta:', user.rows); // Log para ver el resultado de la consulta
+    console.log('Resultado de la consulta:', user.rows);
 
     if (user.rows.length === 0) {
       console.log('Usuario no encontrado');
@@ -35,7 +35,11 @@ router.post('/login', async (req, res) => {
 
     console.log('Generando token JWT...');
     const token = jwt.sign(
-      { userId: userData.id, username: userData.username },
+      {
+        userId: userData.id,
+        username: userData.username,
+        role: userData.role
+      },
       process.env.JWT_SECRET,
       { expiresIn: '1h' }
     );
@@ -43,7 +47,7 @@ router.post('/login', async (req, res) => {
     console.log('Login exitoso');
     res.json({ token });
   } catch (err) {
-    console.error('Error en el servidor:', err); // Log del error del servidor
+    console.error('Error en el servidor:', err);
     res.status(500).json({ message: 'Error del servidor' });
   }
 });
