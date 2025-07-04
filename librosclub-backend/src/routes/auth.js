@@ -1,43 +1,49 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const pool = require('../config/db'); // Asegúrate de que la configuración de tu base de datos esté correcta
+const pool = require('../config/db'); // Configuración de la base de datos
 const router = express.Router();
 
-// Ruta de login
 router.post('/login', async (req, res) => {
-  const { username, password } = req.body; // Cambié email por username
+  console.log('Request recibido:', req.body); // Log inicial para verificar los datos recibidos
+
+  const { username, password } = req.body;
 
   if (!username || !password) {
-    return res.status(400).json({ message: 'Username y contraseña son requeridos.' }); // Actualicé el mensaje de error
+    console.log('Faltan credenciales en el body'); // Log para verificar el error
+    return res.status(400).json({ message: 'Usuario y contraseña son requeridos.' });
   }
 
   try {
-    // Verificar que el username exista en la base de datos
-    const user = await pool.query('SELECT * FROM public."users" WHERE username = $1', [username]);
+    console.log('Buscando usuario en la base de datos...');
+    const user = await pool.query('SELECT * FROM public.users WHERE username = $1', [username]);
+    console.log('Resultado de la consulta:', user.rows); // Log para ver el resultado de la consulta
 
     if (user.rows.length === 0) {
+      console.log('Usuario no encontrado');
       return res.status(401).json({ message: 'Credenciales inválidas.' });
     }
 
-    // Comparar la contraseña ingresada con la almacenada (hash)
-    const isMatch = await bcrypt.compare(password, user.rows[0].password);
+    const userData = user.rows[0];
 
+    console.log('Comparando contraseñas...');
+    const isMatch = await bcrypt.compare(password, userData.password);
     if (!isMatch) {
+      console.log('La contraseña no coincide');
       return res.status(401).json({ message: 'Credenciales inválidas.' });
     }
 
-    // Crear un token JWT
+    console.log('Generando token JWT...');
     const token = jwt.sign(
-      { userId: user.rows[0].id, username: user.rows[0].username },
-      process.env.JWT_SECRET, // Asegúrate de definir JWT_SECRET en tus variables de entorno
-      { expiresIn: '1h' } // Expira en 1 hora
+      { userId: userData.id, username: userData.username },
+      process.env.JWT_SECRET,
+      { expiresIn: '1h' }
     );
 
-    // Retornar el token
-    return res.json({ token });
+    console.log('Login exitoso');
+    res.json({ token });
   } catch (err) {
-    console.error(err);
+    console.error('Error en el servidor:', err); // Log del error del servidor
     res.status(500).json({ message: 'Error del servidor' });
   }
 });
