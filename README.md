@@ -2,7 +2,6 @@
 
 **LibrosClub** es una plataforma web desarrollada como trabajo final para la carrera de Analista de Sistemas en Escuela Da Vinci. El objetivo del proyecto es conectar a lectores a través de una experiencia unificada que permite descubrir, buscar y compartir libros, fomentando también la creación de comunidades lectoras.
 
----
 
 ## 🚀 Tecnologías utilizadas
 
@@ -24,7 +23,7 @@
 - BcryptJS para hashing de contraseñas
 - Dotenv para configuración de variables
 
----
+
 
 ## ⚙️ Instalación
 
@@ -71,20 +70,20 @@ DB_PORT=5432
 JWT_SECRET=un_secreto_seguro
 ```
 
----
+
 
 ## 🔑 Roles de usuario
 
 - **admin**: puede ver, buscar y **agregar libros**
 - **user**: puede ver y buscar libros
 
----
+
 
 ## 🔐 Autenticación
 
 El sistema usa **JWT tokens** para proteger rutas privadas y validar el rol del usuario.
 
----
+
 
 ## 📚 Endpoints principales
 
@@ -128,7 +127,7 @@ El sistema usa **JWT tokens** para proteger rutas privadas y validar el rol del 
 - `GET /api/admin-only`
   → Ruta protegida solo para admins
 
----
+
 
 ## 💻 Interfaz de usuario
 
@@ -139,7 +138,7 @@ Una vez logueado, el usuario accede a un `Dashboard` donde puede:
 - Ver todos los libros
 - Si es admin: aparece formulario para agregar libros
 
----
+
 
 ## 📂 Estructura del proyecto
 
@@ -159,11 +158,9 @@ librosClub/
     └── ...
 ```
 
----
+
 
 ## 🙋‍♀️ Créditos
 
 Desarrollado por [Ariadna Maldonado](https://github.com/Amaldonado7)
 Trabajo final – Escuela Da Vinci – Analista de Sistemas
-
----
