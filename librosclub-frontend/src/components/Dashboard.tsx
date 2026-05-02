@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { booksAPI, Book } from '../utils/api';
-import BookCard from './BookCard';
+import { booksAPI, bookRequestsAPI, Book, BookRequest } from '../utils/api';
 import BookCoverCard from './BookCoverCard';
 import BookAdminRow from './BookAdminRow';
+import LibrosDisponiblesTab from './LibrosDisponiblesTab';
+import ClubesTab from './ClubesTab';
 import EmptyState from './EmptyState';
 import AddBookForm from './AddBookForm';
 import { BooksGridSkeleton } from './BookCardSkeleton';
@@ -15,26 +16,27 @@ import {
   LogOut,
   Rss,
   Library,
-  ArrowLeftRight,
   Users,
   MapPin,
   Menu,
   Loader2,
   Settings,
-  ChevronRight,
+  RefreshCw,
+  CheckCircle,
+  XCircle,
+  Clock,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { jwtDecode } from 'jwt-decode';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
-type TabKey = 'feed' | 'search' | 'all' | 'exchange' | 'clubs' | 'nearby' | 'admin';
+type TabKey = 'feed' | 'search' | 'all' | 'clubs' | 'nearby' | 'admin';
 
 const sidebarItems: { key: TabKey; label: string; icon: React.ElementType; description: string }[] = [
   { key: 'feed', label: 'Feed', icon: Rss, description: 'Novedades y recomendaciones' },
   { key: 'search', label: 'Buscar', icon: Search, description: 'Encontrá libros' },
-  { key: 'all', label: 'Todos', icon: Library, description: 'Catálogo completo' },
-  { key: 'exchange', label: 'Intercambiar', icon: ArrowLeftRight, description: 'Intercambiá con otros' },
+  { key: 'all', label: 'Libros disponibles', icon: Library, description: 'Catálogo e intercambios' },
   { key: 'clubs', label: 'Clubes', icon: Users, description: 'Clubes de lectura' },
   { key: 'nearby', label: 'Cerca tuyo', icon: MapPin, description: 'Lectores cercanos' },
 ];
@@ -79,19 +81,30 @@ const Dashboard: React.FC = () => {
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
 
+  // Admin — solicitudes de libros
+  const [adminBookRequests, setAdminBookRequests] = useState<BookRequest[]>([]);
+  const [isLoadingBookRequests, setIsLoadingBookRequests] = useState(false);
+  const [respondingReqId, setRespondingReqId] = useState<number | null>(null);
+  const [adminTab, setAdminTab] = useState<'catalogo' | 'solicitudes'>('catalogo');
+  const [myBookRequests, setMyBookRequests] = useState<BookRequest[]>([]);
+
   const [activeTab, setActiveTab] = useState<TabKey>('feed');
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   const { token, logout } = useAuth();
   const { toast } = useToast();
 
-  const decoded = token ? jwtDecode<{ role: string }>(token) : null;
+  const decoded = token ? jwtDecode<{ role: string; userId: number; username: string }>(token) : null;
   const isAdmin = decoded?.role === 'admin';
 
   useEffect(() => {
     if (token) {
-      // Feed inicial (Google)
       loadGoogleFeed({ topic: googleTopic, page: 0 });
+      if (!isAdmin) {
+        bookRequestsAPI.getMyRequests(token)
+          .then(setMyBookRequests)
+          .catch(() => {});
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
@@ -165,16 +178,52 @@ const Dashboard: React.FC = () => {
     loadGoogleFeed({ topic, page: 0 });
   };
 
+  const loadAdminBookRequests = async () => {
+    if (!token) return;
+    setIsLoadingBookRequests(true);
+    try {
+      setAdminBookRequests(await bookRequestsAPI.getAdminRequests(token));
+    } catch {
+      toast({ title: 'Error', description: 'No se pudieron cargar las solicitudes.', variant: 'destructive' });
+    } finally {
+      setIsLoadingBookRequests(false);
+    }
+  };
+
+  const handleRespondToRequest = async (reqId: number, status: 'accepted' | 'rejected') => {
+    setRespondingReqId(reqId);
+    try {
+      await bookRequestsAPI.respond(token!, reqId, status);
+      setAdminBookRequests((prev) =>
+        prev.map((r) => r.id === reqId ? { ...r, status } : r)
+      );
+      toast({ title: status === 'accepted' ? 'Solicitud aceptada' : 'Solicitud rechazada' });
+    } catch {
+      toast({ title: 'Error', description: 'No se pudo actualizar la solicitud.', variant: 'destructive' });
+    } finally {
+      setRespondingReqId(null);
+    }
+  };
+
+  const handleBookRequested = (req: BookRequest) => {
+    setMyBookRequests((prev) => {
+      const filtered = prev.filter((r) => r.bookId !== req.bookId);
+      return [...filtered, req];
+    });
+  };
+
+  const myRequestsMap = useMemo(() => {
+    const m = new Map<number, BookRequest['status']>();
+    myBookRequests.forEach((r) => m.set(r.bookId, r.status));
+    return m;
+  }, [myBookRequests]);
+
   const handleTabChange = (key: TabKey) => {
     setActiveTab(key);
 
-    // cargo libros DB al entrar a "all" o "admin" por primera vez
     if ((key === 'all' || key === 'admin') && allBooks.length === 0) loadAllBooks();
-
+    if (key === 'admin' && adminBookRequests.length === 0) loadAdminBookRequests();
     if (key === 'search') setSearchResults([]);
-
-    // opcional: refrescar feed cada vez que vuelvo
-    // if (key === 'feed') loadGoogleFeed({ topic: googleTopic, page: googlePage });
   };
 
   const handleLogout = () => {
@@ -183,18 +232,6 @@ const Dashboard: React.FC = () => {
   };
 
   // -------- Render helpers --------
-  const renderDbBooks = (books: Book[]) => {
-    if (isLoading) return <BooksGridSkeleton />;
-    if (books.length === 0) return <EmptyState />;
-    return (
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-4">
-        {books.map((book, i) => (
-          <BookCard key={book.id} book={book} index={i} />
-        ))}
-      </div>
-    );
-  };
-
   const renderGoogleBooks = () => {
     if (isGoogleLoading) return <BooksGridSkeleton />;
 
@@ -350,78 +387,152 @@ const Dashboard: React.FC = () => {
 
       case 'all':
         return (
-          <div className="space-y-5">
-            {isAdmin && (
-              <button
-                onClick={() => handleTabChange('admin')}
-                className="w-full flex items-center justify-between gap-4 bg-primary/8 border border-primary/20 rounded-xl px-5 py-4 text-left hover:bg-primary/12 transition-colors group"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="h-9 w-9 rounded-lg bg-primary/15 flex items-center justify-center flex-shrink-0">
-                    <Settings className="h-4.5 w-4.5 text-primary" />
-                  </div>
-                  <div>
-                    <p className="font-mono text-sm font-bold text-foreground">Gestionar catálogo</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">Agregá o editá libros desde el panel de administración.</p>
-                  </div>
-                </div>
-                <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors flex-shrink-0" />
-              </button>
-            )}
-            {renderDbBooks(allBooks)}
-          </div>
+          <LibrosDisponiblesTab
+            token={token!}
+            allBooks={allBooks}
+            isLoadingBooks={isLoading}
+            isAdmin={isAdmin}
+            onGoToAdmin={() => handleTabChange('admin')}
+            myRequests={myRequestsMap}
+            onRequested={handleBookRequested}
+          />
         );
 
       case 'admin':
         return (
-          <div className="space-y-6">
-            <div>
-              <h3 className="font-mono text-xl font-bold text-foreground">Gestionar libros</h3>
-              <p className="text-sm text-muted-foreground mt-1">Agregá, editá o eliminá libros del catálogo.</p>
+          <div className="space-y-5">
+            {/* Tabs */}
+            <div className="flex gap-1 border-b border-border">
+              {([
+                { key: 'catalogo' as const, label: 'Catálogo' },
+                { key: 'solicitudes' as const, label: 'Solicitudes' },
+              ]).map((t) => {
+                const pendingCount = t.key === 'solicitudes'
+                  ? adminBookRequests.filter((r) => r.status === 'pending').length
+                  : 0;
+                return (
+                  <button
+                    key={t.key}
+                    onClick={() => setAdminTab(t.key)}
+                    className={cn(
+                      'relative px-4 py-2.5 text-sm font-mono font-medium transition-colors',
+                      adminTab === t.key
+                        ? 'text-foreground border-b-2 border-primary -mb-px'
+                        : 'text-muted-foreground hover:text-foreground'
+                    )}
+                  >
+                    {t.label}
+                    {pendingCount > 0 && (
+                      <span className="ml-1.5 inline-flex items-center justify-center bg-accent text-accent-foreground text-xs font-bold w-4 h-4 rounded-full">
+                        {pendingCount}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
             </div>
 
-            <AddBookForm token={token!} onBookAdded={loadAllBooks} />
-
-            {isLoading ? (
-              <div className="text-sm text-muted-foreground px-1">Cargando catálogo...</div>
-            ) : allBooks.length > 0 ? (
-              <div className="space-y-2">
-                <p className="font-mono text-xs font-semibold text-muted-foreground uppercase tracking-wide px-1">
-                  Catálogo — {allBooks.length} {allBooks.length === 1 ? 'libro' : 'libros'}
-                </p>
-                <div className="rounded-xl border border-border overflow-hidden">
-                  {allBooks.map((book) => (
-                    <BookAdminRow
-                      key={book.id}
-                      book={book}
-                      token={token!}
-                      onUpdated={(updated) =>
-                        setAllBooks((prev) => prev.map((b) => (b.id === updated.id ? updated : b)))
-                      }
-                      onDeleted={(id) =>
-                        setAllBooks((prev) => prev.filter((b) => b.id !== id))
-                      }
-                    />
-                  ))}
-                </div>
+            {adminTab === 'catalogo' ? (
+              <div className="space-y-4">
+                <p className="text-sm text-muted-foreground">Agregá, editá o eliminá libros del catálogo.</p>
+                <AddBookForm token={token!} onBookAdded={loadAllBooks} />
+                {isLoading ? (
+                  <div className="text-sm text-muted-foreground px-1">Cargando catálogo...</div>
+                ) : allBooks.length > 0 ? (
+                  <div className="space-y-2">
+                    <p className="font-mono text-xs font-semibold text-muted-foreground uppercase tracking-wide px-1">
+                      Catálogo — {allBooks.length} {allBooks.length === 1 ? 'libro' : 'libros'}
+                    </p>
+                    <div className="rounded-xl border border-border overflow-hidden">
+                      {allBooks.map((book) => (
+                        <BookAdminRow
+                          key={book.id}
+                          book={book}
+                          token={token!}
+                          onUpdated={(updated) =>
+                            setAllBooks((prev) => prev.map((b) => (b.id === updated.id ? updated : b)))
+                          }
+                          onDeleted={(id) =>
+                            setAllBooks((prev) => prev.filter((b) => b.id !== id))
+                          }
+                        />
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
               </div>
-            ) : null}
+            ) : (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm text-muted-foreground">Compras e intercambios solicitados por los usuarios.</p>
+                  <button
+                    onClick={loadAdminBookRequests}
+                    className="p-1.5 text-muted-foreground hover:text-foreground transition-colors"
+                    title="Actualizar"
+                  >
+                    <RefreshCw className={`h-4 w-4 ${isLoadingBookRequests ? 'animate-spin' : ''}`} />
+                  </button>
+                </div>
+
+                {isLoadingBookRequests ? (
+                  <p className="text-sm text-muted-foreground px-1">Cargando...</p>
+                ) : adminBookRequests.length === 0 ? (
+                  <p className="text-sm text-muted-foreground px-1">No hay solicitudes.</p>
+                ) : (
+                  <div className="rounded-xl border border-border overflow-hidden divide-y divide-border">
+                    {adminBookRequests.map((req) => (
+                      <div key={req.id} className="flex items-center gap-3 px-4 py-3 bg-card">
+                        <div className="flex-1 min-w-0">
+                          <p className="font-mono text-sm font-bold text-foreground truncate">{req.title}</p>
+                          <p className="text-xs text-muted-foreground truncate">
+                            {req.author} · solicitado por <span className="font-medium">{req.requesterUsername}</span>
+                          </p>
+                        </div>
+                        <span className={`text-xs font-mono px-2 py-0.5 rounded-md flex-shrink-0 ${
+                          req.type === 'intercambio' ? 'bg-accent/20 text-accent-foreground' : 'bg-primary/10 text-primary'
+                        }`}>
+                          {req.type === 'intercambio' ? 'Intercambio' : 'Compra'}
+                        </span>
+                        {req.status === 'pending' ? (
+                          <div className="flex gap-2 flex-shrink-0">
+                            <button
+                              onClick={() => handleRespondToRequest(req.id, 'accepted')}
+                              disabled={respondingReqId === req.id}
+                              className="p-1.5 text-muted-foreground hover:text-primary transition-colors disabled:opacity-50"
+                              title="Aceptar"
+                            >
+                              <CheckCircle className="h-4 w-4" />
+                            </button>
+                            <button
+                              onClick={() => handleRespondToRequest(req.id, 'rejected')}
+                              disabled={respondingReqId === req.id}
+                              className="p-1.5 text-muted-foreground hover:text-destructive transition-colors disabled:opacity-50"
+                              title="Rechazar"
+                            >
+                              <XCircle className="h-4 w-4" />
+                            </button>
+                          </div>
+                        ) : (
+                          <span className={`flex items-center gap-1 text-xs font-mono flex-shrink-0 ${
+                            req.status === 'accepted' ? 'text-primary' : 'text-muted-foreground'
+                          }`}>
+                            {req.status === 'accepted'
+                              ? <><CheckCircle className="h-3.5 w-3.5" /> Aceptada</>
+                              : <><Clock className="h-3.5 w-3.5" /> Rechazada</>
+                            }
+                          </span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         );
 
-      case 'exchange':
-        return renderComingSoon(
-          'Intercambio de libros',
-          'Próximamente: publicá libros para intercambiar con otros lectores de tu zona.',
-          <ArrowLeftRight className="h-10 w-10 text-accent/60" />
-        );
-
       case 'clubs':
-        return renderComingSoon(
-          'Clubes de lectura',
-          'Próximamente: creá o unite a clubes de lectura con personas que comparten tus gustos.',
-          <Users className="h-10 w-10 text-forest/60" />
-        );
+        return <ClubesTab token={token!} isAdmin={isAdmin} userId={decoded?.userId ?? 0} />;
 
       case 'nearby':
         return renderComingSoon(
@@ -523,7 +634,7 @@ const Dashboard: React.FC = () => {
               {activeTab === 'admin' ? 'Gestionar libros' : sidebarItems.find((i) => i.key === activeTab)?.label}
             </h2>
             <p className="text-xs text-muted-foreground hidden sm:block">
-              {activeTab === 'admin' ? 'Panel de administración' : sidebarItems.find((i) => i.key === activeTab)?.description}
+              {activeTab === 'admin' ? 'Panel de administración' : sidebarItems.find((i) => i.key === activeTab)?.description ?? ''}
             </p>
           </div>
 
@@ -538,6 +649,51 @@ const Dashboard: React.FC = () => {
 
         {/* Page content */}
         <main className="flex-1 p-6 lg:p-8 overflow-y-auto">
+          {!isAdmin && activeTab === 'all' && myBookRequests.some((r) => r.status !== 'pending') && (
+            <div className="mb-6">
+              <p className="font-mono text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+                Tus solicitudes
+              </p>
+              <div className="flex gap-3 overflow-x-auto pb-1">
+                {myBookRequests
+                  .filter((r) => r.status !== 'pending')
+                  .map((req) => (
+                    <div
+                      key={req.id}
+                      className={cn(
+                        'flex-shrink-0 flex items-center gap-3 rounded-xl border px-4 py-3 min-w-[200px]',
+                        req.status === 'accepted'
+                          ? 'bg-primary/5 border-primary/20'
+                          : 'bg-muted/50 border-border'
+                      )}
+                    >
+                      <div className="w-10 h-14 rounded-md border border-border overflow-hidden bg-muted flex-shrink-0 flex items-center justify-center">
+                        {req.coverUrl ? (
+                          <img src={req.coverUrl} alt={req.title ?? ''} className="w-full h-full object-cover" />
+                        ) : (
+                          <BookOpen className="h-4 w-4 text-muted-foreground/40" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-mono text-xs font-bold text-foreground truncate">{req.title ?? 'Libro'}</p>
+                        <p className="text-xs text-muted-foreground truncate mt-0.5">
+                          {req.type === 'intercambio' ? 'Intercambio' : 'Compra'}
+                        </p>
+                        <span className={cn(
+                          'mt-1.5 inline-flex items-center gap-1 text-xs font-mono font-medium',
+                          req.status === 'accepted' ? 'text-primary' : 'text-destructive'
+                        )}>
+                          {req.status === 'accepted'
+                            ? <><CheckCircle className="h-3 w-3" /> Aceptado</>
+                            : <><XCircle className="h-3 w-3" /> Rechazado</>
+                          }
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            </div>
+          )}
           <AnimatePresence mode="wait">
             <motion.div
               key={activeTab}

@@ -41,7 +41,7 @@ router.post('/login', async (req, res) => {
         role: userData.role
       },
       process.env.JWT_SECRET,
-      { expiresIn: '1h' }
+      { expiresIn: '7d' }
     );
 
     console.log('Login exitoso');

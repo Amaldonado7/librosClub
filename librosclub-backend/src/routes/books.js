@@ -1,22 +1,25 @@
 const express = require('express');
-const { getBooks, getFeed, createBook, updateBook, deleteBook } = require('../controllers/booksControllers');
+const {
+  getBooks, getFeed, createBook, updateBook, deleteBook,
+  requestBook, getMyBookRequests, getAdminBookRequests, respondToBookRequest,
+} = require('../controllers/booksControllers');
 const authMiddleware = require('../middlewares/authMiddleware');
 const allowRoles = require('../middlewares/allowRoles');
 const router = express.Router();
 
-// Ruta principal para obtener todos los libros o buscar por título
-router.get('/', getBooks); // GET /api/books
+// Rutas estáticas primero (antes de /:id)
+router.get('/feed',         getFeed);
+router.get('/requests',     authMiddleware, allowRoles('admin'), getAdminBookRequests);
+router.get('/my-requests',  authMiddleware, getMyBookRequests);
+router.get('/',             getBooks);
 
-// Ruta para obtener el feed (últimos libros)
-router.get('/feed', getFeed); // GET /api/books/feed
+router.post('/',            authMiddleware, allowRoles('admin'), createBook);
+router.post('/:id/request', authMiddleware, requestBook);
 
-// Agregar un nuevo libro (solo admin)
-router.post('/', authMiddleware, allowRoles('admin'), createBook);
+// PUT /requests/:reqId antes de PUT /:id para evitar conflicto de parámetros
+router.put('/requests/:reqId', authMiddleware, allowRoles('admin'), respondToBookRequest);
+router.put('/:id',             authMiddleware, allowRoles('admin'), updateBook);
 
-// Actualizar libro (solo admin)
-router.put('/:id', authMiddleware, allowRoles('admin'), updateBook);
-
-// Eliminar libro (solo admin)
-router.delete('/:id', authMiddleware, allowRoles('admin'), deleteBook);
+router.delete('/:id',       authMiddleware, allowRoles('admin'), deleteBook);
 
 module.exports = router;
