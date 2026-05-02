@@ -9,13 +9,14 @@ import { Settings, ChevronRight, CheckCircle, XCircle, Clock, ArrowLeftRight } f
 import { cn } from '@/lib/utils';
 
 interface Props {
-  token: string;
+  token: string | null;
   allBooks: Book[];
   isLoadingBooks: boolean;
   isAdmin: boolean;
   onGoToAdmin: () => void;
   myRequests: Map<number, BookRequest['status']>;
   onRequested: (req: BookRequest) => void;
+  onAuthRequired?: () => void;
 }
 
 const STATUS_BADGE: Record<string, React.ReactNode> = {
@@ -37,12 +38,13 @@ const STATUS_BADGE: Record<string, React.ReactNode> = {
 };
 
 const LibrosDisponiblesTab: React.FC<Props> = ({
-  token, allBooks, isLoadingBooks, isAdmin, onGoToAdmin, myRequests, onRequested,
+  token, allBooks, isLoadingBooks, isAdmin, onGoToAdmin, myRequests, onRequested, onAuthRequired,
 }) => {
   const [requestingId, setRequestingId] = useState<string | null>(null);
   const { toast } = useToast();
 
   const handleRequest = async (book: Book) => {
+    if (!token) { onAuthRequired?.(); return; }
     setRequestingId(book.id);
     try {
       const req = await bookRequestsAPI.request(token, book.id);

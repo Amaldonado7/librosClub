@@ -11,9 +11,10 @@ import { cn } from '@/lib/utils';
 import ClubDetailSheet from './ClubDetailSheet';
 
 interface Props {
-  token: string;
+  token: string | null;
   isAdmin: boolean;
   userId: number;
+  onAuthRequired?: () => void;
 }
 
 const ClubCard: React.FC<{
@@ -121,7 +122,7 @@ const ClubCard: React.FC<{
   );
 };
 
-const ClubesTab: React.FC<Props> = ({ token, isAdmin, userId }) => {
+const ClubesTab: React.FC<Props> = ({ token, isAdmin, userId, onAuthRequired }) => {
   const [clubs, setClubs] = useState<Club[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [actionId, setActionId] = useState<number | null>(null);
@@ -142,6 +143,7 @@ const ClubesTab: React.FC<Props> = ({ token, isAdmin, userId }) => {
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!token) { onAuthRequired?.(); return; }
     if (!nombre.trim()) {
       toast({ title: 'Nombre requerido', variant: 'destructive' });
       return;
@@ -165,6 +167,7 @@ const ClubesTab: React.FC<Props> = ({ token, isAdmin, userId }) => {
   };
 
   const handleJoin = async (club: Club) => {
+    if (!token) { onAuthRequired?.(); return; }
     setActionId(club.id);
     try {
       await clubsAPI.joinClub(token, club.id);
@@ -180,6 +183,7 @@ const ClubesTab: React.FC<Props> = ({ token, isAdmin, userId }) => {
   };
 
   const handleLeave = async (club: Club) => {
+    if (!token) { onAuthRequired?.(); return; }
     setActionId(club.id);
     try {
       await clubsAPI.leaveClub(token, club.id);
@@ -313,7 +317,7 @@ const ClubesTab: React.FC<Props> = ({ token, isAdmin, userId }) => {
         </div>
       )}
 
-      {selectedClub && (
+      {selectedClub && token && (
         <ClubDetailSheet
           club={selectedClub}
           token={token}

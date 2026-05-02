@@ -9,7 +9,7 @@ async function getMiRol(userId, clubId) {
 }
 
 exports.getClubs = async (req, res) => {
-  const userId = req.user.userId;
+  const userId = req.user?.userId ?? null;
   try {
     const { rows } = await pool.query(
       `SELECT
