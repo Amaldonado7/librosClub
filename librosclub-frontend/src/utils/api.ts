@@ -80,7 +80,25 @@ export const booksAPI = {
     return response.json();
   },
 
-  createBook: async (token: string, payload: { title: string; author: string; genre?: string }): Promise<Book> => {
+  updateBook: async (token: string, id: string, payload: { title: string; author: string; genre?: string; coverUrl?: string }): Promise<Book> => {
+    const response = await fetch(`${API_BASE_URL}/books/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify(payload),
+    });
+    if (!response.ok) throw new Error('Error al actualizar libro');
+    return response.json();
+  },
+
+  deleteBook: async (token: string, id: string): Promise<void> => {
+    const response = await fetch(`${API_BASE_URL}/books/${id}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${token}` },
+    });
+    if (!response.ok) throw new Error('Error al eliminar libro');
+  },
+
+  createBook: async (token: string, payload: { title: string; author: string; genre?: string; coverUrl?: string }): Promise<Book> => {
     const response = await fetch(`${API_BASE_URL}/books`, {
       method: 'POST',
       headers: {
@@ -94,6 +112,14 @@ export const booksAPI = {
       throw new Error('Error al agregar libro');
     }
 
+    return response.json();
+  },
+
+  searchGoogleBooks: async (q: string, page: number = 0, pageSize: number = 20) => {
+    const response = await fetch(
+      `${API_BASE_URL}/google-books/search?q=${encodeURIComponent(q)}&page=${page}&pageSize=${pageSize}&lang=es`
+    );
+    if (!response.ok) throw new Error('Failed to search Google Books');
     return response.json();
   },
 

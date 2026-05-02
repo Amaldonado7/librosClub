@@ -1,5 +1,5 @@
 const express = require('express');
-const { getBooks, getFeed, createBook } = require('../controllers/booksControllers');
+const { getBooks, getFeed, createBook, updateBook, deleteBook } = require('../controllers/booksControllers');
 const authMiddleware = require('../middlewares/authMiddleware');
 const allowRoles = require('../middlewares/allowRoles');
 const router = express.Router();
@@ -11,6 +11,12 @@ router.get('/', getBooks); // GET /api/books
 router.get('/feed', getFeed); // GET /api/books/feed
 
 // Agregar un nuevo libro (solo admin)
-router.post('/', authMiddleware, allowRoles('admin'), createBook); // POST /api/books
+router.post('/', authMiddleware, allowRoles('admin'), createBook);
+
+// Actualizar libro (solo admin)
+router.put('/:id', authMiddleware, allowRoles('admin'), updateBook);
+
+// Eliminar libro (solo admin)
+router.delete('/:id', authMiddleware, allowRoles('admin'), deleteBook);
 
 module.exports = router;

@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { booksAPI, Book } from '../utils/api';
 import BookCard from './BookCard';
+import BookCoverCard from './BookCoverCard';
+import BookAdminRow from './BookAdminRow';
 import EmptyState from './EmptyState';
 import AddBookForm from './AddBookForm';
 import { BooksGridSkeleton } from './BookCardSkeleton';
@@ -18,13 +20,15 @@ import {
   MapPin,
   Menu,
   Loader2,
+  Settings,
+  ChevronRight,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { jwtDecode } from 'jwt-decode';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
-type TabKey = 'feed' | 'search' | 'all' | 'exchange' | 'clubs' | 'nearby';
+type TabKey = 'feed' | 'search' | 'all' | 'exchange' | 'clubs' | 'nearby' | 'admin';
 
 const sidebarItems: { key: TabKey; label: string; icon: React.ElementType; description: string }[] = [
   { key: 'feed', label: 'Feed', icon: Rss, description: 'Novedades y recomendaciones' },
@@ -58,13 +62,14 @@ const GENRES = [
 ] as const;
 
 const Dashboard: React.FC = () => {
-  // DB (se mantiene para tabs all/search)
+  // DB (solo para tab "all")
   const [allBooks, setAllBooks] = useState<Book[]>([]);
-  const [searchResults, setSearchResults] = useState<Book[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
-
-  // Loading general (DB)
   const [isLoading, setIsLoading] = useState(false);
+
+  // Búsqueda Google Books
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<GoogleBook[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
 
   // Feed ahora es Google Books
   const [googleBooks, setGoogleBooks] = useState<GoogleBook[]>([]);
@@ -106,18 +111,18 @@ const Dashboard: React.FC = () => {
   };
 
   const handleSearch = async (query: string) => {
-    if (!token || !query.trim()) {
+    if (!query.trim()) {
       setSearchResults([]);
       return;
     }
-    setIsLoading(true);
+    setIsSearching(true);
     try {
-      const books = await booksAPI.searchBooks(token, query);
-      setSearchResults(books);
+      const data = await booksAPI.searchGoogleBooks(query);
+      setSearchResults((data?.items ?? []) as GoogleBook[]);
     } catch {
-      toast({ title: 'Error', description: 'Error en la búsqueda de libros.', variant: 'destructive' });
+      toast({ title: 'Error', description: 'Error en la búsqueda.', variant: 'destructive' });
     } finally {
-      setIsLoading(false);
+      setIsSearching(false);
     }
   };
 
@@ -163,8 +168,8 @@ const Dashboard: React.FC = () => {
   const handleTabChange = (key: TabKey) => {
     setActiveTab(key);
 
-    // si entro a "all" la primera vez, cargo DB
-    if (key === 'all' && allBooks.length === 0) loadAllBooks();
+    // cargo libros DB al entrar a "all" o "admin" por primera vez
+    if ((key === 'all' || key === 'admin') && allBooks.length === 0) loadAllBooks();
 
     if (key === 'search') setSearchResults([]);
 
@@ -182,7 +187,7 @@ const Dashboard: React.FC = () => {
     if (isLoading) return <BooksGridSkeleton />;
     if (books.length === 0) return <EmptyState />;
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-4">
         {books.map((book, i) => (
           <BookCard key={book.id} book={book} index={i} />
         ))}
@@ -207,57 +212,16 @@ const Dashboard: React.FC = () => {
       <div className="space-y-6">
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-4">
           {googleBooks.map((b, i) => (
-            <motion.div
+            <BookCoverCard
               key={`${b.id}-${i}`}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.2, delay: Math.min(i * 0.04, 0.4) }}
-              className="group bg-card border border-border rounded-xl overflow-hidden shadow-card hover:shadow-warm transition-all duration-200 hover:-translate-y-0.5"
-            >
-              <div className="relative aspect-[2/3] bg-muted overflow-hidden">
-                {b.thumbnail ? (
-                  <img
-                    src={b.thumbnail}
-                    alt={b.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    loading="lazy"
-                  />
-                ) : (
-                  <div className="w-full h-full flex flex-col items-center justify-center gap-2 px-3 text-center">
-                    <BookOpen className="h-7 w-7 text-muted-foreground/40" />
-                    <p className="text-xs text-muted-foreground/60 font-mono line-clamp-3 leading-snug">
-                      {b.title}
-                    </p>
-                  </div>
-                )}
-                {b.publishedDate && (
-                  <span className="absolute top-2 left-2 bg-accent text-accent-foreground text-xs font-mono font-bold px-2 py-0.5 rounded-md">
-                    {b.publishedDate.slice(0, 4)}
-                  </span>
-                )}
-              </div>
-
-              <div className="p-3 space-y-1">
-                <p className="font-mono text-xs font-bold leading-snug line-clamp-2 text-foreground">
-                  {b.title}
-                </p>
-                {b.authors?.length ? (
-                  <p className="text-xs text-muted-foreground line-clamp-1">
-                    {b.authors.join(', ')}
-                  </p>
-                ) : null}
-                {b.link ? (
-                  <a
-                    href={b.link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-block text-xs text-primary font-medium hover:underline pt-1"
-                  >
-                    Ver más →
-                  </a>
-                ) : null}
-              </div>
-            </motion.div>
+              title={b.title}
+              subtitle={b.authors?.join(', ')}
+              badge={b.publishedDate?.slice(0, 4)}
+              badgeVariant="accent"
+              thumbnail={b.thumbnail}
+              link={b.link}
+              index={i}
+            />
           ))}
         </div>
 
@@ -323,27 +287,61 @@ const Dashboard: React.FC = () => {
 
       case 'search':
         return (
-          <div className="space-y-6">
-            <div className="relative max-w-lg">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                type="text"
-                placeholder="Buscar libros por título..."
-                value={searchQuery}
-                onChange={(e) => {
-                  setSearchQuery(e.target.value);
-                  handleSearch(e.target.value);
-                }}
-                className="pl-10 bg-card border-border"
-              />
-            </div>
+          <div className="space-y-5">
+            <h3 className="font-mono text-xl font-bold text-foreground">
+              Encontrá tu próxima lectura
+            </h3>
 
-            {searchQuery ? (
-              renderDbBooks(searchResults)
+            <form
+              className="flex gap-2 max-w-lg"
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleSearch(searchQuery);
+              }}
+            >
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="text"
+                  placeholder="Título, autor, saga o ISBN..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10 bg-card border-border"
+                  autoFocus
+                />
+              </div>
+              <Button type="submit" size="icon" disabled={isSearching || !searchQuery.trim()} aria-label="Buscar">
+                {isSearching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+              </Button>
+            </form>
+
+            {isSearching ? (
+              <BooksGridSkeleton />
+            ) : searchResults.length > 0 ? (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-4">
+                {searchResults.map((b, i) => (
+                  <BookCoverCard
+                    key={`${b.id}-${i}`}
+                    title={b.title}
+                    subtitle={b.authors?.join(', ')}
+                    badge={b.publishedDate?.slice(0, 4)}
+                    badgeVariant="accent"
+                    thumbnail={b.thumbnail}
+                    link={b.link}
+                    index={i}
+                  />
+                ))}
+              </div>
+            ) : searchQuery && !isSearching ? (
+              <EmptyState
+                title="Sin resultados"
+                description="Probá con otro título o autor."
+                icon={<Search className="h-10 w-10 text-muted-foreground/50" />}
+              />
             ) : (
               <EmptyState
-                title="Buscá algo"
-                description="Escribí el título de un libro para empezar."
+                title="¿Qué querés leer?"
+                description="Título, autor, saga o ISBN."
                 icon={<Search className="h-10 w-10 text-muted-foreground/50" />}
               />
             )}
@@ -351,7 +349,65 @@ const Dashboard: React.FC = () => {
         );
 
       case 'all':
-        return renderDbBooks(allBooks);
+        return (
+          <div className="space-y-5">
+            {isAdmin && (
+              <button
+                onClick={() => handleTabChange('admin')}
+                className="w-full flex items-center justify-between gap-4 bg-primary/8 border border-primary/20 rounded-xl px-5 py-4 text-left hover:bg-primary/12 transition-colors group"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="h-9 w-9 rounded-lg bg-primary/15 flex items-center justify-center flex-shrink-0">
+                    <Settings className="h-4.5 w-4.5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="font-mono text-sm font-bold text-foreground">Gestionar catálogo</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">Agregá o editá libros desde el panel de administración.</p>
+                  </div>
+                </div>
+                <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors flex-shrink-0" />
+              </button>
+            )}
+            {renderDbBooks(allBooks)}
+          </div>
+        );
+
+      case 'admin':
+        return (
+          <div className="space-y-6">
+            <div>
+              <h3 className="font-mono text-xl font-bold text-foreground">Gestionar libros</h3>
+              <p className="text-sm text-muted-foreground mt-1">Agregá, editá o eliminá libros del catálogo.</p>
+            </div>
+
+            <AddBookForm token={token!} onBookAdded={loadAllBooks} />
+
+            {isLoading ? (
+              <div className="text-sm text-muted-foreground px-1">Cargando catálogo...</div>
+            ) : allBooks.length > 0 ? (
+              <div className="space-y-2">
+                <p className="font-mono text-xs font-semibold text-muted-foreground uppercase tracking-wide px-1">
+                  Catálogo — {allBooks.length} {allBooks.length === 1 ? 'libro' : 'libros'}
+                </p>
+                <div className="rounded-xl border border-border overflow-hidden">
+                  {allBooks.map((book) => (
+                    <BookAdminRow
+                      key={book.id}
+                      book={book}
+                      token={token!}
+                      onUpdated={(updated) =>
+                        setAllBooks((prev) => prev.map((b) => (b.id === updated.id ? updated : b)))
+                      }
+                      onDeleted={(id) =>
+                        setAllBooks((prev) => prev.filter((b) => b.id !== id))
+                      }
+                    />
+                  ))}
+                </div>
+              </div>
+            ) : null}
+          </div>
+        );
 
       case 'exchange':
         return renderComingSoon(
@@ -421,10 +477,14 @@ const Dashboard: React.FC = () => {
                 <div className="pt-4 mt-4 border-t border-sidebar-border">
                   <p className="px-3 text-xs uppercase tracking-wider text-sidebar-foreground/40 mb-2">Admin</p>
                   <button
-                    onClick={() => handleTabChange('all')}
-                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground transition-colors"
+                    onClick={() => handleTabChange('admin')}
+                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                      activeTab === 'admin'
+                        ? 'bg-sidebar-accent text-sidebar-accent-foreground'
+                        : 'text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground'
+                    }`}
                   >
-                    <BookOpen className="h-4.5 w-4.5" />
+                    <Settings className={`h-4.5 w-4.5 ${activeTab === 'admin' ? 'text-sidebar-primary' : ''}`} />
                     <span>Gestionar libros</span>
                   </button>
                 </div>
@@ -460,10 +520,10 @@ const Dashboard: React.FC = () => {
 
           <div className="flex-1">
             <h2 className="font-serif text-lg font-semibold text-foreground">
-              {sidebarItems.find((i) => i.key === activeTab)?.label}
+              {activeTab === 'admin' ? 'Gestionar libros' : sidebarItems.find((i) => i.key === activeTab)?.label}
             </h2>
             <p className="text-xs text-muted-foreground hidden sm:block">
-              {sidebarItems.find((i) => i.key === activeTab)?.description}
+              {activeTab === 'admin' ? 'Panel de administración' : sidebarItems.find((i) => i.key === activeTab)?.description}
             </p>
           </div>
 
@@ -487,7 +547,6 @@ const Dashboard: React.FC = () => {
               transition={{ duration: 0.2 }}
               className="space-y-6"
             >
-              {isAdmin && activeTab === 'all' && <AddBookForm token={token!} onBookAdded={loadAllBooks} />}
               {renderContent()}
             </motion.div>
           </AnimatePresence>
