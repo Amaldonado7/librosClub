@@ -1,14 +1,14 @@
 const express = require('express');
 const router = express.Router();
 const authMiddleware = require('../middlewares/authMiddleware');
-const allowRoles = require('../middlewares/allowRoles');
+const optionalAuth = require('../middlewares/optionalAuth');
 const {
   getClubs, createClub, joinClub, leaveClub,
   getClubDetail, setCurrentBook, addMeeting, deleteMeeting, createPost, deletePost,
 } = require('../controllers/clubsController');
 
-router.get('/',                           authMiddleware, getClubs);
-router.post('/',                          authMiddleware, allowRoles('admin'), createClub);
+router.get('/',                           optionalAuth, getClubs);
+router.post('/',                          authMiddleware, createClub);
 router.post('/:id/join',                  authMiddleware, joinClub);
 router.delete('/:id/leave',              authMiddleware, leaveClub);
 router.get('/:id',                        authMiddleware, getClubDetail);

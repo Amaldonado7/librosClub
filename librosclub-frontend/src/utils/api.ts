@@ -35,27 +35,35 @@ export const authAPI = {
   login: async (credentials: LoginRequest): Promise<LoginResponse> => {
     const response = await fetch(`${API_BASE_URL}/auth/login`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(credentials),
     });
-
     if (!response.ok) {
-      throw new Error('Login failed');
+      const body = await response.json().catch(() => ({}));
+      throw new Error((body as any).message ?? 'Credenciales incorrectas.');
     }
-
     return response.json();
-  }
+  },
+
+  register: async (credentials: LoginRequest): Promise<LoginResponse> => {
+    const response = await fetch(`${API_BASE_URL}/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(credentials),
+    });
+    if (!response.ok) {
+      const body = await response.json().catch(() => ({}));
+      throw new Error((body as any).message ?? 'Error al registrarse.');
+    }
+    return response.json();
+  },
 };
 
 export const booksAPI = {
-  getAllBooks: async (token: string): Promise<Book[]> => {
-    const response = await handleResponse(await fetch(`${API_BASE_URL}/books`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    }));
+  getAllBooks: async (token: string | null): Promise<Book[]> => {
+    const headers: Record<string, string> = {};
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    const response = await handleResponse(await fetch(`${API_BASE_URL}/books`, { headers }));
 
     if (!response.ok) {
       throw new Error('Failed to fetch books');
@@ -297,8 +305,10 @@ export interface ClubDetail extends Club {
 }
 
 export const clubsAPI = {
-  getClubs: async (token: string): Promise<Club[]> => {
-    const r = await handleResponse(await fetch(`${API_BASE_URL}/clubs`, { headers: authHeaders(token) }));
+  getClubs: async (token: string | null): Promise<Club[]> => {
+    const headers: Record<string, string> = {};
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    const r = await handleResponse(await fetch(`${API_BASE_URL}/clubs`, { headers }));
     if (!r.ok) throw new Error('Error al cargar clubes.');
     return r.json();
   },

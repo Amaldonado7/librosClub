@@ -14,6 +14,8 @@ import {
   BookOpen,
   Search,
   LogOut,
+  LogIn,
+  UserPlus,
   Rss,
   Library,
   Users,
@@ -30,6 +32,7 @@ import { useToast } from '@/hooks/use-toast';
 import { jwtDecode } from 'jwt-decode';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import AuthModal from './AuthModal';
 
 type TabKey = 'feed' | 'search' | 'all' | 'clubs' | 'nearby' | 'admin';
 
@@ -90,6 +93,13 @@ const Dashboard: React.FC = () => {
 
   const [activeTab, setActiveTab] = useState<TabKey>('feed');
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [authModalMode, setAuthModalMode] = useState<'login' | 'register'>('login');
+
+  const openAuthModal = (mode: 'login' | 'register' = 'register') => {
+    setAuthModalMode(mode);
+    setAuthModalOpen(true);
+  };
 
   const { token, logout } = useAuth();
   const { toast } = useToast();
@@ -98,20 +108,21 @@ const Dashboard: React.FC = () => {
   const isAdmin = decoded?.role === 'admin';
 
   useEffect(() => {
-    if (token) {
-      loadGoogleFeed({ topic: googleTopic, page: 0 });
-      if (!isAdmin) {
-        bookRequestsAPI.getMyRequests(token)
-          .then(setMyBookRequests)
-          .catch(() => {});
-      }
+    loadGoogleFeed({ topic: googleTopic, page: 0 });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (token && !isAdmin) {
+      bookRequestsAPI.getMyRequests(token)
+        .then(setMyBookRequests)
+        .catch(() => {});
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
   // -------- DB calls (para "all" y "search") --------
   const loadAllBooks = async () => {
-    if (!token) return;
     setIsLoading(true);
     try {
       const books = await booksAPI.getAllBooks(token);
@@ -388,13 +399,14 @@ const Dashboard: React.FC = () => {
       case 'all':
         return (
           <LibrosDisponiblesTab
-            token={token!}
+            token={token}
             allBooks={allBooks}
             isLoadingBooks={isLoading}
             isAdmin={isAdmin}
             onGoToAdmin={() => handleTabChange('admin')}
             myRequests={myRequestsMap}
             onRequested={handleBookRequested}
+            onAuthRequired={() => openAuthModal('register')}
           />
         );
 
@@ -532,7 +544,7 @@ const Dashboard: React.FC = () => {
         );
 
       case 'clubs':
-        return <ClubesTab token={token!} isAdmin={isAdmin} userId={decoded?.userId ?? 0} />;
+        return <ClubesTab token={token} isAdmin={isAdmin} userId={decoded?.userId ?? 0} onAuthRequired={() => openAuthModal('register')} />;
 
       case 'nearby':
         return renderComingSoon(
@@ -603,14 +615,40 @@ const Dashboard: React.FC = () => {
             </nav>
 
             <div className="p-4 border-t border-sidebar-border">
-              <Button
-                onClick={handleLogout}
-                variant="ghost"
-                className="w-full justify-start text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50"
-              >
-                <LogOut className="h-4 w-4 mr-2" />
-                Cerrar sesión
-              </Button>
+              {token ? (
+                <>
+                  <p className="text-xs text-sidebar-foreground/40 font-mono truncate px-1 mb-2">
+                    {decoded?.username}
+                  </p>
+                  <Button
+                    onClick={handleLogout}
+                    variant="ghost"
+                    className="w-full justify-start text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50"
+                  >
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Cerrar sesión
+                  </Button>
+                </>
+              ) : (
+                <div className="space-y-1">
+                  <Button
+                    onClick={() => openAuthModal('login')}
+                    variant="ghost"
+                    className="w-full justify-start text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50"
+                  >
+                    <LogIn className="h-4 w-4 mr-2" />
+                    Iniciar sesión
+                  </Button>
+                  <Button
+                    onClick={() => openAuthModal('register')}
+                    variant="ghost"
+                    className="w-full justify-start text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50"
+                  >
+                    <UserPlus className="h-4 w-4 mr-2" />
+                    Registrarse
+                  </Button>
+                </div>
+              )}
             </div>
           </motion.aside>
         )}
@@ -708,6 +746,11 @@ const Dashboard: React.FC = () => {
           </AnimatePresence>
         </main>
       </div>
+      <AuthModal
+        open={authModalOpen}
+        onClose={() => setAuthModalOpen(false)}
+        defaultMode={authModalMode}
+      />
     </div>
   );
 };
