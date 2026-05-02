@@ -1,4 +1,3 @@
-
 const API_BASE_URL = 'http://localhost:3000/api';
 
 export interface Book {
@@ -79,5 +78,34 @@ export const booksAPI = {
     }
 
     return response.json();
-  }
+  },
+
+  createBook: async (token: string, payload: { title: string; author: string; genre?: string }): Promise<Book> => {
+    const response = await fetch(`${API_BASE_URL}/books`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      throw new Error('Error al agregar libro');
+    }
+
+    return response.json();
+  },
+
+  getGoogleFeed: async (topic: string = 'fiction', page: number = 0, limit: number = 15) => {
+    const response = await fetch(
+      `${API_BASE_URL}/google-books/feed?topic=${encodeURIComponent(topic)}&page=${page}&limit=${limit}&lang=es`
+    );
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch Google Books feed');
+    }
+
+    return response.json();
+  },
 };
