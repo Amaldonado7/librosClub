@@ -2,56 +2,64 @@ import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Book } from '../utils/api';
 import { BookOpen } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 interface BookCardProps {
   book: Book;
+  index?: number;
 }
 
-const BookCard: React.FC<BookCardProps> = ({ book }) => {
+const BookCard: React.FC<BookCardProps> = ({ book, index = 0 }) => {
   return (
-    <Card className="h-full hover:shadow-lg transition-all duration-300 hover:-translate-y-1 bg-white border-amber-100">
-      <CardContent className="p-4">
-        <div className="flex gap-4">
-          <div className="flex-shrink-0">
-            {book.coverUrl ? (
-              <img
-                src={book.coverUrl}
-                alt={book.title}
-                className="w-16 h-24 object-cover rounded-md shadow-sm"
-              />
-            ) : (
-              <div className="w-16 h-24 bg-gradient-to-br from-amber-100 to-orange-100 rounded-md flex items-center justify-center">
-                <BookOpen className="h-8 w-8 text-amber-600" />
-              </div>
-            )}
-          </div>
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3, delay: index * 0.05 }}
+    >
+      <Card className="h-full hover:shadow-warm transition-all duration-300 hover:-translate-y-1 bg-card border-border group">
+        <CardContent className="p-5">
+          <div className="flex gap-4">
+            <div className="flex-shrink-0">
+              {book.coverUrl ? (
+                <img
+                  src={book.coverUrl}
+                  alt={book.title}
+                  className="w-20 h-28 object-cover rounded-md shadow-card"
+                />
+              ) : (
+                <div className="w-20 h-28 bg-gradient-to-br from-secondary to-muted rounded-md flex items-center justify-center shadow-card">
+                  <BookOpen className="h-8 w-8 text-primary/60" />
+                </div>
+              )}
+            </div>
 
-          <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-amber-900 text-lg mb-1 line-clamp-2">
-              {book.title}
-            </h3>
-            <p className="text-amber-700 font-medium mb-2">
-              {book.author}
-            </p>
-            {book.genre && (
-              <span className="inline-block bg-amber-100 text-amber-800 text-xs px-2 py-1 rounded-full mb-2">
-                {book.genre}
-              </span>
-            )}
-            {book.description && (
-              <p className="text-gray-600 text-sm line-clamp-3">
-                {book.description}
+            <div className="flex-1 min-w-0">
+              <h3 className="font-serif font-semibold text-foreground text-lg mb-1 line-clamp-2 group-hover:text-primary transition-colors">
+                {book.title}
+              </h3>
+              <p className="text-muted-foreground font-medium text-sm mb-2">
+                {book.author}
               </p>
-            )}
-            {book.publishedDate && (
-              <p className="text-gray-500 text-xs mt-2">
-                Publicado: {new Date(book.publishedDate).getFullYear()}
-              </p>
-            )}
+              {book.genre && (
+                <span className="inline-block bg-secondary text-secondary-foreground text-xs px-2.5 py-1 rounded-full mb-2 font-medium">
+                  {book.genre}
+                </span>
+              )}
+              {book.description && (
+                <p className="text-muted-foreground text-sm line-clamp-2 leading-relaxed">
+                  {book.description}
+                </p>
+              )}
+              {book.publishedDate && (
+                <p className="text-muted-foreground/70 text-xs mt-2">
+                  Publicado: {new Date(book.publishedDate).getFullYear()}
+                </p>
+              )}
+            </div>
           </div>
-        </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </motion.div>
   );
 };
 
