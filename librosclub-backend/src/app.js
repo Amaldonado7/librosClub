@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
@@ -8,6 +9,7 @@ const authRoutes = require('./routes/auth');
 const booksRoutes = require('./routes/books');
 const protectedRoutes = require('./routes/protected');
 const usersRoutes = require('./routes/users');
+const googleBooksRoutes = require('./routes/googleBooks');
 
 // Crear la instancia de Express
 const app = express();
@@ -38,5 +40,6 @@ app.use('/api/auth', authRoutes); // Rutas de autenticación
 app.use('/api/books', booksRoutes); // Rutas de libros
 app.use('/api/protected', protectedRoutes); // Rutas protegidas
 app.use('/api/users', usersRoutes); // Rutas de usuarios
+app.use('/api/google-books', googleBooksRoutes); // Rutas de Google Books
 
 module.exports = app;
