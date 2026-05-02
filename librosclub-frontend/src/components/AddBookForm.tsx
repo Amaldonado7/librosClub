@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { booksAPI } from '../utils/api';
 import { useToast } from '@/hooks/use-toast';
+import { Textarea } from '@/components/ui/textarea';
 import { Plus, BookOpen, ImageOff } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -17,6 +18,7 @@ const AddBookForm: React.FC<AddBookFormProps> = ({ token, onBookAdded }) => {
   const [author, setAuthor] = useState('');
   const [genre, setGenre] = useState('');
   const [coverUrl, setCoverUrl] = useState('');
+  const [description, setDescription] = useState('');
   const [imgError, setImgError] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
@@ -39,12 +41,15 @@ const AddBookForm: React.FC<AddBookFormProps> = ({ token, onBookAdded }) => {
         author,
         genre: genre || undefined,
         coverUrl: coverUrl || undefined,
+        type: 'intercambio',
+        description: description.trim() || undefined,
       });
       toast({ title: 'Libro agregado', description: `"${title}" fue agregado al catálogo.` });
       setTitle('');
       setAuthor('');
       setGenre('');
       setCoverUrl('');
+      setDescription('');
       setImgError(false);
       onBookAdded();
     } catch (err: any) {
@@ -135,6 +140,17 @@ const AddBookForm: React.FC<AddBookFormProps> = ({ token, onBookAdded }) => {
                   className="bg-background"
                 />
               </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-xs text-muted-foreground font-mono">Descripción / condición del ejemplar</Label>
+              <Textarea
+                placeholder="Ej: Excelente estado, sin subrayados. Busco algo de ciencia ficción a cambio."
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                className="bg-background text-sm resize-none"
+                rows={3}
+              />
             </div>
 
             <Button

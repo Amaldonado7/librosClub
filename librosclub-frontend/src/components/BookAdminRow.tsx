@@ -3,7 +3,9 @@ import { Book, booksAPI } from '../utils/api';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import { Textarea } from '@/components/ui/textarea';
 import { BookOpen, Pencil, Trash2, Check, X, ImageOff } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface BookAdminRowProps {
   book: Book;
@@ -23,6 +25,7 @@ const BookAdminRow: React.FC<BookAdminRowProps> = ({ book, token, onUpdated, onD
   const [author, setAuthor] = useState(book.author);
   const [genre, setGenre] = useState(book.genre ?? '');
   const [coverUrl, setCoverUrl] = useState(book.coverUrl ?? '');
+  const [description, setDescription] = useState(book.description ?? '');
 
   const { toast } = useToast();
 
@@ -31,6 +34,7 @@ const BookAdminRow: React.FC<BookAdminRowProps> = ({ book, token, onUpdated, onD
     setAuthor(book.author);
     setGenre(book.genre ?? '');
     setCoverUrl(book.coverUrl ?? '');
+    setDescription(book.description ?? '');
     setImgError(false);
     setEditing(true);
     setConfirming(false);
@@ -53,6 +57,7 @@ const BookAdminRow: React.FC<BookAdminRowProps> = ({ book, token, onUpdated, onD
         author: author.trim(),
         genre: genre.trim() || undefined,
         coverUrl: coverUrl.trim() || undefined,
+        description: description.trim() || undefined,
       });
       onUpdated(updated);
       setEditing(false);
@@ -102,40 +107,63 @@ const BookAdminRow: React.FC<BookAdminRowProps> = ({ book, token, onUpdated, onD
       {/* Contenido */}
       <div className="flex-1 min-w-0">
         {editing ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            <Input
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Título"
-              className="bg-background text-sm h-8"
-            />
-            <Input
-              value={author}
-              onChange={(e) => setAuthor(e.target.value)}
-              placeholder="Autor"
-              className="bg-background text-sm h-8"
-            />
-            <Input
-              value={genre}
-              onChange={(e) => setGenre(e.target.value)}
-              placeholder="Género (opcional)"
-              className="bg-background text-sm h-8"
-            />
-            <Input
-              value={coverUrl}
-              onChange={(e) => { setCoverUrl(e.target.value); setImgError(false); }}
-              placeholder="URL de portada (opcional)"
-              className="bg-background text-sm h-8"
+          <div className="space-y-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <Input
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Título"
+                className="bg-background text-sm h-8"
+              />
+              <Input
+                value={author}
+                onChange={(e) => setAuthor(e.target.value)}
+                placeholder="Autor"
+                className="bg-background text-sm h-8"
+              />
+              <Input
+                value={genre}
+                onChange={(e) => setGenre(e.target.value)}
+                placeholder="Género (opcional)"
+                className="bg-background text-sm h-8"
+              />
+              <Input
+                value={coverUrl}
+                onChange={(e) => { setCoverUrl(e.target.value); setImgError(false); }}
+                placeholder="URL de portada (opcional)"
+                className="bg-background text-sm h-8"
+              />
+            </div>
+            <Textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Descripción / condición del ejemplar"
+              className="bg-background text-sm resize-none h-16"
             />
           </div>
         ) : (
           <div>
             <p className="font-mono text-sm font-bold text-foreground truncate">{book.title}</p>
             <p className="text-xs text-muted-foreground mt-0.5 truncate">{book.author}</p>
-            {book.genre && (
-              <span className="inline-block mt-1.5 text-xs font-mono bg-primary/10 text-primary px-2 py-0.5 rounded-md">
-                {book.genre}
-              </span>
+            <div className="flex gap-1.5 mt-1.5 flex-wrap">
+              {book.type && (
+                <span className={cn(
+                  'inline-block text-xs font-mono px-2 py-0.5 rounded-md',
+                  book.type === 'intercambio'
+                    ? 'bg-accent/20 text-accent-foreground'
+                    : 'bg-primary/10 text-primary'
+                )}>
+                  {book.type === 'venta' ? 'En venta' : 'Para intercambio'}
+                </span>
+              )}
+              {book.genre && (
+                <span className="inline-block text-xs font-mono bg-muted text-muted-foreground px-2 py-0.5 rounded-md">
+                  {book.genre}
+                </span>
+              )}
+            </div>
+            {book.type === 'intercambio' && book.description && (
+              <p className="text-xs text-muted-foreground/70 mt-1.5 italic line-clamp-2">"{book.description}"</p>
             )}
           </div>
         )}
