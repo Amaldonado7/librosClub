@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://localhost:3000/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000/api';
 
 // Dispara un evento global cuando el backend responde 401 con expired:true
 async function handleResponse(res: Response): Promise<Response> {
