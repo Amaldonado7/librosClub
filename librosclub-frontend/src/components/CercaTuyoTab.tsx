@@ -200,7 +200,7 @@ const CercaTuyoTab: React.FC<Props> = ({ token, onViewClub }) => {
 
       <div
         ref={mapContainerRef}
-        className="w-full rounded-xl overflow-hidden border border-border"
+        className="w-full rounded-xl overflow-hidden border border-border isolate"
         style={{ height: 420 }}
       />
 

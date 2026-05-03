@@ -85,7 +85,7 @@ const NewListingForm: React.FC<{ token: string; onCreated: (l: ExchangeListing) 
       <p className="font-mono text-sm font-bold text-foreground mb-4 flex items-center gap-2">
         <Plus className="h-4 w-4 text-accent" /> Publicar un libro
       </p>
-      <form onSubmit={handleSubmit} className="flex gap-4">
+      <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-4">
         {/* Preview */}
         <div className="flex-shrink-0 w-16 h-[88px] rounded-lg border border-border overflow-hidden bg-muted flex items-center justify-center">
           {coverUrl && !imgErr ? (
@@ -421,7 +421,7 @@ const ExchangeTab: React.FC<Props> = ({ token, currentUserId }) => {
   return (
     <div className="space-y-5">
       {/* Header */}
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4">
         <div>
           <h3 className="font-mono text-xl font-bold text-foreground">Intercambiar libros</h3>
           <p className="text-sm text-muted-foreground mt-1">Ofrecé libros que ya leíste y encontrá tu próxima lectura.</p>
@@ -429,7 +429,7 @@ const ExchangeTab: React.FC<Props> = ({ token, currentUserId }) => {
         <Button
           size="sm"
           onClick={() => { setShowForm((v) => !v); setView('explore'); }}
-          className="flex-shrink-0 bg-accent text-accent-foreground hover:bg-accent/90"
+          className="w-full sm:w-auto flex-shrink-0 bg-accent text-accent-foreground hover:bg-accent/90"
         >
           <Plus className="h-4 w-4 mr-1.5" />
           Publicar libro

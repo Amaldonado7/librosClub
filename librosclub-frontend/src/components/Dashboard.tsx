@@ -96,9 +96,20 @@ const Dashboard: React.FC = () => {
   const [chatRequest, setChatRequest] = useState<BookRequest | null>(null);
 
   const [activeTab, setActiveTab] = useState<TabKey>('feed');
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
+  const [sidebarOpen, setSidebarOpen] = useState(() => window.innerWidth >= 768);
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authModalMode, setAuthModalMode] = useState<'login' | 'register'>('login');
+
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+      if (!mobile) setSidebarOpen(true);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const openAuthModal = (mode: 'login' | 'register' = 'register') => {
     setAuthModalMode(mode);
@@ -246,6 +257,7 @@ const Dashboard: React.FC = () => {
 
   const handleTabChange = (key: TabKey) => {
     setActiveTab(key);
+    if (isMobile) setSidebarOpen(false);
 
     if ((key === 'all' || key === 'admin') && allBooks.length === 0) loadAllBooks();
     if (key === 'admin' && adminBookRequests.length === 0) loadAdminBookRequests();
@@ -579,6 +591,21 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-background flex">
+      {/* Backdrop mobile */}
+      <AnimatePresence>
+        {sidebarOpen && isMobile && (
+          <motion.div
+            key="backdrop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-40 bg-black/50"
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
+      </AnimatePresence>
+
       {/* Sidebar */}
       <AnimatePresence mode="wait">
         {sidebarOpen && (
@@ -587,7 +614,10 @@ const Dashboard: React.FC = () => {
             animate={{ width: 260, opacity: 1 }}
             exit={{ width: 0, opacity: 0 }}
             transition={{ duration: 0.25 }}
-            className="bg-sidebar border-r border-sidebar-border flex flex-col overflow-hidden flex-shrink-0"
+            className={cn(
+              "bg-sidebar border-r border-sidebar-border flex flex-col overflow-hidden flex-shrink-0",
+              isMobile && "fixed inset-y-0 left-0 z-50 h-screen"
+            )}
           >
             <div className="p-5 flex items-center gap-3">
               <BookOpen className="h-7 w-7 text-sidebar-primary" />
@@ -676,7 +706,7 @@ const Dashboard: React.FC = () => {
       {/* Main content */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Header */}
-        <header className="h-16 border-b border-border bg-card/80 backdrop-blur-sm flex items-center px-6 gap-4 flex-shrink-0">
+        <header className="h-16 border-b border-border bg-card/80 backdrop-blur-sm flex items-center px-3 sm:px-6 gap-3 sm:gap-4 flex-shrink-0">
           <Button
             variant="ghost"
             size="icon"
@@ -705,20 +735,20 @@ const Dashboard: React.FC = () => {
         </header>
 
         {/* Page content */}
-        <main className="flex-1 p-6 lg:p-8 overflow-y-auto">
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto">
           {!isAdmin && activeTab === 'all' && myBookRequests.some((r) => r.status !== 'pending') && (
             <div className="mb-6">
               <p className="font-mono text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
                 Tus solicitudes
               </p>
-              <div className="flex gap-3 overflow-x-auto pb-1">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 {myBookRequests
                   .filter((r) => r.status !== 'pending')
                   .map((req) => (
                     <div
                       key={req.id}
                       className={cn(
-                        'flex-shrink-0 flex items-center gap-3 rounded-xl border px-4 py-3 min-w-[200px]',
+                        'flex items-center gap-3 rounded-xl border px-4 py-3',
                         req.status === 'accepted'
                           ? 'bg-primary/5 border-primary/20'
                           : 'bg-muted/50 border-border'
