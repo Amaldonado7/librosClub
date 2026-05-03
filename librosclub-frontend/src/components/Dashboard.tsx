@@ -5,6 +5,7 @@ import BookCoverCard from './BookCoverCard';
 import BookAdminRow from './BookAdminRow';
 import LibrosDisponiblesTab from './LibrosDisponiblesTab';
 import ClubesTab from './ClubesTab';
+import CercaTuyoTab from './CercaTuyoTab';
 import EmptyState from './EmptyState';
 import AddBookForm from './AddBookForm';
 import { BooksGridSkeleton } from './BookCardSkeleton';
@@ -547,11 +548,7 @@ const Dashboard: React.FC = () => {
         return <ClubesTab token={token} isAdmin={isAdmin} userId={decoded?.userId ?? 0} onAuthRequired={() => openAuthModal('register')} />;
 
       case 'nearby':
-        return renderComingSoon(
-          'Lectores cerca tuyo',
-          'Próximamente: descubrí lectores en tu zona y conectá para intercambiar libros.',
-          <MapPin className="h-10 w-10 text-terracotta/60" />
-        );
+        return <CercaTuyoTab token={token} />;
 
       default:
         return null;

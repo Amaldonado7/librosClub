@@ -270,6 +270,8 @@ export interface Club {
   nombre: string;
   descripcion?: string | null;
   ubicacion?: string | null;
+  lat?: number | null;
+  lng?: number | null;
   creadorId: number;
   creadorUsername: string;
   fechaCreacion: string;
@@ -278,6 +280,7 @@ export interface Club {
   currentBookTitle?: string | null;
   currentBookAuthor?: string | null;
   currentBookCoverUrl?: string | null;
+  distanceKm?: number;
 }
 
 export interface ClubMeeting {
@@ -315,7 +318,7 @@ export const clubsAPI = {
 
   createClub: async (
     token: string,
-    payload: { nombre: string; descripcion?: string; ubicacion?: string }
+    payload: { nombre: string; descripcion?: string; ubicacion?: string; lat?: number | null; lng?: number | null }
   ): Promise<Club> => {
     const r = await handleResponse(await fetch(`${API_BASE_URL}/clubs`, {
       method: 'POST',
@@ -417,6 +420,30 @@ export const clubsAPI = {
       headers: authHeaders(token),
     }));
     if (!r.ok) throw new Error('Error al eliminar mensaje.');
+  },
+
+  getNearbyClubs: async (lat: number, lng: number, radius: number, token: string | null): Promise<Club[]> => {
+    const headers: Record<string, string> = {};
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    const r = await handleResponse(await fetch(
+      `${API_BASE_URL}/clubs/nearby?lat=${lat}&lng=${lng}&radius=${radius}`,
+      { headers }
+    ));
+    if (!r.ok) throw new Error('Error al buscar clubes cercanos.');
+    return r.json();
+  },
+
+  setClubLocation: async (
+    token: string,
+    clubId: number,
+    payload: { lat: number | null; lng: number | null; ubicacion?: string }
+  ): Promise<void> => {
+    const r = await handleResponse(await fetch(`${API_BASE_URL}/clubs/${clubId}/location`, {
+      method: 'PUT',
+      headers: authHeaders(token),
+      body: JSON.stringify(payload),
+    }));
+    if (!r.ok) throw new Error('Error al actualizar la ubicación.');
   },
 };
 
