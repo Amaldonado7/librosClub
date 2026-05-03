@@ -2,7 +2,8 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const helmet = require('helmet'); // Importar Helmet
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 
 // Importar rutas
 const authRoutes = require('./routes/auth');
@@ -31,14 +32,37 @@ app.use(
   })
 );
 
-// Configuración de middlewares
-app.use(cors());
+const allowedOrigins = process.env.CORS_ORIGINS
+  ? process.env.CORS_ORIGINS.split(',').map((o) => o.trim())
+  : [];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    // Permite requests sin origin (Postman, server-to-server) en desarrollo
+    if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+    callback(new Error('Not allowed by CORS'));
+  },
+  credentials: true,
+}));
+
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: 'Demasiados intentos. Intentá de nuevo en 15 minutos.' },
+});
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // Configurar rutas
 app.use('/api', protectedRoutes);
-app.use('/api/auth', authRoutes); // Rutas de autenticación
+app.use('/api/auth/login', loginLimiter);
+app.use('/api/auth/register', loginLimiter);
+app.use('/api/users/login', loginLimiter);
+app.use('/api/users/register', loginLimiter);
+app.use('/api/auth', authRoutes);
 app.use('/api/books', booksRoutes); // Rutas de libros
 app.use('/api/protected', protectedRoutes); // Rutas protegidas
 app.use('/api/users', usersRoutes); // Rutas de usuarios
