@@ -368,7 +368,8 @@ const ExchangeTab: React.FC<Props> = ({ token, currentUserId }) => {
   const handleViewChange = (v: View) => {
     setView(v);
     setShowForm(false);
-    if (v === 'mine' && myListings.length === 0) fetchMyListings();
+    if (v === 'mine') fetchMyListings();
+    if (v === 'explore') fetchListings();
   };
 
   const handleCreated = (listing: ExchangeListing) => {
@@ -389,6 +390,9 @@ const ExchangeTab: React.FC<Props> = ({ token, currentUserId }) => {
       toast({ title: 'Solicitud enviada', description: 'El dueño del libro verá tu solicitud.' });
     } catch (err: any) {
       toast({ title: 'Error', description: err.message, variant: 'destructive' });
+      if (err.message?.includes('ya no está disponible')) {
+        setListings((prev) => prev.filter((l) => l.id !== listingId));
+      }
     } finally {
       setRequestingId(null);
     }
@@ -411,6 +415,7 @@ const ExchangeTab: React.FC<Props> = ({ token, currentUserId }) => {
         return { ...l, status: status === 'accepted' ? 'exchanged' as const : l.status, requests: finalRequests };
       })
     );
+    if (status === 'accepted') fetchListings();
   };
 
   return (

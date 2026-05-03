@@ -108,10 +108,11 @@ exports.requestBook = async (req, res) => {
 
   try {
     const { rows: books } = await pool.query(
-      'SELECT id, type FROM public.books WHERE id = $1',
+      'SELECT id, type, is_available FROM public.books WHERE id = $1',
       [bookId]
     );
     if (books.length === 0) return res.status(404).json({ message: 'Libro no encontrado.' });
+    if (!books[0].is_available) return res.status(400).json({ message: 'Este libro ya no está disponible.' });
 
     const requestType = books[0].type === 'venta' ? 'compra' : 'intercambio';
     const { rows } = await pool.query(
@@ -169,6 +170,72 @@ exports.getAdminBookRequests = async (req, res) => {
   }
 };
 
+// Mensajes de chat de una solicitud aceptada
+exports.getRequestMessages = async (req, res) => {
+  const userId = req.user.userId;
+  const isAdmin = req.user.role === 'admin';
+  const { reqId } = req.params;
+  try {
+    const { rows: reqData } = await pool.query(
+      'SELECT user_id FROM public.book_requests WHERE id = $1',
+      [reqId]
+    );
+    if (reqData.length === 0) return res.status(404).json({ message: 'Solicitud no encontrada.' });
+    if (!isAdmin && reqData[0].user_id !== userId) return res.status(403).json({ message: 'Sin permiso.' });
+
+    const { rows } = await pool.query(
+      `SELECT m.id, m.request_id AS "requestId", m.sender_id AS "senderId",
+              u.username AS "senderUsername", m.message, m.created_at AS "createdAt"
+       FROM public.book_request_messages m
+       JOIN public.users u ON u.id = m.sender_id
+       WHERE m.request_id = $1
+       ORDER BY m.created_at ASC`,
+      [reqId]
+    );
+    res.json(rows);
+  } catch (error) {
+    console.error('getRequestMessages:', error);
+    res.status(500).json({ message: 'Error al cargar mensajes.' });
+  }
+};
+
+exports.sendRequestMessage = async (req, res) => {
+  const userId = req.user.userId;
+  const isAdmin = req.user.role === 'admin';
+  const { reqId } = req.params;
+  const { message } = req.body;
+
+  if (!message?.trim()) return res.status(400).json({ message: 'El mensaje no puede estar vacío.' });
+  if (message.trim().length > 500) return res.status(400).json({ message: 'El mensaje no puede superar los 500 caracteres.' });
+
+  try {
+    const { rows: reqData } = await pool.query(
+      'SELECT user_id, status FROM public.book_requests WHERE id = $1',
+      [reqId]
+    );
+    if (reqData.length === 0) return res.status(404).json({ message: 'Solicitud no encontrada.' });
+    if (!isAdmin && reqData[0].user_id !== userId) return res.status(403).json({ message: 'Sin permiso.' });
+    if (reqData[0].status !== 'accepted') return res.status(400).json({ message: 'El chat solo está disponible para solicitudes aceptadas.' });
+
+    const { rows: inserted } = await pool.query(
+      'INSERT INTO public.book_request_messages (request_id, sender_id, message) VALUES ($1, $2, $3) RETURNING id',
+      [reqId, userId, message.trim()]
+    );
+    const { rows } = await pool.query(
+      `SELECT m.id, m.request_id AS "requestId", m.sender_id AS "senderId",
+              u.username AS "senderUsername", m.message, m.created_at AS "createdAt"
+       FROM public.book_request_messages m
+       JOIN public.users u ON u.id = m.sender_id
+       WHERE m.id = $1`,
+      [inserted[0].id]
+    );
+    res.status(201).json(rows[0]);
+  } catch (error) {
+    console.error('sendRequestMessage:', error);
+    res.status(500).json({ message: 'Error al enviar mensaje.' });
+  }
+};
+
 // Aceptar o rechazar solicitud (solo admin)
 exports.respondToBookRequest = async (req, res) => {
   const { reqId } = req.params;
@@ -179,11 +246,23 @@ exports.respondToBookRequest = async (req, res) => {
   }
 
   try {
-    const { rowCount } = await pool.query(
-      'UPDATE public.book_requests SET status = $1 WHERE id = $2',
-      [status, reqId]
+    const { rows: reqData } = await pool.query(
+      'SELECT book_id FROM public.book_requests WHERE id = $1',
+      [reqId]
     );
-    if (rowCount === 0) return res.status(404).json({ message: 'Solicitud no encontrada.' });
+    if (reqData.length === 0) return res.status(404).json({ message: 'Solicitud no encontrada.' });
+    const bookId = reqData[0].book_id;
+
+    await pool.query('UPDATE public.book_requests SET status = $1 WHERE id = $2', [status, reqId]);
+
+    if (status === 'accepted') {
+      await pool.query('UPDATE public.books SET is_available = false WHERE id = $1', [bookId]);
+      await pool.query(
+        "UPDATE public.book_requests SET status = 'rejected' WHERE book_id = $1 AND id != $2 AND status = 'pending'",
+        [bookId, reqId]
+      );
+    }
+
     res.json({ message: 'Solicitud actualizada.' });
   } catch (error) {
     console.error('respondToBookRequest:', error);
