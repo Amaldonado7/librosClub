@@ -73,9 +73,9 @@ const AddBookForm: React.FC<AddBookFormProps> = ({ token, onBookAdded }) => {
       </h3>
 
       <form onSubmit={handleSubmit}>
-        <div className="flex gap-6">
+        <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
           {/* Preview de portada */}
-          <div className="flex-shrink-0">
+          <div className="flex-shrink-0 flex sm:block justify-center">
             <div className="w-24 aspect-[2/3] rounded-lg border border-border overflow-hidden bg-muted flex items-center justify-center">
               {showPreview ? (
                 <img
