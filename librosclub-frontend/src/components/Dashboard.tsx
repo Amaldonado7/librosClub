@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { booksAPI, bookRequestsAPI, Book, BookRequest } from '../utils/api';
+import RequestChatModal from './RequestChatModal';
 import BookCoverCard from './BookCoverCard';
 import BookAdminRow from './BookAdminRow';
 import LibrosDisponiblesTab from './LibrosDisponiblesTab';
@@ -28,6 +29,7 @@ import {
   CheckCircle,
   XCircle,
   Clock,
+  MessageCircle,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { jwtDecode } from 'jwt-decode';
@@ -91,6 +93,7 @@ const Dashboard: React.FC = () => {
   const [respondingReqId, setRespondingReqId] = useState<number | null>(null);
   const [adminTab, setAdminTab] = useState<'catalogo' | 'solicitudes'>('catalogo');
   const [myBookRequests, setMyBookRequests] = useState<BookRequest[]>([]);
+  const [chatRequest, setChatRequest] = useState<BookRequest | null>(null);
 
   const [activeTab, setActiveTab] = useState<TabKey>('feed');
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -206,9 +209,20 @@ const Dashboard: React.FC = () => {
     setRespondingReqId(reqId);
     try {
       await bookRequestsAPI.respond(token!, reqId, status);
-      setAdminBookRequests((prev) =>
-        prev.map((r) => r.id === reqId ? { ...r, status } : r)
-      );
+      setAdminBookRequests((prev) => {
+        const updated = prev.map((r) => r.id === reqId ? { ...r, status } : r);
+        if (status === 'accepted') {
+          const accepted = prev.find((r) => r.id === reqId);
+          if (accepted) {
+            return updated.map((r) =>
+              r.id !== reqId && r.bookId === accepted.bookId && r.status === 'pending'
+                ? { ...r, status: 'rejected' as const }
+                : r
+            );
+          }
+        }
+        return updated;
+      });
       toast({ title: status === 'accepted' ? 'Solicitud aceptada' : 'Solicitud rechazada' });
     } catch {
       toast({ title: 'Error', description: 'No se pudo actualizar la solicitud.', variant: 'destructive' });
@@ -525,14 +539,22 @@ const Dashboard: React.FC = () => {
                               <XCircle className="h-4 w-4" />
                             </button>
                           </div>
+                        ) : req.status === 'accepted' ? (
+                          <div className="flex items-center gap-2 flex-shrink-0">
+                            <span className="flex items-center gap-1 text-xs font-mono text-primary">
+                              <CheckCircle className="h-3.5 w-3.5" /> Aceptada
+                            </span>
+                            <button
+                              onClick={() => setChatRequest(req)}
+                              className="p-1.5 text-muted-foreground hover:text-accent transition-colors"
+                              title="Abrir chat"
+                            >
+                              <MessageCircle className="h-4 w-4" />
+                            </button>
+                          </div>
                         ) : (
-                          <span className={`flex items-center gap-1 text-xs font-mono flex-shrink-0 ${
-                            req.status === 'accepted' ? 'text-primary' : 'text-muted-foreground'
-                          }`}>
-                            {req.status === 'accepted'
-                              ? <><CheckCircle className="h-3.5 w-3.5" /> Aceptada</>
-                              : <><Clock className="h-3.5 w-3.5" /> Rechazada</>
-                            }
+                          <span className="flex items-center gap-1 text-xs font-mono flex-shrink-0 text-muted-foreground">
+                            <Clock className="h-3.5 w-3.5" /> Rechazada
                           </span>
                         )}
                       </div>
@@ -723,6 +745,14 @@ const Dashboard: React.FC = () => {
                             : <><XCircle className="h-3 w-3" /> Rechazado</>
                           }
                         </span>
+                        {req.status === 'accepted' && (
+                          <button
+                            onClick={() => setChatRequest(req)}
+                            className="mt-2 flex items-center gap-1 text-xs font-mono text-accent hover:text-accent/80 transition-colors"
+                          >
+                            <MessageCircle className="h-3 w-3" /> Coordinar
+                          </button>
+                        )}
                       </div>
                     </div>
                   ))}
@@ -748,6 +778,16 @@ const Dashboard: React.FC = () => {
         onClose={() => setAuthModalOpen(false)}
         defaultMode={authModalMode}
       />
+      {chatRequest && token && decoded && (
+        <RequestChatModal
+          requestId={chatRequest.id}
+          token={token}
+          currentUserId={decoded.userId}
+          bookTitle={chatRequest.title ?? 'Libro'}
+          requesterUsername={isAdmin ? chatRequest.requesterUsername : undefined}
+          onClose={() => setChatRequest(null)}
+        />
+      )}
     </div>
   );
 };

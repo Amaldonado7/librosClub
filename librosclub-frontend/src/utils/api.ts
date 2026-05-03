@@ -265,6 +265,15 @@ export interface BookRequest {
   requesterUsername?: string;
 }
 
+export interface BookRequestMessage {
+  id: number;
+  requestId: number;
+  senderId: number;
+  senderUsername: string;
+  message: string;
+  createdAt: string;
+}
+
 export interface Club {
   id: number;
   nombre: string;
@@ -483,5 +492,26 @@ export const bookRequestsAPI = {
       body: JSON.stringify({ status }),
     }));
     if (!r.ok) throw new Error('Error al responder solicitud.');
+  },
+
+  getMessages: async (token: string, reqId: number): Promise<BookRequestMessage[]> => {
+    const r = await handleResponse(await fetch(`${API_BASE_URL}/books/requests/${reqId}/messages`, {
+      headers: authHeaders(token),
+    }));
+    if (!r.ok) throw new Error('Error al cargar mensajes.');
+    return r.json();
+  },
+
+  sendMessage: async (token: string, reqId: number, message: string): Promise<BookRequestMessage> => {
+    const r = await handleResponse(await fetch(`${API_BASE_URL}/books/requests/${reqId}/messages`, {
+      method: 'POST',
+      headers: authHeaders(token),
+      body: JSON.stringify({ message }),
+    }));
+    if (!r.ok) {
+      const body = await r.json().catch(() => ({}));
+      throw new Error((body as any).message ?? 'Error al enviar mensaje.');
+    }
+    return r.json();
   },
 };
