@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { motion, AnimatePresence } from 'framer-motion';
-import { BookOpen, Calendar, MapPin, Users, Trash2, Send } from 'lucide-react';
+import { BookOpen, Calendar, MapPin, Users, Trash2, Send, Navigation } from 'lucide-react';
 
 interface Props {
   club: Club;
@@ -59,6 +59,10 @@ const ClubDetailSheet: React.FC<Props> = ({ club, token, userId, onClose, onClub
   const [meetDesc, setMeetDesc] = useState('');
   const [isAddingMeeting, setIsAddingMeeting] = useState(false);
   const [deletingMeetingId, setDeletingMeetingId] = useState<number | null>(null);
+
+  // Ubicación
+  const [isGeocodingLocation, setIsGeocodingLocation] = useState(false);
+  const [locationSaved, setLocationSaved] = useState(false);
 
   // Foro
   const [postContent, setPostContent] = useState('');
@@ -163,6 +167,34 @@ const ClubDetailSheet: React.FC<Props> = ({ club, token, userId, onClose, onClub
     }
   };
 
+  const handleGeocodeAndSave = async () => {
+    if (!club.ubicacion?.trim()) {
+      toast({ title: 'El club no tiene ubicación de texto definida', variant: 'destructive' });
+      return;
+    }
+    setIsGeocodingLocation(true);
+    try {
+      const r = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(club.ubicacion)}&limit=1`
+      );
+      const data = await r.json();
+      if (data.length === 0) {
+        toast({ title: 'No se encontró la ubicación', variant: 'destructive' });
+        return;
+      }
+      const newLat = parseFloat(data[0].lat);
+      const newLng = parseFloat(data[0].lon);
+      await clubsAPI.setClubLocation(token, club.id, { lat: newLat, lng: newLng });
+      onClubUpdated({ ...club, lat: newLat, lng: newLng });
+      setLocationSaved(true);
+      toast({ title: 'Ubicación en mapa guardada' });
+    } catch (err: any) {
+      toast({ title: 'Error', description: err.message, variant: 'destructive' });
+    } finally {
+      setIsGeocodingLocation(false);
+    }
+  };
+
   const handlePost = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!postContent.trim()) return;
@@ -208,6 +240,17 @@ const ClubDetailSheet: React.FC<Props> = ({ club, token, userId, onClose, onClub
                 <Users className="h-3 w-3" />
                 {club.miembros} {club.miembros === 1 ? 'miembro' : 'miembros'}
               </span>
+              {detail?.miRol === 'admin' && club.ubicacion && !club.lat && !locationSaved && (
+                <button
+                  onClick={handleGeocodeAndSave}
+                  disabled={isGeocodingLocation}
+                  className="flex items-center gap-1 text-muted-foreground hover:text-primary transition-colors"
+                  title="Guardar coordenadas para aparecer en 'Cerca tuyo'"
+                >
+                  <Navigation className="h-3 w-3" />
+                  {isGeocodingLocation ? 'Ubicando...' : 'Ubicar en mapa'}
+                </button>
+              )}
             </div>
           </div>
         </SheetHeader>

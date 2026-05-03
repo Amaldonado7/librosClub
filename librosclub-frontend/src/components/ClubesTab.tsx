@@ -6,7 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Users, Plus, BookOpen, X, Check, ChevronRight } from 'lucide-react';
+import { MapPin, Users, Plus, BookOpen, X, Check, ChevronRight, Navigation } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import ClubDetailSheet from './ClubDetailSheet';
 
@@ -131,6 +131,9 @@ const ClubesTab: React.FC<Props> = ({ token, isAdmin, userId, onAuthRequired }) 
   const [descripcion, setDescripcion] = useState('');
   const [ubicacion, setUbicacion] = useState('');
   const [isCreating, setIsCreating] = useState(false);
+  const [lat, setLat] = useState<number | null>(null);
+  const [lng, setLng] = useState<number | null>(null);
+  const [isGeocoding, setIsGeocoding] = useState(false);
   const [selectedClub, setSelectedClub] = useState<Club | null>(null);
   const { toast } = useToast();
 
@@ -141,6 +144,31 @@ const ClubesTab: React.FC<Props> = ({ token, isAdmin, userId, onAuthRequired }) 
       .finally(() => setIsLoading(false));
   }, [token]);
 
+  const handleGeocode = async () => {
+    if (!ubicacion.trim()) {
+      toast({ title: 'Ingresá una ubicación para geocodificar', variant: 'destructive' });
+      return;
+    }
+    setIsGeocoding(true);
+    try {
+      const r = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(ubicacion)}&limit=1`
+      );
+      const data = await r.json();
+      if (data.length === 0) {
+        toast({ title: 'No se encontró la ubicación', description: 'Probá con otra dirección.', variant: 'destructive' });
+        return;
+      }
+      setLat(parseFloat(data[0].lat));
+      setLng(parseFloat(data[0].lon));
+      toast({ title: 'Ubicación encontrada', description: data[0].display_name.split(',').slice(0, 2).join(',') });
+    } catch {
+      toast({ title: 'Error al geocodificar', variant: 'destructive' });
+    } finally {
+      setIsGeocoding(false);
+    }
+  };
+
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!token) { onAuthRequired?.(); return; }
@@ -149,14 +177,32 @@ const ClubesTab: React.FC<Props> = ({ token, isAdmin, userId, onAuthRequired }) 
       return;
     }
     setIsCreating(true);
+
+    let finalLat = lat;
+    let finalLng = lng;
+    if (ubicacion.trim() && lat === null) {
+      try {
+        const r = await fetch(
+          `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(ubicacion)}&limit=1`
+        );
+        const data = await r.json();
+        if (data.length > 0) {
+          finalLat = parseFloat(data[0].lat);
+          finalLng = parseFloat(data[0].lon);
+        }
+      } catch { /* non-fatal, proceed without coords */ }
+    }
+
     try {
       const club = await clubsAPI.createClub(token, {
         nombre: nombre.trim(),
         descripcion: descripcion.trim() || undefined,
         ubicacion: ubicacion.trim() || undefined,
+        lat: finalLat,
+        lng: finalLng,
       });
       setClubs((prev) => [club, ...prev]);
-      setNombre(''); setDescripcion(''); setUbicacion('');
+      setNombre(''); setDescripcion(''); setUbicacion(''); setLat(null); setLng(null);
       setShowForm(false);
       toast({ title: 'Club creado', description: `"${club.nombre}" fue creado.` });
     } catch (err: any) {
@@ -248,12 +294,30 @@ const ClubesTab: React.FC<Props> = ({ token, isAdmin, userId, onAuthRequired }) 
                     </div>
                     <div className="space-y-1.5">
                       <Label className="text-xs text-muted-foreground font-mono">Ubicación</Label>
-                      <Input
-                        placeholder="Ej: Palermo, CABA"
-                        value={ubicacion}
-                        onChange={(e) => setUbicacion(e.target.value)}
-                        className="bg-background"
-                      />
+                      <div className="flex gap-2">
+                        <Input
+                          placeholder="Ej: Palermo, CABA"
+                          value={ubicacion}
+                          onChange={(e) => { setUbicacion(e.target.value); setLat(null); setLng(null); }}
+                          className="bg-background"
+                        />
+                        <Button
+                          type="button"
+                          size="icon"
+                          variant="outline"
+                          onClick={handleGeocode}
+                          disabled={isGeocoding || !ubicacion.trim()}
+                          title="Ubicar en mapa"
+                          className={cn('flex-shrink-0 h-10 w-10', lat !== null && 'border-primary text-primary')}
+                        >
+                          <Navigation className={cn('h-4 w-4', isGeocoding && 'animate-pulse')} />
+                        </Button>
+                      </div>
+                      {lat !== null && (
+                        <p className="text-xs text-primary font-mono">
+                          Coordenadas guardadas ({lat.toFixed(4)}, {lng?.toFixed(4)})
+                        </p>
+                      )}
                     </div>
                   </div>
                   <div className="space-y-1.5">

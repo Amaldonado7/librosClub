@@ -17,6 +17,8 @@ exports.getClubs = async (req, res) => {
          c.nombre,
          c.descripcion,
          c.ubicacion,
+         c.lat,
+         c.lng,
          c.creador_id             AS "creadorId",
          u.username               AS "creadorUsername",
          c.fecha_creacion         AS "fechaCreacion",
@@ -40,7 +42,7 @@ exports.getClubs = async (req, res) => {
 };
 
 exports.createClub = async (req, res) => {
-  const { nombre, descripcion, ubicacion } = req.body;
+  const { nombre, descripcion, ubicacion, lat, lng } = req.body;
   const creadorId = req.user.userId;
 
   if (!nombre?.trim()) {
@@ -51,10 +53,10 @@ exports.createClub = async (req, res) => {
   try {
     await client.query('BEGIN');
     const { rows } = await client.query(
-      `INSERT INTO public.clubs (nombre, descripcion, ubicacion, creador_id)
-       VALUES ($1, $2, $3, $4)
-       RETURNING id, nombre, descripcion, ubicacion, creador_id AS "creadorId", fecha_creacion AS "fechaCreacion"`,
-      [nombre.trim(), descripcion?.trim() || null, ubicacion?.trim() || null, creadorId]
+      `INSERT INTO public.clubs (nombre, descripcion, ubicacion, lat, lng, creador_id)
+       VALUES ($1, $2, $3, $4, $5, $6)
+       RETURNING id, nombre, descripcion, ubicacion, lat, lng, creador_id AS "creadorId", fecha_creacion AS "fechaCreacion"`,
+      [nombre.trim(), descripcion?.trim() || null, ubicacion?.trim() || null, lat ?? null, lng ?? null, creadorId]
     );
     const club = rows[0];
     await client.query(
@@ -133,7 +135,7 @@ exports.getClubDetail = async (req, res) => {
 
   try {
     const { rows: clubRows } = await pool.query(
-      `SELECT c.id, c.nombre, c.descripcion, c.ubicacion,
+      `SELECT c.id, c.nombre, c.descripcion, c.ubicacion, c.lat, c.lng,
               c.creador_id             AS "creadorId",
               u.username               AS "creadorUsername",
               c.fecha_creacion         AS "fechaCreacion",
@@ -303,5 +305,75 @@ exports.deletePost = async (req, res) => {
   } catch (err) {
     console.error('deletePost:', err);
     res.status(500).json({ message: 'Error al eliminar mensaje.' });
+  }
+};
+
+exports.getNearbyClubs = async (req, res) => {
+  const { lat, lng, radius = 20 } = req.query;
+  if (!lat || !lng) return res.status(400).json({ message: 'lat y lng son requeridos.' });
+  const userId = req.user?.userId ?? null;
+
+  try {
+    const { rows } = await pool.query(
+      `SELECT
+         c.id, c.nombre, c.descripcion, c.ubicacion, c.lat, c.lng,
+         c.creador_id             AS "creadorId",
+         u.username               AS "creadorUsername",
+         c.fecha_creacion         AS "fechaCreacion",
+         COUNT(cm.usuario_id)::int AS miembros,
+         MAX(CASE WHEN cm.usuario_id = $3 THEN cm.rol END) AS "miRol",
+         c.current_book_title     AS "currentBookTitle",
+         c.current_book_author    AS "currentBookAuthor",
+         c.current_book_cover_url AS "currentBookCoverUrl",
+         (6371 * acos(LEAST(1.0,
+           cos(radians($1::float)) * cos(radians(c.lat)) * cos(radians(c.lng) - radians($2::float)) +
+           sin(radians($1::float)) * sin(radians(c.lat))
+         ))) AS "distanceKm"
+       FROM public.clubs c
+       JOIN public.users u ON u.id = c.creador_id
+       LEFT JOIN public.club_members cm ON cm.club_id = c.id
+       WHERE c.lat IS NOT NULL AND c.lng IS NOT NULL
+         AND (6371 * acos(LEAST(1.0,
+           cos(radians($1::float)) * cos(radians(c.lat)) * cos(radians(c.lng) - radians($2::float)) +
+           sin(radians($1::float)) * sin(radians(c.lat))
+         ))) <= $4::float
+       GROUP BY c.id, u.username
+       ORDER BY "distanceKm" ASC`,
+      [parseFloat(lat), parseFloat(lng), userId, parseFloat(radius)]
+    );
+    res.json(rows);
+  } catch (err) {
+    console.error('getNearbyClubs:', err);
+    res.status(500).json({ message: 'Error al buscar clubes cercanos.' });
+  }
+};
+
+exports.setClubLocation = async (req, res) => {
+  const userId = req.user.userId;
+  const isGlobalAdmin = req.user.role === 'admin';
+  const { id: clubId } = req.params;
+
+  const miRol = await getMiRol(userId, clubId);
+  if (miRol !== 'admin' && !isGlobalAdmin) {
+    return res.status(403).json({ message: 'Solo el admin del club puede actualizar la ubicación.' });
+  }
+
+  const { lat, lng, ubicacion } = req.body;
+  try {
+    if (ubicacion !== undefined) {
+      await pool.query(
+        'UPDATE public.clubs SET lat = $1, lng = $2, ubicacion = $3 WHERE id = $4',
+        [lat ?? null, lng ?? null, ubicacion, clubId]
+      );
+    } else {
+      await pool.query(
+        'UPDATE public.clubs SET lat = $1, lng = $2 WHERE id = $3',
+        [lat ?? null, lng ?? null, clubId]
+      );
+    }
+    res.json({ message: 'Ubicación actualizada.' });
+  } catch (err) {
+    console.error('setClubLocation:', err);
+    res.status(500).json({ message: 'Error al actualizar la ubicación.' });
   }
 };
