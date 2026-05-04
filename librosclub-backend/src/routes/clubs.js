@@ -5,7 +5,7 @@ const optionalAuth = require('../middlewares/optionalAuth');
 const {
   getClubs, createClub, joinClub, leaveClub,
   getClubDetail, setCurrentBook, addMeeting, deleteMeeting, createPost, deletePost,
-  getNearbyClubs, setClubLocation,
+  getNearbyClubs, setClubLocation, upgradeClub,
 } = require('../controllers/clubsController');
 
 router.get('/',                           optionalAuth, getClubs);
@@ -16,6 +16,7 @@ router.delete('/:id/leave',              authMiddleware, leaveClub);
 router.get('/:id',                        authMiddleware, getClubDetail);
 router.put('/:id/current-book',           authMiddleware, setCurrentBook);
 router.put('/:id/location',               authMiddleware, setClubLocation);
+router.put('/:id/upgrade',                authMiddleware, upgradeClub);
 router.post('/:id/meetings',              authMiddleware, addMeeting);
 router.delete('/:id/meetings/:meetingId', authMiddleware, deleteMeeting);
 router.post('/:id/posts',                 authMiddleware, createPost);

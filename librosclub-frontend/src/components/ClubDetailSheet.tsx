@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Club, ClubDetail, ClubMeeting, ClubPost, clubsAPI } from '../utils/api';
+import { Club, ClubDetail, ClubMeeting, ClubPost, clubsAPI, ApiError } from '../utils/api';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { motion, AnimatePresence } from 'framer-motion';
-import { BookOpen, Calendar, MapPin, Users, Trash2, Send, Navigation } from 'lucide-react';
+import { BookOpen, Calendar, MapPin, Users, Trash2, Send, Navigation, Crown, Sparkles } from 'lucide-react';
 
 interface Props {
   club: Club;
@@ -40,6 +40,34 @@ function timeAgo(iso: string) {
   return `hace ${diffDays} día${diffDays > 1 ? 's' : ''}`;
 }
 
+const UpgradeBanner: React.FC<{
+  isAdmin: boolean;
+  onUpgrade: () => void;
+  isUpgrading: boolean;
+}> = ({ isAdmin, onUpgrade, isUpgrading }) => (
+  <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 space-y-2">
+    <div className="flex items-center gap-2">
+      <Sparkles className="h-4 w-4 text-amber-600 flex-shrink-0" />
+      <p className="text-sm font-mono font-bold text-amber-800">Función Premium</p>
+    </div>
+    <p className="text-xs text-amber-700">
+      El libro actual, las reuniones y el foro son exclusivos del plan Premium.
+      {isAdmin ? ' Actualizá tu club para desbloquearlos.' : ' El admin del club puede actualizarlo.'}
+    </p>
+    {isAdmin && (
+      <Button
+        size="sm"
+        onClick={onUpgrade}
+        disabled={isUpgrading}
+        className="bg-amber-600 hover:bg-amber-700 text-white text-xs h-8 mt-1"
+      >
+        <Crown className="h-3.5 w-3.5 mr-1.5" />
+        {isUpgrading ? 'Actualizando...' : 'Activar Premium (demo)'}
+      </Button>
+    )}
+  </div>
+);
+
 const ClubDetailSheet: React.FC<Props> = ({ club, token, userId, onClose, onClubUpdated }) => {
   const [detail, setDetail] = useState<ClubDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -69,8 +97,12 @@ const ClubDetailSheet: React.FC<Props> = ({ club, token, userId, onClose, onClub
   const [isPosting, setIsPosting] = useState(false);
   const [deletingPostId, setDeletingPostId] = useState<number | null>(null);
 
+  // Plan
+  const [isUpgrading, setIsUpgrading] = useState(false);
+
   const { toast } = useToast();
   const isClubAdmin = detail?.miRol === 'admin';
+  const isPremium = detail?.plan === 'premium';
 
   useEffect(() => {
     setIsLoading(true);
@@ -79,6 +111,20 @@ const ClubDetailSheet: React.FC<Props> = ({ club, token, userId, onClose, onClub
       .catch((err: any) => toast({ title: 'Error', description: err.message, variant: 'destructive' }))
       .finally(() => setIsLoading(false));
   }, [club.id, token]);
+
+  const handleUpgrade = async () => {
+    setIsUpgrading(true);
+    try {
+      const result = await clubsAPI.upgradeClub(token, club.id);
+      setDetail((prev) => prev ? { ...prev, plan: result.plan as 'premium', planExpiresAt: result.planExpiresAt } : prev);
+      onClubUpdated({ ...club, plan: result.plan as 'premium', planExpiresAt: result.planExpiresAt });
+      toast({ title: '¡Club actualizado a Premium!', description: 'Ahora tenés acceso a todas las funciones.' });
+    } catch (err: any) {
+      toast({ title: 'Error', description: err.message, variant: 'destructive' });
+    } finally {
+      setIsUpgrading(false);
+    }
+  };
 
   const handleSaveBook = async () => {
     if (!detail) return;
@@ -100,7 +146,11 @@ const ClubDetailSheet: React.FC<Props> = ({ club, token, userId, onClose, onClub
       setEditingBook(false);
       toast({ title: 'Libro actual actualizado' });
     } catch (err: any) {
-      toast({ title: 'Error', description: err.message, variant: 'destructive' });
+      if (err instanceof ApiError && err.code === 'PREMIUM_REQUIRED') {
+        toast({ title: 'Plan Premium requerido', description: err.message, variant: 'destructive' });
+      } else {
+        toast({ title: 'Error', description: err.message, variant: 'destructive' });
+      }
     } finally {
       setIsSavingBook(false);
     }
@@ -149,7 +199,11 @@ const ClubDetailSheet: React.FC<Props> = ({ club, token, userId, onClose, onClub
       setShowMeetingForm(false);
       toast({ title: 'Reunión agendada' });
     } catch (err: any) {
-      toast({ title: 'Error', description: err.message, variant: 'destructive' });
+      if (err instanceof ApiError && err.code === 'PREMIUM_REQUIRED') {
+        toast({ title: 'Plan Premium requerido', description: err.message, variant: 'destructive' });
+      } else {
+        toast({ title: 'Error', description: err.message, variant: 'destructive' });
+      }
     } finally {
       setIsAddingMeeting(false);
     }
@@ -204,7 +258,11 @@ const ClubDetailSheet: React.FC<Props> = ({ club, token, userId, onClose, onClub
       setDetail((prev) => prev ? { ...prev, posts: [post, ...prev.posts] } : prev);
       setPostContent('');
     } catch (err: any) {
-      toast({ title: 'Error', description: err.message, variant: 'destructive' });
+      if (err instanceof ApiError && err.code === 'PREMIUM_REQUIRED') {
+        toast({ title: 'Plan Premium requerido', description: err.message, variant: 'destructive' });
+      } else {
+        toast({ title: 'Error', description: err.message, variant: 'destructive' });
+      }
     } finally {
       setIsPosting(false);
     }
@@ -226,7 +284,15 @@ const ClubDetailSheet: React.FC<Props> = ({ club, token, userId, onClose, onClub
     <Sheet open onOpenChange={(open) => { if (!open) onClose(); }}>
       <SheetContent side="right" className="w-full sm:max-w-lg flex flex-col p-0 overflow-hidden">
         <SheetHeader className="px-6 py-5 border-b border-border flex-shrink-0">
-          <SheetTitle className="font-mono text-base text-left leading-snug">{club.nombre}</SheetTitle>
+          <div className="flex items-center gap-2">
+            <SheetTitle className="font-mono text-base text-left leading-snug">{club.nombre}</SheetTitle>
+            {isPremium && (
+              <span className="flex items-center gap-1 text-xs font-mono px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 border border-amber-200 flex-shrink-0">
+                <Crown className="h-3 w-3" />
+                Premium
+              </span>
+            )}
+          </div>
           <div className="flex flex-col gap-1 mt-1">
             {club.descripcion && <p className="text-xs text-muted-foreground">{club.descripcion}</p>}
             <div className="flex items-center gap-3 text-xs text-muted-foreground mt-0.5">
@@ -275,7 +341,7 @@ const ClubDetailSheet: React.FC<Props> = ({ club, token, userId, onClose, onClub
                   <BookOpen className="h-3.5 w-3.5" />
                   Libro actual
                 </h3>
-                {isClubAdmin && !editingBook && (
+                {isClubAdmin && !editingBook && isPremium && (
                   <button
                     onClick={() => {
                       setBookTitle(detail.currentBookTitle ?? '');
@@ -290,7 +356,9 @@ const ClubDetailSheet: React.FC<Props> = ({ club, token, userId, onClose, onClub
                 )}
               </div>
 
-              {editingBook ? (
+              {!isPremium ? (
+                <UpgradeBanner isAdmin={isClubAdmin} onUpgrade={handleUpgrade} isUpgrading={isUpgrading} />
+              ) : editingBook ? (
                 <div className="space-y-3 bg-card border border-border rounded-xl p-4">
                   <div className="space-y-2">
                     <div className="space-y-1">
@@ -391,7 +459,7 @@ const ClubDetailSheet: React.FC<Props> = ({ club, token, userId, onClose, onClub
                   <Calendar className="h-3.5 w-3.5" />
                   Próximas reuniones
                 </h3>
-                {isClubAdmin && (
+                {isClubAdmin && isPremium && (
                   <button
                     onClick={() => setShowMeetingForm((v) => !v)}
                     className="text-xs text-muted-foreground hover:text-foreground transition-colors"
@@ -401,90 +469,96 @@ const ClubDetailSheet: React.FC<Props> = ({ club, token, userId, onClose, onClub
                 )}
               </div>
 
-              <AnimatePresence>
-                {showMeetingForm && (
-                  <motion.form
-                    initial={{ opacity: 0, y: -6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -6 }}
-                    onSubmit={handleAddMeeting}
-                    className="bg-card border border-border rounded-xl p-4 space-y-3"
-                  >
-                    <div className="space-y-2">
-                      <div className="space-y-1">
-                        <Label className="text-xs text-muted-foreground font-mono">Título *</Label>
-                        <Input
-                          value={meetTitulo}
-                          onChange={(e) => setMeetTitulo(e.target.value)}
-                          placeholder="Ej: Encuentro mensual"
-                          className="bg-background text-sm"
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <Label className="text-xs text-muted-foreground font-mono">Fecha y hora *</Label>
-                        <Input
-                          type="datetime-local"
-                          value={meetFecha}
-                          onChange={(e) => setMeetFecha(e.target.value)}
-                          className="bg-background text-sm"
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <Label className="text-xs text-muted-foreground font-mono">Lugar</Label>
-                        <Input
-                          value={meetUbicacion}
-                          onChange={(e) => setMeetUbicacion(e.target.value)}
-                          placeholder="Ej: Café La Paloma, Palermo"
-                          className="bg-background text-sm"
-                        />
-                      </div>
-                    </div>
-                    <Button
-                      type="submit"
-                      disabled={isAddingMeeting || !meetTitulo.trim() || !meetFecha}
-                      size="sm"
-                      className="bg-accent text-accent-foreground hover:bg-accent/90 text-xs h-8"
-                    >
-                      {isAddingMeeting ? 'Agendando...' : 'Agendar reunión'}
-                    </Button>
-                  </motion.form>
-                )}
-              </AnimatePresence>
-
-              {detail.meetings.length === 0 ? (
-                <p className="text-xs text-muted-foreground">No hay reuniones próximas agendadas.</p>
+              {!isPremium ? (
+                <p className="text-xs text-muted-foreground">Disponible en plan Premium.</p>
               ) : (
-                <div className="space-y-2">
-                  {detail.meetings.map((m: ClubMeeting) => (
-                    <div
-                      key={m.id}
-                      className="flex items-start gap-3 bg-card border border-border rounded-xl px-4 py-3"
-                    >
-                      <div className="flex-1 min-w-0 space-y-0.5">
-                        <p className="font-mono text-sm font-bold text-foreground">{m.titulo}</p>
-                        <p className="text-xs text-muted-foreground">{fmtDate(m.fecha)}</p>
-                        {m.ubicacion && (
-                          <p className="text-xs text-muted-foreground flex items-center gap-1">
-                            <MapPin className="h-3 w-3" />
-                            {m.ubicacion}
-                          </p>
-                        )}
-                        {m.descripcion && (
-                          <p className="text-xs text-muted-foreground mt-1">{m.descripcion}</p>
-                        )}
-                      </div>
-                      {isClubAdmin && (
-                        <button
-                          onClick={() => handleDeleteMeeting(m.id)}
-                          disabled={deletingMeetingId === m.id}
-                          className="text-muted-foreground hover:text-destructive transition-colors flex-shrink-0 p-0.5 mt-0.5"
+                <>
+                  <AnimatePresence>
+                    {showMeetingForm && (
+                      <motion.form
+                        initial={{ opacity: 0, y: -6 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -6 }}
+                        onSubmit={handleAddMeeting}
+                        className="bg-card border border-border rounded-xl p-4 space-y-3"
+                      >
+                        <div className="space-y-2">
+                          <div className="space-y-1">
+                            <Label className="text-xs text-muted-foreground font-mono">Título *</Label>
+                            <Input
+                              value={meetTitulo}
+                              onChange={(e) => setMeetTitulo(e.target.value)}
+                              placeholder="Ej: Encuentro mensual"
+                              className="bg-background text-sm"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-xs text-muted-foreground font-mono">Fecha y hora *</Label>
+                            <Input
+                              type="datetime-local"
+                              value={meetFecha}
+                              onChange={(e) => setMeetFecha(e.target.value)}
+                              className="bg-background text-sm"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-xs text-muted-foreground font-mono">Lugar</Label>
+                            <Input
+                              value={meetUbicacion}
+                              onChange={(e) => setMeetUbicacion(e.target.value)}
+                              placeholder="Ej: Café La Paloma, Palermo"
+                              className="bg-background text-sm"
+                            />
+                          </div>
+                        </div>
+                        <Button
+                          type="submit"
+                          disabled={isAddingMeeting || !meetTitulo.trim() || !meetFecha}
+                          size="sm"
+                          className="bg-accent text-accent-foreground hover:bg-accent/90 text-xs h-8"
                         >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </button>
-                      )}
+                          {isAddingMeeting ? 'Agendando...' : 'Agendar reunión'}
+                        </Button>
+                      </motion.form>
+                    )}
+                  </AnimatePresence>
+
+                  {detail.meetings.length === 0 ? (
+                    <p className="text-xs text-muted-foreground">No hay reuniones próximas agendadas.</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {detail.meetings.map((m: ClubMeeting) => (
+                        <div
+                          key={m.id}
+                          className="flex items-start gap-3 bg-card border border-border rounded-xl px-4 py-3"
+                        >
+                          <div className="flex-1 min-w-0 space-y-0.5">
+                            <p className="font-mono text-sm font-bold text-foreground">{m.titulo}</p>
+                            <p className="text-xs text-muted-foreground">{fmtDate(m.fecha)}</p>
+                            {m.ubicacion && (
+                              <p className="text-xs text-muted-foreground flex items-center gap-1">
+                                <MapPin className="h-3 w-3" />
+                                {m.ubicacion}
+                              </p>
+                            )}
+                            {m.descripcion && (
+                              <p className="text-xs text-muted-foreground mt-1">{m.descripcion}</p>
+                            )}
+                          </div>
+                          {isClubAdmin && (
+                            <button
+                              onClick={() => handleDeleteMeeting(m.id)}
+                              disabled={deletingMeetingId === m.id}
+                              className="text-muted-foreground hover:text-destructive transition-colors flex-shrink-0 p-0.5 mt-0.5"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </button>
+                          )}
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
+                  )}
+                </>
               )}
             </section>
 
@@ -497,56 +571,62 @@ const ClubDetailSheet: React.FC<Props> = ({ club, token, userId, onClose, onClub
                 Foro del club
               </h3>
 
-              <form onSubmit={handlePost} className="flex gap-2 items-end">
-                <Textarea
-                  value={postContent}
-                  onChange={(e) => setPostContent(e.target.value)}
-                  placeholder="Escribí algo para el club..."
-                  className="bg-card text-sm resize-none"
-                  rows={2}
-                  maxLength={1000}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                      e.preventDefault();
-                      if (postContent.trim()) handlePost(e as unknown as React.FormEvent);
-                    }
-                  }}
-                />
-                <Button
-                  type="submit"
-                  size="icon"
-                  disabled={isPosting || !postContent.trim()}
-                  className="h-9 w-9 flex-shrink-0 bg-accent text-accent-foreground hover:bg-accent/90"
-                >
-                  <Send className="h-3.5 w-3.5" />
-                </Button>
-              </form>
-
-              {detail.posts.length === 0 ? (
-                <p className="text-xs text-muted-foreground">Nadie ha publicado todavía. ¡Sé el primero!</p>
+              {!isPremium ? (
+                <p className="text-xs text-muted-foreground">Disponible en plan Premium.</p>
               ) : (
-                <div className="space-y-2">
-                  {detail.posts.map((p: ClubPost) => (
-                    <div key={p.id} className="bg-card border border-border rounded-xl px-4 py-3 space-y-1">
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-2">
-                          <span className="font-mono text-xs font-bold text-foreground">{p.autorUsername}</span>
-                          <span className="text-xs text-muted-foreground">{timeAgo(p.createdAt)}</span>
+                <>
+                  <form onSubmit={handlePost} className="flex gap-2 items-end">
+                    <Textarea
+                      value={postContent}
+                      onChange={(e) => setPostContent(e.target.value)}
+                      placeholder="Escribí algo para el club..."
+                      className="bg-card text-sm resize-none"
+                      rows={2}
+                      maxLength={1000}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                          e.preventDefault();
+                          if (postContent.trim()) handlePost(e as unknown as React.FormEvent);
+                        }
+                      }}
+                    />
+                    <Button
+                      type="submit"
+                      size="icon"
+                      disabled={isPosting || !postContent.trim()}
+                      className="h-9 w-9 flex-shrink-0 bg-accent text-accent-foreground hover:bg-accent/90"
+                    >
+                      <Send className="h-3.5 w-3.5" />
+                    </Button>
+                  </form>
+
+                  {detail.posts.length === 0 ? (
+                    <p className="text-xs text-muted-foreground">Nadie ha publicado todavía. ¡Sé el primero!</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {detail.posts.map((p: ClubPost) => (
+                        <div key={p.id} className="bg-card border border-border rounded-xl px-4 py-3 space-y-1">
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="flex items-center gap-2">
+                              <span className="font-mono text-xs font-bold text-foreground">{p.autorUsername}</span>
+                              <span className="text-xs text-muted-foreground">{timeAgo(p.createdAt)}</span>
+                            </div>
+                            {(isClubAdmin || p.autorId === userId) && (
+                              <button
+                                onClick={() => handleDeletePost(p.id)}
+                                disabled={deletingPostId === p.id}
+                                className="text-muted-foreground hover:text-destructive transition-colors flex-shrink-0 p-0.5"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </button>
+                            )}
+                          </div>
+                          <p className="text-sm text-foreground whitespace-pre-wrap break-words">{p.contenido}</p>
                         </div>
-                        {(isClubAdmin || p.autorId === userId) && (
-                          <button
-                            onClick={() => handleDeletePost(p.id)}
-                            disabled={deletingPostId === p.id}
-                            className="text-muted-foreground hover:text-destructive transition-colors flex-shrink-0 p-0.5"
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </button>
-                        )}
-                      </div>
-                      <p className="text-sm text-foreground whitespace-pre-wrap break-words">{p.contenido}</p>
+                      ))}
                     </div>
-                  ))}
-                </div>
+                  )}
+                </>
               )}
             </section>
 

@@ -6,7 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Users, Plus, BookOpen, X, Check, ChevronRight, Navigation } from 'lucide-react';
+import { MapPin, Users, Plus, BookOpen, X, Check, ChevronRight, Navigation, Crown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import ClubDetailSheet from './ClubDetailSheet';
 
@@ -44,16 +44,19 @@ const ClubCard: React.FC<{
         <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
           <BookOpen className="h-5 w-5 text-primary" />
         </div>
-        {isMember && (
-          <span className={cn(
-            'text-xs font-mono px-2.5 py-1 rounded-full flex-shrink-0',
-            isClubAdmin
-              ? 'bg-accent/20 text-accent-foreground'
-              : 'bg-primary/10 text-primary'
-          )}>
-            {isClubAdmin ? 'Admin' : 'Miembro'}
-          </span>
-        )}
+        <div className="flex items-center gap-1.5 flex-shrink-0">
+          {club.plan === 'premium' && (
+            <span className="flex items-center gap-1 text-xs font-mono px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 border border-amber-200">
+              <Crown className="h-3 w-3" />
+              Premium
+            </span>
+          )}
+          {isMember && (
+            <span className="text-xs font-mono px-2.5 py-1 rounded-full bg-primary/10 text-primary border border-primary/20">
+              {isClubAdmin ? 'Admin' : 'Miembro'}
+            </span>
+          )}
+        </div>
       </div>
 
       <div className="flex-1 space-y-1">
