@@ -38,8 +38,8 @@ const allowedOrigins = process.env.CORS_ORIGINS
 
 app.use(cors({
   origin: (origin, callback) => {
-    // Permite requests sin origin (Postman, server-to-server) en desarrollo
     if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+    console.error(`CORS blocked origin: "${origin}" — allowed: ${JSON.stringify(allowedOrigins)}`);
     callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
