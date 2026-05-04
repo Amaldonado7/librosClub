@@ -1,35 +1,24 @@
-# 📚 LibrosClub
+# LibrosClub
 
-**LibrosClub** es una plataforma web desarrollada como trabajo final para la carrera de Analista de Sistemas en Escuela Da Vinci. El objetivo del proyecto es conectar a lectores a través de una experiencia unificada que permite descubrir, buscar y compartir libros, fomentando también la creación de comunidades lectoras.
+Plataforma web para descubrir, buscar e intercambiar libros. Trabajo final de la carrera de Analista de Sistemas en Escuela Da Vinci.
 
+## Tecnologías
 
-## 🚀 Tecnologías utilizadas
+### Frontend
+- React 18 + Vite + TypeScript
+- Tailwind CSS + Shadcn UI (Radix UI)
+- Framer Motion
+- TanStack Query · React Router DOM · jwt-decode
 
-### 🖥️ Frontend
+### Backend
+- Node.js 18+ + Express
+- PostgreSQL (`pg`)
+- JWT (`jsonwebtoken`) · BcryptJS · node-fetch v2
 
-- [React](https://reactjs.org/) + [Vite](https://vitejs.dev/)
-- TypeScript
-- Tailwind CSS
-- Shadcn UI + Radix UI
-- React Hook Form
-- React Router DOM
-- JWT para autenticación (token)
+## Instalación
 
-### 🗄️ Backend
-
-- Node.js + Express
-- PostgreSQL
-- JWT (jsonwebtoken)
-- BcryptJS para hashing de contraseñas
-- Dotenv para configuración de variables
-
-
-
-## ⚙️ Instalación
-
-### Requisitos:
-
-- Node.js 18+
+### Requisitos
+- Node.js 20+ (recomendado; mínimo 18)
 - PostgreSQL
 - npm
 
@@ -40,127 +29,154 @@ git clone https://github.com/Amaldonado7/librosClub.git
 cd librosClub
 ```
 
-### 2. Instalar dependencias
-
-#### Backend
+### 2. Backend
 
 ```bash
 cd librosclub-backend
 npm install
 ```
 
-#### Frontend
-
-```bash
-cd ../librosclub-frontend
-npm install
-```
-
-### 3. Variables de entorno
-
-#### Backend - Crear archivo `.env` en `librosclub-backend`
+Crear archivo `.env`:
 
 ```env
 PORT=3000
 DB_USER=tu_usuario
 DB_HOST=localhost
-DB_DATABASE=librosclub
+DB_NAME=librosclub
 DB_PASSWORD=tu_contraseña
 DB_PORT=5432
 JWT_SECRET=un_secreto_seguro
+GOOGLE_BOOKS_API_KEY=tu_api_key
+GOOGLE_BOOKS_CACHE_TTL_MS=600000
 ```
 
-
-
-## 🔑 Roles de usuario
-
-- **admin**: puede ver, buscar y **agregar libros**
-- **user**: puede ver y buscar libros
-
-
-
-## 🔐 Autenticación
-
-El sistema usa **JWT tokens** para proteger rutas privadas y validar el rol del usuario.
-
-
-
-## 📚 Endpoints principales
-
-### 🔐 Auth
-
-- `POST /api/auth/login`
-  → Iniciar sesión y obtener token
-
-### 📖 Books
-
-- `GET /api/books`
-  → Lista completa de libros
-
-- `GET /api/books?title=palabra`
-  → Buscar libros por título
-
-- `GET /api/books/feed`
-  → Últimos 10 libros agregados
-
-- `POST /api/books`
-  → Agregar nuevo libro (solo `admin`)
-
-  **Headers:**
-  `Authorization: Bearer <token>`
-
-  **Body:**
-
-  ```json
-  {
-    "title": "Título del libro",
-    "author": "Autor",
-    "genre": "Género"
-  }
-  ```
-
-### 🛡️ Verificación de token
-
-- `GET /api/protected`
-  → Verifica si el token es válido
-
-- `GET /api/admin-only`
-  → Ruta protegida solo para admins
-
-
-
-## 💻 Interfaz de usuario
-
-Una vez logueado, el usuario accede a un `Dashboard` donde puede:
-
-- Ver el feed de los últimos libros
-- Buscar por título
-- Ver todos los libros
-- Si es admin: aparece formulario para agregar libros
-
-
-
-## 📂 Estructura del proyecto
-
-```
-librosClub/
-├── librosclub-backend/
-│   ├── routes/
-│   ├── controllers/
-│   ├── middlewares/
-│   ├── config/db.js
-│   └── ...
-└── librosclub-frontend/
-    ├── src/components/
-    ├── src/pages/
-    ├── src/utils/
-    ├── src/contexts/
-    └── ...
+```bash
+npm run dev   # nodemon, puerto 3000
 ```
 
+### 3. Base de datos
 
+```sql
+-- Usuarios
+CREATE TABLE public.users (
+  id       SERIAL PRIMARY KEY,
+  username VARCHAR(50)  NOT NULL,
+  password VARCHAR(255) NOT NULL,
+  role     VARCHAR(20)  NOT NULL
+);
 
-## 🙋‍♀️ Créditos
+-- Catálogo de libros
+CREATE TABLE public.books (
+  id           SERIAL PRIMARY KEY,
+  title        VARCHAR(100),
+  author       VARCHAR(100),
+  genre        VARCHAR(50),
+  is_available BOOLEAN DEFAULT true,
+  cover_url    VARCHAR(500)
+);
 
-Desarrollado por [Ariadna Maldonado](https://github.com/Amaldonado7)
+-- Publicaciones de intercambio
+CREATE TABLE public.exchange_listings (
+  id          SERIAL PRIMARY KEY,
+  user_id     INTEGER NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+  title       VARCHAR(200) NOT NULL,
+  author      VARCHAR(200) NOT NULL,
+  cover_url   VARCHAR(500),
+  description VARCHAR(500),
+  status      VARCHAR(20) NOT NULL DEFAULT 'available',
+  created_at  TIMESTAMP DEFAULT NOW()
+);
+
+-- Solicitudes de intercambio
+CREATE TABLE public.exchange_requests (
+  id           SERIAL PRIMARY KEY,
+  listing_id   INTEGER NOT NULL REFERENCES public.exchange_listings(id) ON DELETE CASCADE,
+  requester_id INTEGER NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+  status       VARCHAR(20) NOT NULL DEFAULT 'pending',
+  created_at   TIMESTAMP DEFAULT NOW(),
+  UNIQUE(listing_id, requester_id)
+);
+```
+
+### 4. Frontend
+
+```bash
+cd ../librosclub-frontend
+npm install
+npm run dev   # Vite, puerto 8080
+```
+
+## Funcionalidades
+
+### Feed
+Exploración de libros desde Google Books API, filtrada por género (Ficción, Fantasía, Romance, Thriller, Misterio, Terror, Historia, Biografía, Ciencia, Poesía). Chips de selección rápida y botón "Cargar más" con paginación real vía `startIndex`.
+
+### Buscar
+Búsqueda libre en Google Books por título, autor, saga o ISBN. Submit explícito (Enter o botón) para no saturar la API.
+
+### Todos
+Catálogo propio de la plataforma almacenado en PostgreSQL. Los admins ven un banner de acceso directo al panel de gestión.
+
+### Intercambiar
+Sistema P2P de intercambio de libros:
+- Publicar un libro con portada, descripción y estado del ejemplar
+- Explorar libros disponibles de otros usuarios
+- Solicitar un intercambio → el dueño acepta o rechaza
+- Al aceptar: el libro queda marcado como "intercambiado" y las demás solicitudes se rechazan automáticamente
+- "Mis publicaciones" muestra las solicitudes entrantes con acciones
+
+### Gestionar libros (Admin)
+Panel exclusivo para admins:
+- Agregar libros al catálogo con portada (URL) y preview en tiempo real
+- Editar cualquier campo inline sin salir de la página
+- Eliminar con confirmación de dos pasos
+
+## Endpoints
+
+### Auth
+| Método | Ruta | Auth | Body |
+|--------|------|------|------|
+| POST | `/api/auth/login` | No | `{ username, password }` |
+
+### Books
+| Método | Ruta | Auth | Descripción |
+|--------|------|------|-------------|
+| GET | `/api/books` | No | Lista (`?title=` para buscar) |
+| GET | `/api/books/feed` | No | Últimos 10 |
+| POST | `/api/books` | Admin | `{ title, author, genre?, coverUrl? }` |
+| PUT | `/api/books/:id` | Admin | Actualizar libro |
+| DELETE | `/api/books/:id` | Admin | Eliminar libro |
+
+### Google Books
+| Método | Ruta | Auth | Descripción |
+|--------|------|------|-------------|
+| GET | `/api/google-books/feed` | No | `?topic=&limit=&page=&lang=` |
+| GET | `/api/google-books/search` | No | `?q=&page=&pageSize=&lang=` |
+
+### Exchanges
+| Método | Ruta | Auth | Descripción |
+|--------|------|------|-------------|
+| GET | `/api/exchanges` | Sí | Publicaciones disponibles (con estado de solicitud propia) |
+| POST | `/api/exchanges` | Sí | `{ title, author, coverUrl?, description? }` |
+| DELETE | `/api/exchanges/:id` | Sí | Eliminar publicación propia |
+| GET | `/api/exchanges/my` | Sí | Mis publicaciones con solicitudes |
+| POST | `/api/exchanges/:id/request` | Sí | Solicitar intercambio |
+| PUT | `/api/exchanges/requests/:id` | Sí | `{ status: 'accepted' \| 'rejected' }` |
+
+## Roles
+
+| Rol | Permisos |
+|-----|----------|
+| `user` | Ver catálogo, buscar, feed, intercambiar |
+| `admin` | Todo lo anterior + agregar, editar y eliminar libros del catálogo |
+
+## Diseño
+
+Identidad visual basada en el brandbook de LibrosClub (Poulain):
+- **Colores:** Cremita `#F7F0E2`, Verde Oliva `#5E5827`, Marrón Oscuro `#492710`, Amarillo `#F2D661`
+- **Tipografía:** Space Mono (títulos), Lora (cuerpo), Beth Ellen (acentos)
+
+## Créditos
+
+Desarrollado por [Ariadna Maldonado](https://github.com/Amaldonado7)  
 Trabajo final – Escuela Da Vinci – Analista de Sistemas

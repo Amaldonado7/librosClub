@@ -93,3 +93,54 @@ exports.getGoogleFeed = async ({ topic = 'fiction', limit = 10, lang = 'es', pag
   };
 };
 
+exports.searchVolumes = async ({ q, page = 0, pageSize = 20, lang = 'es' }) => {
+  const API_KEY = getApiKey();
+  const safePageSize = Math.min(40, Math.max(1, Number(pageSize)));
+  const safePage = Math.max(0, Number(page));
+  const startIndex = safePage * safePageSize;
+
+  const url = new URL('https://www.googleapis.com/books/v1/volumes');
+  url.searchParams.set('q', String(q));
+  url.searchParams.set('maxResults', String(safePageSize));
+  url.searchParams.set('startIndex', String(startIndex));
+  url.searchParams.set('printType', 'books');
+  url.searchParams.set('projection', 'lite');
+  url.searchParams.set('langRestrict', String(lang));
+  url.searchParams.set(
+    'fields',
+    'totalItems,items(id,volumeInfo(title,authors,publishedDate,imageLinks,infoLink))'
+  );
+  url.searchParams.set('key', API_KEY);
+
+  const r = await fetch(url.toString());
+  const rawText = await r.text();
+
+  if (!r.ok) {
+    const err = new Error(`Google Books error ${r.status}: ${rawText}`);
+    err.status = r.status;
+    throw err;
+  }
+
+  const raw = JSON.parse(rawText);
+
+  const items = (raw.items ?? []).map((it) => {
+    const vi = it.volumeInfo ?? {};
+    return {
+      id: it.id,
+      title: vi.title ?? '',
+      authors: vi.authors ?? [],
+      publishedDate: vi.publishedDate ?? null,
+      thumbnail: vi.imageLinks?.thumbnail ?? null,
+      link: vi.infoLink ?? null,
+    };
+  });
+
+  return {
+    q,
+    page: safePage,
+    pageSize: safePageSize,
+    totalItems: raw.totalItems ?? 0,
+    items,
+  };
+};
+

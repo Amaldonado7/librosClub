@@ -8,7 +8,7 @@ exports.register = async (req, res) => {
 
     try {
         const result = await pool.query(
-            'INSERT INTO users (username, password, role) VALUES ($1, $2, $3) RETURNING *',
+            'INSERT INTO users (username, password, role) VALUES ($1, $2, $3) RETURNING id, username, role',
             [username, hashedPassword, role]
         );
         res.status(201).json(result.rows[0]);

@@ -14,9 +14,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     const storedToken = localStorage.getItem('libros_token');
-    if (storedToken) {
-      setToken(storedToken);
-    }
+    if (storedToken) setToken(storedToken);
+  }, []);
+
+  // Cerrar sesión automáticamente cuando el backend reporta token expirado
+  useEffect(() => {
+    const handler = () => {
+      localStorage.removeItem('libros_token');
+      setToken(null);
+    };
+    window.addEventListener('auth:expired', handler);
+    return () => window.removeEventListener('auth:expired', handler);
   }, []);
 
   const login = (newToken: string) => {

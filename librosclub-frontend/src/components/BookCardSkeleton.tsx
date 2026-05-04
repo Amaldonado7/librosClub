@@ -1,23 +1,17 @@
 import React from 'react';
 
-const BookCardSkeleton: React.FC = () => {
-  return (
-    <div className="rounded-lg border border-border bg-card p-5">
-      <div className="flex gap-4">
-        <div className="w-20 h-28 shimmer rounded-md" />
-        <div className="flex-1 space-y-3">
-          <div className="h-5 w-3/4 shimmer rounded" />
-          <div className="h-4 w-1/2 shimmer rounded" />
-          <div className="h-6 w-20 shimmer rounded-full" />
-          <div className="h-3 w-full shimmer rounded" />
-        </div>
-      </div>
+const BookCardSkeleton: React.FC = () => (
+  <div className="rounded-xl border border-border bg-card overflow-hidden">
+    <div className="aspect-[2/3] shimmer" />
+    <div className="p-3 space-y-2">
+      <div className="h-3 w-3/4 shimmer rounded" />
+      <div className="h-3 w-1/2 shimmer rounded" />
     </div>
-  );
-};
+  </div>
+);
 
-export const BooksGridSkeleton: React.FC<{ count?: number }> = ({ count = 6 }) => (
-  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+export const BooksGridSkeleton: React.FC<{ count?: number }> = ({ count = 10 }) => (
+  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-4">
     {Array.from({ length: count }).map((_, i) => (
       <BookCardSkeleton key={i} />
     ))}
