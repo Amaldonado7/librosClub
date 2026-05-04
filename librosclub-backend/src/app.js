@@ -37,6 +37,7 @@ const allowedOrigins = process.env.CORS_ORIGINS
   : [];
 
 function isAllowedOrigin(origin) {
+  if (/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) return true;
   return allowedOrigins.some((pattern) => {
     if (!pattern.includes('*')) return pattern === origin;
     const regex = new RegExp('^' + pattern.replace(/\./g, '\\.').replace(/\*/g, '[^.]+') + '$');

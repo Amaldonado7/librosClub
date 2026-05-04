@@ -12,9 +12,10 @@ interface Props {
   open: boolean;
   onClose: () => void;
   defaultMode?: 'login' | 'register';
+  onSuccess?: () => void;
 }
 
-const AuthModal: React.FC<Props> = ({ open, onClose, defaultMode = 'login' }) => {
+const AuthModal: React.FC<Props> = ({ open, onClose, defaultMode = 'login', onSuccess }) => {
   const [mode, setMode] = useState<'login' | 'register'>(defaultMode);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -45,6 +46,7 @@ const AuthModal: React.FC<Props> = ({ open, onClose, defaultMode = 'login' }) =>
       });
       reset();
       onClose();
+      onSuccess?.();
     } catch (err: any) {
       toast({ title: 'Error', description: err.message, variant: 'destructive' });
     } finally {

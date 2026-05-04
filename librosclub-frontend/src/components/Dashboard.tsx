@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { booksAPI, bookRequestsAPI, Book, BookRequest } from '../utils/api';
 import RequestChatModal from './RequestChatModal';
@@ -117,6 +118,7 @@ const Dashboard: React.FC = () => {
   };
 
   const { token, logout } = useAuth();
+  const navigate = useNavigate();
   const { toast } = useToast();
 
   const decoded = token ? jwtDecode<{ role: string; userId: number; username: string }>(token) : null;
@@ -619,10 +621,13 @@ const Dashboard: React.FC = () => {
               isMobile && "fixed inset-y-0 left-0 z-50 h-screen"
             )}
           >
-            <div className="p-5 flex items-center gap-3">
+            <button
+              onClick={() => navigate('/')}
+              className="p-5 flex items-center gap-3 hover:opacity-80 transition-opacity"
+            >
               <BookOpen className="h-7 w-7 text-sidebar-primary" />
               <span className="font-serif text-xl font-bold text-sidebar-foreground">LibrosClub</span>
-            </div>
+            </button>
 
             <nav className="flex-1 px-3 py-2 space-y-1">
               {sidebarItems.map((item) => {
