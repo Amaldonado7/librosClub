@@ -56,6 +56,8 @@ const loginLimiter = rateLimit({
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
+app.get('/api/health', (_req, res) => res.json({ status: 'ok' }));
+
 // Configurar rutas
 app.use('/api', protectedRoutes);
 app.use('/api/auth/login', loginLimiter);
