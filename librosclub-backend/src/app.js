@@ -36,9 +36,17 @@ const allowedOrigins = process.env.CORS_ORIGINS
   ? process.env.CORS_ORIGINS.split(',').map((o) => o.trim())
   : [];
 
+function isAllowedOrigin(origin) {
+  return allowedOrigins.some((pattern) => {
+    if (!pattern.includes('*')) return pattern === origin;
+    const regex = new RegExp('^' + pattern.replace(/\./g, '\\.').replace(/\*/g, '[^.]+') + '$');
+    return regex.test(origin);
+  });
+}
+
 app.use(cors({
   origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+    if (!origin || isAllowedOrigin(origin)) return callback(null, true);
     callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
