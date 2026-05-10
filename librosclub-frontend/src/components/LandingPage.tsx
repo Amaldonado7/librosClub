@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { BookOpen, Rss, Search, Library, ArrowRight, Users, MapPin, ArrowLeftRight } from 'lucide-react';
+import { BookOpen, Rss, Search, Library, ArrowRight, Users, MapPin, ArrowLeftRight, Check, Crown, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 import AuthModal from './AuthModal';
+import PremiumUpgradeModal from './PremiumUpgradeModal';
+import { useAuth } from '../contexts/AuthContext';
 
 const features = [
   {
@@ -40,8 +42,10 @@ const features = [
 
 const LandingPage: React.FC = () => {
   const navigate = useNavigate();
+  const { isAuthenticated, isPremium, username } = useAuth();
   const [authOpen, setAuthOpen] = useState(false);
   const [authMode, setAuthMode] = useState<'login' | 'register'>('register');
+  const [paymentOpen, setPaymentOpen] = useState(false);
 
   const openAuth = (mode: 'login' | 'register') => {
     setAuthMode(mode);
@@ -90,14 +94,16 @@ const LandingPage: React.FC = () => {
               Explorar la plataforma
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              className="border-sidebar-foreground/30 text-sidebar-foreground bg-transparent hover:bg-sidebar-accent/50 hover:text-sidebar-foreground font-mono"
-              onClick={() => openAuth('register')}
-            >
-              Crear cuenta gratis
-            </Button>
+            {!isAuthenticated && (
+              <Button
+                size="lg"
+                variant="outline"
+                className="border-sidebar-foreground/30 text-sidebar-foreground bg-transparent hover:bg-sidebar-accent/50 hover:text-sidebar-foreground font-mono"
+                onClick={() => openAuth('register')}
+              >
+                Crear cuenta gratis
+              </Button>
+            )}
           </motion.div>
 
           <motion.p
@@ -106,13 +112,27 @@ const LandingPage: React.FC = () => {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.3 }}
           >
-            ¿Ya tenés cuenta?{' '}
-            <button
-              onClick={() => openAuth('login')}
-              className="underline underline-offset-2 hover:text-sidebar-foreground/70 transition-colors"
-            >
-              Iniciá sesión
-            </button>
+            {isAuthenticated ? (
+              <>
+                Hola, <span className="text-sidebar-foreground/60">{username}</span>.{' '}
+                <button
+                  onClick={() => navigate('/app')}
+                  className="underline underline-offset-2 hover:text-sidebar-foreground/70 transition-colors"
+                >
+                  Ir a la plataforma
+                </button>
+              </>
+            ) : (
+              <>
+                ¿Ya tenés cuenta?{' '}
+                <button
+                  onClick={() => openAuth('login')}
+                  className="underline underline-offset-2 hover:text-sidebar-foreground/70 transition-colors"
+                >
+                  Iniciá sesión
+                </button>
+              </>
+            )}
           </motion.p>
         </div>
       </section>
@@ -161,6 +181,143 @@ const LandingPage: React.FC = () => {
         </div>
       </section>
 
+      {/* Pricing */}
+      <section className="bg-muted/40 border-y border-border py-20">
+        <div className="max-w-5xl mx-auto px-6">
+          <div className="mb-12">
+            <h2 className="font-mono text-2xl sm:text-3xl font-bold text-foreground">
+              Planes
+            </h2>
+            <p className="mt-2 text-muted-foreground">
+              Empezá gratis. Desbloqueá todo con Premium.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* Free */}
+            <motion.div
+              className="bg-card border border-border rounded-xl p-6 flex flex-col gap-4"
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.35, delay: 0.05 }}
+            >
+              <div>
+                <p className="font-mono text-xs text-muted-foreground uppercase tracking-widest mb-1">Gratis</p>
+                <p className="font-mono text-3xl font-bold text-foreground">$0</p>
+                <p className="text-xs text-muted-foreground mt-1">Para siempre</p>
+              </div>
+              <ul className="flex flex-col gap-2.5 text-sm flex-1">
+                {[
+                  'Feed de novedades por género',
+                  'Búsqueda de libros',
+                  'Catálogo de la comunidad',
+                  'Intercambios P2P',
+                  'Unirse a clubes de lectura',
+                  'Hasta 10 miembros por club',
+                ].map((item) => (
+                  <li key={item} className="flex items-start gap-2 text-foreground">
+                    <Check className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
+                    {item}
+                  </li>
+                ))}
+                {[
+                  'Libro actual del club',
+                  'Reuniones del club',
+                  'Foro del club',
+                ].map((item) => (
+                  <li key={item} className="flex items-start gap-2 text-muted-foreground/50">
+                    <X className="h-4 w-4 flex-shrink-0 mt-0.5" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+              <Button
+                variant="outline"
+                className="w-full font-mono"
+                onClick={() => isAuthenticated ? navigate('/app') : openAuth('register')}
+              >
+                {isAuthenticated ? 'Ir a la plataforma' : 'Empezar gratis'}
+              </Button>
+            </motion.div>
+
+            {/* Premium */}
+            <motion.div
+              className="bg-card border-2 border-amber-400 rounded-xl p-6 flex flex-col gap-4 relative"
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.35, delay: 0.12 }}
+            >
+              <div className="absolute top-4 right-4">
+                <span className="flex items-center gap-1 text-xs font-mono px-2.5 py-1 rounded-full bg-amber-100 text-amber-700 border border-amber-200">
+                  <Crown className="h-3 w-3" />
+                  Premium
+                </span>
+              </div>
+              <div>
+                <p className="font-mono text-xs text-muted-foreground uppercase tracking-widest mb-1">Premium</p>
+                <p className="font-mono text-3xl font-bold text-foreground">
+                  $5<span className="text-base font-normal text-muted-foreground">/mes</span>
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">Por club</p>
+              </div>
+              <ul className="flex flex-col gap-2.5 text-sm flex-1">
+                {[
+                  'Todo lo del plan Gratis',
+                  'Sin límite de miembros',
+                  'Libro actual del club',
+                  'Reuniones y agenda del club',
+                  'Foro asíncrono del club',
+                ].map((item) => (
+                  <li key={item} className="flex items-start gap-2 text-foreground">
+                    <Check className="h-4 w-4 text-amber-600 flex-shrink-0 mt-0.5" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+
+              {/* CTA según estado de auth */}
+              {isPremium ? (
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-center justify-center gap-2 py-2 rounded-lg bg-amber-50 border border-amber-200">
+                    <Crown className="h-4 w-4 text-amber-600" />
+                    <span className="text-sm font-mono font-bold text-amber-700">Ya sos Premium</span>
+                  </div>
+                  <Button variant="outline" className="w-full font-mono text-xs" onClick={() => navigate('/app')}>
+                    Ir a la plataforma
+                  </Button>
+                </div>
+              ) : isAuthenticated ? (
+                <Button
+                  className="w-full font-mono bg-amber-600 hover:bg-amber-700 text-white"
+                  onClick={() => setPaymentOpen(true)}
+                >
+                  <Crown className="h-3.5 w-3.5 mr-1.5" />
+                  Activar Premium
+                </Button>
+              ) : (
+                <div className="flex flex-col gap-2">
+                  <Button
+                    className="w-full font-mono bg-amber-600 hover:bg-amber-700 text-white"
+                    onClick={() => openAuth('login')}
+                  >
+                    Iniciá sesión para activar
+                  </Button>
+                  <p className="text-center text-xs text-muted-foreground">
+                    ¿No tenés cuenta?{' '}
+                    <button
+                      className="underline underline-offset-2 hover:text-foreground transition-colors"
+                      onClick={() => openAuth('register')}
+                    >
+                      Registrate
+                    </button>
+                  </p>
+                </div>
+              )}
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
       {/* Footer */}
       <footer className="border-t border-border py-8 px-6">
         <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-muted-foreground font-mono">
@@ -178,6 +335,8 @@ const LandingPage: React.FC = () => {
         defaultMode={authMode}
         onSuccess={() => navigate('/app')}
       />
+
+      {paymentOpen && <PremiumUpgradeModal onClose={() => setPaymentOpen(false)} />}
     </div>
   );
 };

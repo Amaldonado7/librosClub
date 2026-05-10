@@ -1,5 +1,14 @@
 const API_BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000/api';
 
+export class ApiError extends Error {
+  code?: string;
+  constructor(message: string, code?: string) {
+    super(message);
+    this.name = 'ApiError';
+    this.code = code;
+  }
+}
+
 // Dispara un evento global cuando el backend responde 401 con expired:true
 async function handleResponse(res: Response): Promise<Response> {
   if (res.status === 401) {
@@ -54,6 +63,18 @@ export const authAPI = {
     if (!response.ok) {
       const body = await response.json().catch(() => ({}));
       throw new Error((body as any).message ?? 'Error al registrarse.');
+    }
+    return response.json();
+  },
+
+  upgradeUser: async (token: string): Promise<LoginResponse> => {
+    const response = await fetch(`${API_BASE_URL}/auth/upgrade`, {
+      method: 'PUT',
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!response.ok) {
+      const body = await response.json().catch(() => ({}));
+      throw new ApiError((body as any).message ?? 'Error al actualizar el plan.');
     }
     return response.json();
   },
@@ -290,6 +311,8 @@ export interface Club {
   currentBookAuthor?: string | null;
   currentBookCoverUrl?: string | null;
   distanceKm?: number;
+  plan?: 'free' | 'premium';
+  planExpiresAt?: string | null;
 }
 
 export interface ClubMeeting {
@@ -348,7 +371,7 @@ export const clubsAPI = {
     }));
     if (!r.ok) {
       const body = await r.json().catch(() => ({}));
-      throw new Error(body.message ?? 'Error al unirse al club.');
+      throw new ApiError(body.message ?? 'Error al unirse al club.', body.code);
     }
   },
 
@@ -382,7 +405,10 @@ export const clubsAPI = {
       headers: authHeaders(token),
       body: JSON.stringify(payload),
     }));
-    if (!r.ok) throw new Error('Error al actualizar el libro actual.');
+    if (!r.ok) {
+      const body = await r.json().catch(() => ({}));
+      throw new ApiError(body.message ?? 'Error al actualizar el libro actual.', body.code);
+    }
   },
 
   addMeeting: async (
@@ -397,7 +423,7 @@ export const clubsAPI = {
     }));
     if (!r.ok) {
       const body = await r.json().catch(() => ({}));
-      throw new Error(body.message ?? 'Error al agregar reunión.');
+      throw new ApiError(body.message ?? 'Error al agregar reunión.', body.code);
     }
     return r.json();
   },
@@ -407,7 +433,10 @@ export const clubsAPI = {
       method: 'DELETE',
       headers: authHeaders(token),
     }));
-    if (!r.ok) throw new Error('Error al eliminar reunión.');
+    if (!r.ok) {
+      const body = await r.json().catch(() => ({}));
+      throw new ApiError(body.message ?? 'Error al eliminar reunión.', body.code);
+    }
   },
 
   createPost: async (token: string, clubId: number, contenido: string): Promise<ClubPost> => {
@@ -418,7 +447,7 @@ export const clubsAPI = {
     }));
     if (!r.ok) {
       const body = await r.json().catch(() => ({}));
-      throw new Error(body.message ?? 'Error al publicar mensaje.');
+      throw new ApiError(body.message ?? 'Error al publicar mensaje.', body.code);
     }
     return r.json();
   },
@@ -428,7 +457,10 @@ export const clubsAPI = {
       method: 'DELETE',
       headers: authHeaders(token),
     }));
-    if (!r.ok) throw new Error('Error al eliminar mensaje.');
+    if (!r.ok) {
+      const body = await r.json().catch(() => ({}));
+      throw new ApiError(body.message ?? 'Error al eliminar mensaje.', body.code);
+    }
   },
 
   getNearbyClubs: async (lat: number, lng: number, radius: number, token: string | null): Promise<Club[]> => {
@@ -453,6 +485,18 @@ export const clubsAPI = {
       body: JSON.stringify(payload),
     }));
     if (!r.ok) throw new Error('Error al actualizar la ubicación.');
+  },
+
+  upgradeClub: async (token: string, clubId: number): Promise<{ plan: string; planExpiresAt: string }> => {
+    const r = await handleResponse(await fetch(`${API_BASE_URL}/clubs/${clubId}/upgrade`, {
+      method: 'PUT',
+      headers: authHeaders(token),
+    }));
+    if (!r.ok) {
+      const body = await r.json().catch(() => ({}));
+      throw new ApiError(body.message ?? 'Error al actualizar el plan.', body.code);
+    }
+    return r.json();
   },
 };
 

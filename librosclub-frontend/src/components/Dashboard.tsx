@@ -31,12 +31,14 @@ import {
   XCircle,
   Clock,
   MessageCircle,
+  Crown,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { jwtDecode } from 'jwt-decode';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import AuthModal from './AuthModal';
+import PremiumUpgradeModal from './PremiumUpgradeModal';
 
 type TabKey = 'feed' | 'search' | 'all' | 'clubs' | 'nearby' | 'admin';
 
@@ -117,9 +119,10 @@ const Dashboard: React.FC = () => {
     setAuthModalOpen(true);
   };
 
-  const { token, logout } = useAuth();
+  const { token, logout, isPremium } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
 
   const decoded = token ? jwtDecode<{ role: string; userId: number; username: string }>(token) : null;
   const isAdmin = decoded?.role === 'admin';
@@ -671,9 +674,32 @@ const Dashboard: React.FC = () => {
             <div className="p-4 border-t border-sidebar-border">
               {token ? (
                 <>
-                  <p className="text-xs text-sidebar-foreground/40 font-mono truncate px-1 mb-2">
-                    {decoded?.username}
-                  </p>
+                  <div className="flex items-center gap-2 px-1 mb-2">
+                    <p className="text-xs text-sidebar-foreground/40 font-mono truncate flex-1">
+                      {decoded?.username}
+                    </p>
+                    {isPremium ? (
+                      <span className="flex items-center gap-0.5 text-xs font-mono px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 border border-amber-200 flex-shrink-0">
+                        <Crown className="h-2.5 w-2.5" />
+                        Pro
+                      </span>
+                    ) : (
+                      <span className="text-xs font-mono px-1.5 py-0.5 rounded-full bg-sidebar-foreground/10 text-sidebar-foreground/60 border border-sidebar-foreground/20 flex-shrink-0">
+                        Free
+                      </span>
+                    )}
+                  </div>
+                  {!isPremium && (
+                    <Button
+                      onClick={() => setUpgradeModalOpen(true)}
+                      variant="ghost"
+                      size="sm"
+                      className="w-full justify-start text-amber-600 hover:text-amber-700 hover:bg-amber-50 text-xs mb-1"
+                    >
+                      <Crown className="h-3.5 w-3.5 mr-2" />
+                      Activar Premium
+                    </Button>
+                  )}
                   <Button
                     onClick={handleLogout}
                     variant="ghost"
@@ -732,7 +758,7 @@ const Dashboard: React.FC = () => {
 
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             {isAdmin && (
-              <span className="bg-accent/15 text-accent text-xs font-medium px-2.5 py-1 rounded-full">
+              <span className="bg-primary/10 text-primary border border-primary/20 text-xs font-mono font-medium px-2.5 py-1 rounded-full">
                 Admin
               </span>
             )}
@@ -813,6 +839,7 @@ const Dashboard: React.FC = () => {
         onClose={() => setAuthModalOpen(false)}
         defaultMode={authModalMode}
       />
+      {upgradeModalOpen && <PremiumUpgradeModal onClose={() => setUpgradeModalOpen(false)} />}
       {chatRequest && token && decoded && (
         <RequestChatModal
           requestId={chatRequest.id}

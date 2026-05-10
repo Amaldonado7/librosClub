@@ -1,8 +1,15 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const pool = require('../config/db'); // Configuración de la base de datos
+const pool = require('../config/db');
+const authMiddleware = require('../middlewares/authMiddleware');
 const router = express.Router();
+
+function effectivePlan(userData) {
+  if (userData.plan !== 'premium') return 'free';
+  if (userData.plan_expires_at && new Date(userData.plan_expires_at) < new Date()) return 'free';
+  return 'premium';
+}
 
 router.post('/login', async (req, res) => {
   const { username, password } = req.body;
@@ -24,8 +31,9 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ message: 'Credenciales inválidas.' });
     }
 
+    const plan = effectivePlan(userData);
     const token = jwt.sign(
-      { userId: userData.id, username: userData.username, role: userData.role },
+      { userId: userData.id, username: userData.username, role: userData.role, plan },
       process.env.JWT_SECRET,
       { expiresIn: '7d' }
     );
@@ -57,7 +65,7 @@ router.post('/register', async (req, res) => {
     );
     const user = result.rows[0];
     const token = jwt.sign(
-      { userId: user.id, username: user.username, role: user.role },
+      { userId: user.id, username: user.username, role: user.role, plan: 'free' },
       process.env.JWT_SECRET,
       { expiresIn: '7d' }
     );
@@ -65,6 +73,27 @@ router.post('/register', async (req, res) => {
   } catch (err) {
     console.error('register:', err);
     res.status(500).json({ message: 'Error del servidor.' });
+  }
+});
+
+router.put('/upgrade', authMiddleware, async (req, res) => {
+  const userId = req.user.userId;
+  try {
+    await pool.query(
+      `UPDATE public.users SET plan = 'premium', plan_expires_at = NOW() + INTERVAL '30 days' WHERE id = $1`,
+      [userId]
+    );
+    const userRow = await pool.query('SELECT * FROM public.users WHERE id = $1', [userId]);
+    const userData = userRow.rows[0];
+    const newToken = jwt.sign(
+      { userId: userData.id, username: userData.username, role: userData.role, plan: 'premium' },
+      process.env.JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+    res.json({ token: newToken });
+  } catch (err) {
+    console.error('upgrade user:', err);
+    res.status(500).json({ message: 'Error al actualizar el plan.' });
   }
 });
 

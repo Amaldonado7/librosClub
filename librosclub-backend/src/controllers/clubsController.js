@@ -8,6 +8,18 @@ async function getMiRol(userId, clubId) {
   return rows[0]?.rol ?? null;
 }
 
+async function isPremiumClub(clubId) {
+  const { rows } = await pool.query(
+    'SELECT plan, plan_expires_at FROM public.clubs WHERE id = $1',
+    [clubId]
+  );
+  if (!rows.length) return null;
+  const { plan, plan_expires_at } = rows[0];
+  if (plan !== 'premium') return false;
+  if (plan_expires_at && new Date(plan_expires_at) < new Date()) return false;
+  return true;
+}
+
 exports.getClubs = async (req, res) => {
   const userId = req.user?.userId ?? null;
   try {
@@ -26,7 +38,9 @@ exports.getClubs = async (req, res) => {
          MAX(CASE WHEN cm.usuario_id = $1 THEN cm.rol END) AS "miRol",
          c.current_book_title     AS "currentBookTitle",
          c.current_book_author    AS "currentBookAuthor",
-         c.current_book_cover_url AS "currentBookCoverUrl"
+         c.current_book_cover_url AS "currentBookCoverUrl",
+         c.plan,
+         c.plan_expires_at        AS "planExpiresAt"
        FROM public.clubs c
        JOIN public.users u ON u.id = c.creador_id
        LEFT JOIN public.club_members cm ON cm.club_id = c.id
@@ -74,6 +88,8 @@ exports.createClub = async (req, res) => {
       currentBookTitle: null,
       currentBookAuthor: null,
       currentBookCoverUrl: null,
+      plan: 'free',
+      planExpiresAt: null,
     });
   } catch (err) {
     await client.query('ROLLBACK');
@@ -88,6 +104,21 @@ exports.joinClub = async (req, res) => {
   const userId = req.user.userId;
   const { id: clubId } = req.params;
   try {
+    const premium = await isPremiumClub(clubId);
+    if (premium === null) return res.status(404).json({ message: 'Club no encontrado.' });
+    if (!premium) {
+      const { rows: countRows } = await pool.query(
+        'SELECT COUNT(*) FROM public.club_members WHERE club_id = $1',
+        [clubId]
+      );
+      if (parseInt(countRows[0].count) >= 10) {
+        return res.status(403).json({
+          message: 'Este club está lleno (máx. 10 miembros en plan gratuito).',
+          code: 'MEMBERS_LIMIT_REACHED',
+        });
+      }
+    }
+
     const { rows } = await pool.query(
       `INSERT INTO public.club_members (usuario_id, club_id, rol)
        VALUES ($1, $2, 'miembro')
@@ -143,7 +174,9 @@ exports.getClubDetail = async (req, res) => {
               MAX(CASE WHEN cm.usuario_id = $1 THEN cm.rol END) AS "miRol",
               c.current_book_title     AS "currentBookTitle",
               c.current_book_author    AS "currentBookAuthor",
-              c.current_book_cover_url AS "currentBookCoverUrl"
+              c.current_book_cover_url AS "currentBookCoverUrl",
+              c.plan,
+              c.plan_expires_at        AS "planExpiresAt"
        FROM public.clubs c
        JOIN public.users u ON u.id = c.creador_id
        LEFT JOIN public.club_members cm ON cm.club_id = c.id
@@ -189,6 +222,11 @@ exports.setCurrentBook = async (req, res) => {
     return res.status(403).json({ message: 'Solo el admin del club puede cambiar el libro actual.' });
   }
 
+  const premium = await isPremiumClub(clubId);
+  if (!premium) {
+    return res.status(403).json({ message: 'Esta función requiere plan Premium.', code: 'PREMIUM_REQUIRED' });
+  }
+
   const { title, author, coverUrl } = req.body;
   try {
     await pool.query(
@@ -212,6 +250,11 @@ exports.addMeeting = async (req, res) => {
   const miRol = await getMiRol(userId, clubId);
   if (miRol !== 'admin' && !isGlobalAdmin) {
     return res.status(403).json({ message: 'Solo el admin del club puede agregar reuniones.' });
+  }
+
+  const premium = await isPremiumClub(clubId);
+  if (!premium) {
+    return res.status(403).json({ message: 'Esta función requiere plan Premium.', code: 'PREMIUM_REQUIRED' });
   }
 
   const { titulo, fecha, ubicacion, descripcion } = req.body;
@@ -243,6 +286,11 @@ exports.deleteMeeting = async (req, res) => {
     return res.status(403).json({ message: 'Solo el admin del club puede eliminar reuniones.' });
   }
 
+  const premium = await isPremiumClub(clubId);
+  if (!premium) {
+    return res.status(403).json({ message: 'Esta función requiere plan Premium.', code: 'PREMIUM_REQUIRED' });
+  }
+
   try {
     await pool.query('DELETE FROM public.club_meetings WHERE id = $1 AND club_id = $2', [meetingId, clubId]);
     res.json({ message: 'Reunión eliminada.' });
@@ -260,6 +308,11 @@ exports.createPost = async (req, res) => {
   const miRol = await getMiRol(userId, clubId);
   if (!miRol && !isGlobalAdmin) {
     return res.status(403).json({ message: 'Debés ser miembro del club para postear.' });
+  }
+
+  const premium = await isPremiumClub(clubId);
+  if (!premium) {
+    return res.status(403).json({ message: 'Esta función requiere plan Premium.', code: 'PREMIUM_REQUIRED' });
   }
 
   const { contenido } = req.body;
@@ -285,6 +338,11 @@ exports.deletePost = async (req, res) => {
   const userId = req.user.userId;
   const isGlobalAdmin = req.user.role === 'admin';
   const { id: clubId, postId } = req.params;
+
+  const premium = await isPremiumClub(clubId);
+  if (!premium) {
+    return res.status(403).json({ message: 'Esta función requiere plan Premium.', code: 'PREMIUM_REQUIRED' });
+  }
 
   try {
     const { rows } = await pool.query(
@@ -325,6 +383,8 @@ exports.getNearbyClubs = async (req, res) => {
          c.current_book_title     AS "currentBookTitle",
          c.current_book_author    AS "currentBookAuthor",
          c.current_book_cover_url AS "currentBookCoverUrl",
+         c.plan,
+         c.plan_expires_at        AS "planExpiresAt",
          (6371 * acos(LEAST(1.0,
            cos(radians($1::float)) * cos(radians(c.lat)) * cos(radians(c.lng) - radians($2::float)) +
            sin(radians($1::float)) * sin(radians(c.lat))
@@ -345,6 +405,31 @@ exports.getNearbyClubs = async (req, res) => {
   } catch (err) {
     console.error('getNearbyClubs:', err);
     res.status(500).json({ message: 'Error al buscar clubes cercanos.' });
+  }
+};
+
+exports.upgradeClub = async (req, res) => {
+  const userId = req.user.userId;
+  const isGlobalAdmin = req.user.role === 'admin';
+  const { id: clubId } = req.params;
+
+  const miRol = await getMiRol(userId, clubId);
+  if (miRol !== 'admin' && !isGlobalAdmin) {
+    return res.status(403).json({ message: 'Solo el admin del club puede actualizar el plan.' });
+  }
+
+  try {
+    const { rows } = await pool.query(
+      `UPDATE public.clubs
+       SET plan = 'premium', plan_expires_at = NOW() + INTERVAL '30 days'
+       WHERE id = $1
+       RETURNING plan, plan_expires_at AS "planExpiresAt"`,
+      [clubId]
+    );
+    res.json({ message: 'Club actualizado a Premium.', ...rows[0] });
+  } catch (err) {
+    console.error('upgradeClub:', err);
+    res.status(500).json({ message: 'Error al actualizar el plan.' });
   }
 };
 
