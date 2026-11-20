@@ -19,20 +19,22 @@ interface Props {
   onAuthRequired?: () => void;
 }
 
+const STATUS_PILL = 'pill w-full justify-center gap-1 py-1.5';
+
 const STATUS_BADGE: Record<string, React.ReactNode> = {
   pending: (
-    <span className="flex items-center justify-center gap-1 text-xs font-mono bg-accent/20 text-foreground px-2 py-1 rounded-full w-full">
-      <Clock className="h-3 w-3 flex-shrink-0" /> Pendiente
+    <span className={cn(STATUS_PILL, 'pill-sun')}>
+      <Clock className="h-3 w-3 flex-shrink-0" aria-hidden="true" /> Pendiente
     </span>
   ),
   accepted: (
-    <span className="flex items-center justify-center gap-1 text-xs font-mono bg-primary/15 text-primary px-2 py-1 rounded-full w-full">
-      <CheckCircle className="h-3 w-3 flex-shrink-0" /> Aceptado
+    <span className={cn(STATUS_PILL, 'pill-forest')}>
+      <CheckCircle className="h-3 w-3 flex-shrink-0" aria-hidden="true" /> Aceptado
     </span>
   ),
   rejected: (
-    <span className="flex items-center justify-center gap-1 text-xs font-mono bg-destructive/10 text-destructive px-2 py-1 rounded-full w-full">
-      <XCircle className="h-3 w-3 flex-shrink-0" /> Rechazado
+    <span className={cn(STATUS_PILL, 'pill-outline text-destructive')}>
+      <XCircle className="h-3 w-3 flex-shrink-0" aria-hidden="true" /> Rechazado
     </span>
   ),
 };
@@ -53,8 +55,8 @@ const LibrosDisponiblesTab: React.FC<Props> = ({
         title: book.type === 'intercambio' ? 'Solicitud de intercambio enviada' : 'Solicitud de compra enviada',
         description: 'El administrador verá tu solicitud.',
       });
-    } catch (err: any) {
-      toast({ title: 'Error', description: err.message, variant: 'destructive' });
+    } catch (err) {
+      toast({ title: 'Error', description: (err as Error).message, variant: 'destructive' });
     } finally {
       setRequestingId(null);
     }
@@ -64,30 +66,31 @@ const LibrosDisponiblesTab: React.FC<Props> = ({
   if (allBooks.length === 0) return <EmptyState />;
 
   return (
-    <div className="space-y-5">
+    <div className="flex flex-col gap-7">
       {isAdmin && (
         <button
+          type="button"
           onClick={onGoToAdmin}
-          className="w-full flex items-center justify-between gap-4 bg-primary/8 border border-primary/20 rounded-xl px-5 py-4 text-left hover:bg-primary/12 transition-colors group"
+          className="card-surface border-line-strong w-full flex items-center justify-between gap-4 px-5 py-4 text-left transition-colors hover:border-forest group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         >
           <div className="flex items-center gap-3">
-            <div className="h-9 w-9 rounded-lg bg-primary/15 flex items-center justify-center flex-shrink-0">
-              <Settings className="h-4 w-4 text-primary" />
+            <div className="h-10 w-10 rounded-full bg-forest flex items-center justify-center flex-shrink-0">
+              <Settings className="h-4 w-4 text-sunlight" aria-hidden="true" />
             </div>
-            <div>
-              <p className="font-mono text-sm font-bold text-foreground">Gestionar catálogo</p>
-              <p className="text-xs text-muted-foreground mt-0.5">Agregá, editá o eliminá libros desde el panel de administración.</p>
+            <div className="flex flex-col gap-1">
+              <p className="label-mono text-forest">Gestionar catálogo</p>
+              <p className="font-serif text-base text-ink-muted">Agregá, editá o eliminá libros desde el panel de administración.</p>
             </div>
           </div>
-          <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors flex-shrink-0" />
+          <ChevronRight className="h-4 w-4 text-ink-muted group-hover:text-forest transition-colors flex-shrink-0" aria-hidden="true" />
         </button>
       )}
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-4">
+      <div className="cover-grid">
         {allBooks.map((book, i) => {
           const reqStatus = myRequests.get(Number(book.id));
           return (
-            <div key={book.id} className="flex flex-col gap-1.5">
+            <div key={book.id} className="flex min-w-0 flex-col gap-2">
               <BookCoverCard
                 title={book.title}
                 subtitle={book.author}
@@ -104,9 +107,9 @@ const LibrosDisponiblesTab: React.FC<Props> = ({
                     size="sm"
                     onClick={() => handleRequest(book)}
                     disabled={requestingId === book.id}
-                    className="w-full text-xs h-8 bg-accent text-accent-foreground hover:bg-accent/90"
+                    className="w-full"
                   >
-                    {requestingId === book.id ? '...' : <><ArrowLeftRight className="h-3 w-3 mr-1.5" />Solicitar</>}
+                    {requestingId === book.id ? '...' : <><ArrowLeftRight className="h-3 w-3" aria-hidden="true" />Solicitar</>}
                   </Button>
                 )
               )}

@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { BookOpen, Leaf } from 'lucide-react';
+import FloralSeal from './brand/FloralSeal';
 import { useToast } from '@/hooks/use-toast';
 import { motion } from 'framer-motion';
 import heroImage from '../assets/hero-bg.jpg';
@@ -48,18 +48,18 @@ const Login: React.FC = () => {
           alt="Cabaña de lectura acogedora"
           className="absolute inset-0 w-full h-full object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-wood-dark/80 to-wood-dark/40" />
-        <div className="relative z-10 flex flex-col justify-end p-12 text-primary-foreground">
+        <div className="absolute inset-0 bg-forest/80" />
+        <div className="relative z-10 flex flex-col justify-end p-12 text-warm-cream">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
           >
             <div className="flex items-center gap-3 mb-6">
-              <BookOpen className="h-10 w-10 text-sunlight" />
+              <FloralSeal size={48} centerColor="#5E5827" />
             </div>
-            <h1 className="text-5xl font-serif font-bold mb-4 text-primary-foreground">LibrosClub</h1>
-            <p className="text-xl text-primary-foreground/80 max-w-md font-light leading-relaxed">
+            <h1 className="text-6xl font-serif font-normal mb-4 text-warm-cream">LibrosClub</h1>
+            <p className="font-serif text-xl text-warm-cream max-w-md leading-relaxed">
               Intercambiá libros, descubrí clubes de lectura y conectá con lectores cerca tuyo.
             </p>
           </motion.div>
@@ -77,24 +77,23 @@ const Login: React.FC = () => {
           {/* Mobile logo */}
           <div className="lg:hidden text-center mb-8">
             <div className="flex items-center justify-center gap-2 mb-4">
-              <BookOpen className="h-8 w-8 text-primary" />
-              <Leaf className="h-6 w-6 text-forest" />
+              <FloralSeal size={48} />
             </div>
-            <h1 className="text-4xl font-serif font-bold text-foreground mb-2">LibrosClub</h1>
-            <p className="text-muted-foreground">Tu comunidad de libros favorita</p>
+            <h1 className="text-5xl font-serif font-normal text-forest mb-2">LibrosClub</h1>
+            <p className="font-serif text-lg text-ink-muted">Tu comunidad de libros favorita</p>
           </div>
 
-          <Card className="shadow-warm border-border bg-card">
+          <Card>
             <CardHeader className="text-center pb-2">
-              <CardTitle className="text-2xl font-serif text-foreground">Iniciar Sesión</CardTitle>
-              <CardDescription className="text-muted-foreground">
+              <CardTitle>Iniciar Sesión</CardTitle>
+              <CardDescription className="font-serif text-base">
                 Accedé a tu biblioteca personal
               </CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="username" className="text-foreground">Email</Label>
+                  <Label htmlFor="username">Email</Label>
                   <Input
                     id="username"
                     type="email"
@@ -102,11 +101,10 @@ const Login: React.FC = () => {
                     onChange={(e) => setUsername(e.target.value)}
                     placeholder="tu@email.com"
                     required
-                    className="bg-background border-border focus-visible:ring-primary"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="password" className="text-foreground">Contraseña</Label>
+                  <Label htmlFor="password">Contraseña</Label>
                   <Input
                     id="password"
                     type="password"
@@ -114,22 +112,21 @@ const Login: React.FC = () => {
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
                     required
-                    className="bg-background border-border focus-visible:ring-primary"
                   />
                 </div>
                 <Button
                   type="submit"
-                  className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
+                  className="w-full"
                   disabled={isLoading}
                 >
                   {isLoading ? 'Iniciando sesión...' : 'Entrar'}
                 </Button>
               </form>
 
-              <div className="mt-6 p-4 bg-muted rounded-lg border border-border">
-                <p className="text-sm text-foreground font-medium mb-2">Credenciales de prueba:</p>
-                <p className="text-sm text-muted-foreground">Email: ari@gmail.com</p>
-                <p className="text-sm text-muted-foreground">Contraseña: ari123</p>
+              <div className="mt-6 p-4 bg-warm-cream rounded-lg border-[1.5px] border-line">
+                <p className="label-mono text-wood-dark mb-2">Credenciales de prueba:</p>
+                <p className="font-serif text-base text-ink-muted">Email: ari@gmail.com</p>
+                <p className="font-serif text-base text-ink-muted">Contraseña: ari123</p>
               </div>
             </CardContent>
           </Card>

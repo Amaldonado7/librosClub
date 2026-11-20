@@ -9,10 +9,10 @@ const rateLimit = require('express-rate-limit');
 const authRoutes = require('./routes/auth');
 const booksRoutes = require('./routes/books');
 const protectedRoutes = require('./routes/protected');
-const usersRoutes = require('./routes/users');
 const googleBooksRoutes = require('./routes/googleBooks');
 const exchangeRoutes   = require('./routes/exchanges');
 const clubsRoutes      = require('./routes/clubs');
+const errorHandler     = require('./middlewares/errorHandler');
 
 // Crear la instancia de Express
 const app = express();
@@ -70,14 +70,13 @@ app.get('/api/health', (_req, res) => res.json({ status: 'ok' }));
 app.use('/api', protectedRoutes);
 app.use('/api/auth/login', loginLimiter);
 app.use('/api/auth/register', loginLimiter);
-app.use('/api/users/login', loginLimiter);
-app.use('/api/users/register', loginLimiter);
 app.use('/api/auth', authRoutes);
 app.use('/api/books', booksRoutes); // Rutas de libros
 app.use('/api/protected', protectedRoutes); // Rutas protegidas
-app.use('/api/users', usersRoutes); // Rutas de usuarios
 app.use('/api/google-books', googleBooksRoutes);
 app.use('/api/exchanges',   exchangeRoutes);
 app.use('/api/clubs',       clubsRoutes);
+
+app.use(errorHandler);
 
 module.exports = app;

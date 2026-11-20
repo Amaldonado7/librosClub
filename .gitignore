@@ -152,3 +152,4 @@ dist
 # IntelliJ
 .idea
 .DS_Store
+.mdd/

@@ -1,6 +1,7 @@
 import React from 'react';
-import { BookOpen } from 'lucide-react';
 import { motion } from 'framer-motion';
+import CoverArt from './brand/CoverArt';
+import { safeExternalUrl } from '@/lib/safe-url';
 
 export interface BookCoverCardProps {
   title: string;
@@ -21,54 +22,31 @@ const BookCoverCard: React.FC<BookCoverCardProps> = ({
   link,
   index = 0,
 }) => {
-  const badgeClass =
-    badgeVariant === 'primary'
-      ? 'bg-primary/90 text-primary-foreground'
-      : 'bg-accent text-accent-foreground';
+  const badgeClass = badgeVariant === 'primary' ? 'pill-forest' : 'pill-sun';
+  const safeLink = safeExternalUrl(link);
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.2, delay: Math.min(index * 0.04, 0.4) }}
-      className="group bg-card border border-border rounded-xl overflow-hidden shadow-card hover:shadow-warm transition-all duration-200 hover:-translate-y-0.5"
+      className="group flex min-w-0 flex-col gap-3 transition-transform duration-200 hover:-translate-y-0.5"
     >
-      <div className="relative aspect-[2/3] bg-muted overflow-hidden">
-        {thumbnail ? (
-          <img
-            src={thumbnail}
-            alt={title}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-            loading="lazy"
-          />
-        ) : (
-          <div className="w-full h-full flex flex-col items-center justify-center gap-2 px-3 text-center bg-gradient-to-br from-secondary to-muted">
-            <BookOpen className="h-7 w-7 text-primary/40" />
-            <p className="text-xs text-muted-foreground/60 font-mono line-clamp-3 leading-snug">
-              {title}
-            </p>
-          </div>
-        )}
+      <CoverArt src={thumbnail} title={title} subtitle={subtitle} size="card">
         {badge && (
-          <span className={`absolute top-2 left-2 text-xs font-mono font-bold px-2 py-0.5 rounded-md ${badgeClass}`}>
-            {badge}
-          </span>
+          <span className={`pill ${badgeClass} absolute top-3 left-[22px] z-10`}>{badge}</span>
         )}
-      </div>
+      </CoverArt>
 
-      <div className="p-3 space-y-1">
-        <p className="font-mono text-xs font-bold leading-snug line-clamp-2 text-foreground">
-          {title}
-        </p>
-        {subtitle && (
-          <p className="text-xs text-muted-foreground line-clamp-1">{subtitle}</p>
-        )}
-        {link && (
+      <div className="flex flex-col gap-1">
+        <p className="font-serif text-[19px] leading-snug text-forest line-clamp-2">{title}</p>
+        {subtitle && <p className="font-serif italic text-base text-ink-muted line-clamp-1">{subtitle}</p>}
+        {safeLink && (
           <a
-            href={link}
+            href={safeLink}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-block text-xs text-primary font-medium hover:underline pt-1"
+            className="inline-flex min-h-11 md:min-h-8 items-center self-start rounded-btn font-mono text-xs uppercase tracking-[0.08em] text-terracotta hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ring-offset-background"
           >
             Ver más →
           </a>
