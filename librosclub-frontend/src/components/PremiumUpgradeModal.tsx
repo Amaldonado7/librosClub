@@ -46,22 +46,22 @@ const PremiumUpgradeModal: React.FC<Props> = ({ onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm px-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-wood-dark/60 backdrop-blur-sm px-4">
       <motion.div
         initial={{ opacity: 0, scale: 0.95, y: 8 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
-        className="bg-card border border-border rounded-2xl p-6 w-full max-w-sm shadow-xl"
+        className="bg-surface border-[1.5px] border-line rounded-lg p-6 w-full max-w-sm shadow-xl"
       >
         {paid ? (
-          <div className="text-center py-6 space-y-4">
-            <div className="h-14 w-14 rounded-full bg-amber-100 flex items-center justify-center mx-auto">
-              <Crown className="h-7 w-7 text-amber-600" />
+          <div className="text-center py-6 flex flex-col items-center gap-4">
+            <div className="h-14 w-14 rounded-full bg-sunlight flex items-center justify-center">
+              <Crown className="h-7 w-7 text-wood-dark" aria-hidden="true" />
             </div>
             <div>
-              <p className="font-mono font-bold text-foreground">¡Plan Premium activado!</p>
-              <p className="text-sm text-muted-foreground mt-1">Tus funciones quedan disponibles por 30 días.</p>
+              <p className="font-serif text-2xl text-forest">¡Plan Premium activado!</p>
+              <p className="font-serif text-base text-ink-muted mt-1">Tus funciones quedan disponibles por 30 días.</p>
             </div>
-            <Button className="w-full font-mono bg-amber-600 hover:bg-amber-700 text-white" onClick={onClose}>
+            <Button variant="accent" className="w-full" onClick={onClose}>
               Cerrar
             </Button>
           </div>
@@ -69,73 +69,83 @@ const PremiumUpgradeModal: React.FC<Props> = ({ onClose }) => {
           <>
             <div className="flex items-center justify-between mb-5">
               <div className="flex items-center gap-2">
-                <Crown className="h-4 w-4 text-amber-600" />
-                <h3 className="font-mono font-bold text-sm text-foreground">Activar Premium</h3>
+                <Crown className="h-5 w-5 text-terracotta" aria-hidden="true" />
+                <h3 className="font-serif font-normal text-2xl text-forest">Activar Premium</h3>
               </div>
-              <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-colors">
-                <X className="h-4 w-4" />
+              <button
+                type="button"
+                onClick={onClose}
+                aria-label="Cerrar"
+                className="inline-flex h-11 w-11 items-center justify-center rounded-pill text-wood-dark transition-colors hover:bg-warm-cream focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ring-offset-surface"
+              >
+                <X className="h-4 w-4" aria-hidden="true" />
               </button>
             </div>
 
-            <div className="bg-amber-50 border border-amber-200 rounded-lg px-3 py-2.5 mb-5 flex items-center justify-between">
-              <span className="text-xs text-amber-700 font-mono">Plan Premium · 30 días</span>
-              <span className="text-sm font-bold text-amber-800 font-mono">$5</span>
+            <div className="card-surface border-line-strong px-3 py-2.5 mb-5 flex items-center justify-between">
+              <span className="pill pill-sun">Plan Premium · 30 días</span>
+              <span className="font-serif text-xl text-forest">$5</span>
             </div>
 
             <form onSubmit={handlePay} className="space-y-3.5">
               <div className="space-y-1.5">
-                <Label className="text-xs text-muted-foreground font-mono">Nombre en la tarjeta</Label>
+                <Label htmlFor="premium-card-name">Nombre en la tarjeta</Label>
                 <Input
+                  id="premium-card-name"
                   placeholder="JUAN PEREZ"
                   value={cardName}
                   onChange={(e) => setCardName(e.target.value.toUpperCase())}
-                  className="bg-background font-mono text-sm"
+                  className="font-mono"
                   required
                 />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-xs text-muted-foreground font-mono">Número de tarjeta</Label>
+                <Label htmlFor="premium-card-number">Número de tarjeta</Label>
                 <Input
+                  id="premium-card-number"
                   placeholder="0000 0000 0000 0000"
                   value={cardNumber}
                   onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
-                  className="bg-background font-mono text-sm tracking-widest"
+                  className="font-mono tracking-widest"
                   required
                 />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
-                  <Label className="text-xs text-muted-foreground font-mono">Vencimiento</Label>
+                  <Label htmlFor="premium-card-expiry">Vencimiento</Label>
                   <Input
+                    id="premium-card-expiry"
                     placeholder="MM/AA"
                     value={expiry}
                     onChange={(e) => setExpiry(formatExpiry(e.target.value))}
-                    className="bg-background font-mono text-sm"
+                    className="font-mono"
                     required
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs text-muted-foreground font-mono">CVV</Label>
+                  <Label htmlFor="premium-card-cvv">CVV</Label>
                   <Input
+                    id="premium-card-cvv"
                     placeholder="000"
                     value={cvv}
                     onChange={(e) => setCvv(e.target.value.replace(/\D/g, '').slice(0, 4))}
-                    className="bg-background font-mono text-sm"
+                    className="font-mono"
                     required
                   />
                 </div>
               </div>
-              <Button
-                type="submit"
-                disabled={isPaying}
-                className="w-full font-mono bg-amber-600 hover:bg-amber-700 text-white mt-1"
-              >
-                <Crown className="h-3.5 w-3.5 mr-1.5" />
-                {isPaying ? 'Procesando...' : 'Pagar $5'}
-              </Button>
+              <div className="flex flex-col-reverse gap-2 pt-1 sm:flex-row">
+                <Button type="button" variant="outline" className="sm:flex-1" onClick={onClose}>
+                  Cancelar
+                </Button>
+                <Button type="submit" variant="accent" disabled={isPaying} className="sm:flex-1">
+                  <Crown className="h-3.5 w-3.5" aria-hidden="true" />
+                  {isPaying ? 'Procesando...' : 'Pagar $5'}
+                </Button>
+              </div>
             </form>
 
-            <p className="text-center text-xs text-muted-foreground/50 mt-4 font-mono">
+            <p className="text-center label-mono normal-case tracking-normal text-ink-muted mt-4">
               * Entorno de demostración — no se realiza ningún cobro real
             </p>
           </>

@@ -4,8 +4,9 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Textarea } from '@/components/ui/textarea';
-import { BookOpen, Pencil, Trash2, Check, X, ImageOff } from 'lucide-react';
+import { Pencil, Trash2, Check, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import CoverArt from './brand/CoverArt';
 
 interface BookAdminRowProps {
   book: Book;
@@ -19,7 +20,6 @@ const BookAdminRow: React.FC<BookAdminRowProps> = ({ book, token, onUpdated, onD
   const [confirming, setConfirming] = useState(false);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const [imgError, setImgError] = useState(false);
 
   const [title, setTitle] = useState(book.title);
   const [author, setAuthor] = useState(book.author);
@@ -35,7 +35,6 @@ const BookAdminRow: React.FC<BookAdminRowProps> = ({ book, token, onUpdated, onD
     setGenre(book.genre ?? '');
     setCoverUrl(book.coverUrl ?? '');
     setDescription(book.description ?? '');
-    setImgError(false);
     setEditing(true);
     setConfirming(false);
   };
@@ -62,8 +61,8 @@ const BookAdminRow: React.FC<BookAdminRowProps> = ({ book, token, onUpdated, onD
       onUpdated(updated);
       setEditing(false);
       toast({ title: 'Guardado', description: `"${updated.title}" fue actualizado.` });
-    } catch (err: any) {
-      toast({ title: 'Error', description: err.message, variant: 'destructive' });
+    } catch (err) {
+      toast({ title: 'Error', description: (err as Error).message, variant: 'destructive' });
     } finally {
       setSaving(false);
     }
@@ -75,8 +74,8 @@ const BookAdminRow: React.FC<BookAdminRowProps> = ({ book, token, onUpdated, onD
       await booksAPI.deleteBook(token, book.id);
       onDeleted(book.id);
       toast({ title: 'Eliminado', description: `"${book.title}" fue eliminado del catálogo.` });
-    } catch (err: any) {
-      toast({ title: 'Error', description: err.message, variant: 'destructive' });
+    } catch (err) {
+      toast({ title: 'Error', description: (err as Error).message, variant: 'destructive' });
       setConfirming(false);
     } finally {
       setDeleting(false);
@@ -84,27 +83,22 @@ const BookAdminRow: React.FC<BookAdminRowProps> = ({ book, token, onUpdated, onD
   };
 
   const previewUrl = editing ? coverUrl : book.coverUrl;
-  const showPreview = previewUrl && !imgError;
+  const iconButton =
+    'inline-flex h-11 w-11 md:h-9 md:w-9 items-center justify-center rounded-pill transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ring-offset-surface disabled:opacity-50';
 
   return (
-    <div className="flex items-start gap-4 p-4 bg-card border-b border-border last:border-b-0 hover:bg-muted/30 transition-colors">
-      {/* Thumbnail */}
-      <div className="flex-shrink-0 w-12 h-[68px] rounded-md border border-border overflow-hidden bg-muted flex items-center justify-center">
-        {showPreview ? (
-          <img
-            src={previewUrl!}
-            alt={book.title}
-            className="w-full h-full object-cover"
-            onError={() => setImgError(true)}
-          />
-        ) : imgError ? (
-          <ImageOff className="h-4 w-4 text-muted-foreground/40" />
-        ) : (
-          <BookOpen className="h-4 w-4 text-muted-foreground/40" />
-        )}
-      </div>
+    <div
+      className={cn(
+        'flex items-start gap-4 p-4 transition-colors',
+        editing
+          ? 'bg-warm-cream'
+          : confirming
+            ? 'bg-destructive/10 border-l-4 border-destructive'
+            : 'bg-surface hover:bg-warm-cream/60'
+      )}
+    >
+      <CoverArt src={previewUrl || null} title={book.title} size="thumb" />
 
-      {/* Contenido */}
       <div className="flex-1 min-w-0">
         {editing ? (
           <div className="space-y-2">
@@ -113,92 +107,101 @@ const BookAdminRow: React.FC<BookAdminRowProps> = ({ book, token, onUpdated, onD
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="Título"
-                className="bg-background text-sm h-8"
+                aria-label="Título"
               />
               <Input
                 value={author}
                 onChange={(e) => setAuthor(e.target.value)}
                 placeholder="Autor"
-                className="bg-background text-sm h-8"
+                aria-label="Autor"
               />
               <Input
                 value={genre}
                 onChange={(e) => setGenre(e.target.value)}
                 placeholder="Género (opcional)"
-                className="bg-background text-sm h-8"
+                aria-label="Género (opcional)"
               />
               <Input
                 value={coverUrl}
-                onChange={(e) => { setCoverUrl(e.target.value); setImgError(false); }}
+                onChange={(e) => setCoverUrl(e.target.value)}
                 placeholder="URL de portada (opcional)"
-                className="bg-background text-sm h-8"
+                aria-label="URL de portada (opcional)"
               />
             </div>
             <Textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Descripción / condición del ejemplar"
-              className="bg-background text-sm resize-none h-16"
+              aria-label="Descripción / condición del ejemplar"
+              className="resize-none h-16 min-h-16"
             />
           </div>
         ) : (
           <div>
-            <p className="font-mono text-sm font-bold text-foreground truncate">{book.title}</p>
-            <p className="text-xs text-muted-foreground mt-0.5 truncate">{book.author}</p>
+            <p className="font-serif text-[17px] text-forest truncate">{book.title}</p>
+            <p className="text-sm text-ink-muted mt-0.5 truncate">{book.author}</p>
             <div className="flex gap-1.5 mt-1.5 flex-wrap">
               {book.type && (
-                <span className={cn(
-                  'inline-block text-xs font-mono px-2 py-0.5 rounded-md',
-                  book.type === 'intercambio'
-                    ? 'bg-accent/20 text-accent-foreground'
-                    : 'bg-primary/10 text-primary'
-                )}>
+                <span className={cn('pill', book.type === 'intercambio' ? 'pill-sun' : 'pill-forest')}>
                   {book.type === 'venta' ? 'En venta' : 'Para intercambio'}
                 </span>
               )}
               {book.genre && (
-                <span className="inline-block text-xs font-mono bg-muted text-muted-foreground px-2 py-0.5 rounded-md">
-                  {book.genre}
-                </span>
+                <span className="pill pill-outline text-ink-muted">{book.genre}</span>
               )}
             </div>
             {book.type === 'intercambio' && book.description && (
-              <p className="text-xs text-muted-foreground/70 mt-1.5 italic line-clamp-2">"{book.description}"</p>
+              <p className="font-serif text-sm text-ink-muted mt-1.5 italic line-clamp-2">"{book.description}"</p>
             )}
           </div>
         )}
       </div>
 
-      {/* Acciones */}
       <div className="flex items-center gap-2 flex-shrink-0">
         {editing ? (
           <>
-            <Button size="sm" onClick={handleSave} disabled={saving} className="h-8 px-3 bg-primary text-primary-foreground hover:bg-primary/90">
-              <Check className="h-3.5 w-3.5 mr-1" />
+            <Button size="sm" onClick={handleSave} disabled={saving} aria-label="Guardar">
+              <Check className="h-3.5 w-3.5" aria-hidden="true" />
               {saving ? 'Guardando...' : 'Guardar'}
             </Button>
-            <Button size="sm" variant="ghost" onClick={handleCancel} disabled={saving} className="h-8 px-3">
-              <X className="h-3.5 w-3.5" />
-            </Button>
+            <button
+              type="button"
+              onClick={handleCancel}
+              disabled={saving}
+              aria-label="Cancelar"
+              className={cn(iconButton, 'text-ink-muted hover:text-forest')}
+            >
+              <X className="h-4 w-4" aria-hidden="true" />
+            </button>
           </>
         ) : confirming ? (
           <>
-            <span className="text-xs text-destructive font-mono">¿Eliminar?</span>
-            <Button size="sm" onClick={handleDelete} disabled={deleting} className="h-8 px-3 bg-destructive text-destructive-foreground hover:bg-destructive/90">
+            <span className="label-mono text-destructive">¿Eliminar?</span>
+            <Button size="sm" variant="destructive" onClick={handleDelete} disabled={deleting}>
               {deleting ? '...' : 'Sí'}
             </Button>
-            <Button size="sm" variant="ghost" onClick={() => setConfirming(false)} disabled={deleting} className="h-8 px-3">
+            <Button size="sm" variant="outline" onClick={() => setConfirming(false)} disabled={deleting}>
               No
             </Button>
           </>
         ) : (
           <>
-            <Button size="sm" variant="ghost" onClick={handleEdit} className="h-8 px-3 text-muted-foreground hover:text-foreground">
-              <Pencil className="h-3.5 w-3.5" />
-            </Button>
-            <Button size="sm" variant="ghost" onClick={() => setConfirming(true)} className="h-8 px-3 text-muted-foreground hover:text-destructive">
-              <Trash2 className="h-3.5 w-3.5" />
-            </Button>
+            <button
+              type="button"
+              onClick={handleEdit}
+              aria-label="Editar"
+              className={cn(iconButton, 'text-ink-muted hover:text-forest')}
+            >
+              <Pencil className="h-4 w-4" aria-hidden="true" />
+            </button>
+            <button
+              type="button"
+              onClick={() => setConfirming(true)}
+              aria-label="Eliminar"
+              className={cn(iconButton, 'text-ink-muted hover:text-destructive')}
+            >
+              <Trash2 className="h-4 w-4" aria-hidden="true" />
+            </button>
           </>
         )}
       </div>

@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BookOpen, Calendar, MapPin, Users, Trash2, Send, Navigation, Crown, Sparkles } from 'lucide-react';
+import CoverArt from './brand/CoverArt';
 
 interface Props {
   club: Club;
@@ -45,12 +46,14 @@ const UpgradeBanner: React.FC<{
   onUpgrade: () => void;
   isUpgrading: boolean;
 }> = ({ isAdmin, onUpgrade, isUpgrading }) => (
-  <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 space-y-2">
+  <div className="card-surface border-line-strong p-4 space-y-2">
     <div className="flex items-center gap-2">
-      <Sparkles className="h-4 w-4 text-amber-600 flex-shrink-0" />
-      <p className="text-sm font-mono font-bold text-amber-800">Función Premium</p>
+      <span className="pill pill-sun gap-1">
+        <Sparkles className="h-3 w-3 flex-shrink-0" aria-hidden="true" />
+        Función Premium
+      </span>
     </div>
-    <p className="text-xs text-amber-700">
+    <p className="font-serif text-base text-wood-dark">
       El libro actual, las reuniones y el foro son exclusivos del plan Premium.
       {isAdmin ? ' Actualizá tu club para desbloquearlos.' : ' El admin del club puede actualizarlo.'}
     </p>
@@ -59,9 +62,10 @@ const UpgradeBanner: React.FC<{
         size="sm"
         onClick={onUpgrade}
         disabled={isUpgrading}
-        className="bg-amber-600 hover:bg-amber-700 text-white text-xs h-8 mt-1"
+        variant="accent"
+        className="mt-1"
       >
-        <Crown className="h-3.5 w-3.5 mr-1.5" />
+        <Crown className="h-3.5 w-3.5" aria-hidden="true" />
         {isUpgrading ? 'Actualizando...' : 'Activar Premium (demo)'}
       </Button>
     )}
@@ -108,7 +112,7 @@ const ClubDetailSheet: React.FC<Props> = ({ club, token, userId, onClose, onClub
     setIsLoading(true);
     clubsAPI.getClubDetail(token, club.id)
       .then(setDetail)
-      .catch((err: any) => toast({ title: 'Error', description: err.message, variant: 'destructive' }))
+      .catch((err: Error) => toast({ title: 'Error', description: err.message, variant: 'destructive' }))
       .finally(() => setIsLoading(false));
   }, [club.id, token]);
 
@@ -119,8 +123,8 @@ const ClubDetailSheet: React.FC<Props> = ({ club, token, userId, onClose, onClub
       setDetail((prev) => prev ? { ...prev, plan: result.plan as 'premium', planExpiresAt: result.planExpiresAt } : prev);
       onClubUpdated({ ...club, plan: result.plan as 'premium', planExpiresAt: result.planExpiresAt });
       toast({ title: '¡Club actualizado a Premium!', description: 'Ahora tenés acceso a todas las funciones.' });
-    } catch (err: any) {
-      toast({ title: 'Error', description: err.message, variant: 'destructive' });
+    } catch (err) {
+      toast({ title: 'Error', description: (err as Error).message, variant: 'destructive' });
     } finally {
       setIsUpgrading(false);
     }
@@ -145,11 +149,11 @@ const ClubDetailSheet: React.FC<Props> = ({ club, token, userId, onClose, onClub
       onClubUpdated({ ...club, ...updated });
       setEditingBook(false);
       toast({ title: 'Libro actual actualizado' });
-    } catch (err: any) {
+    } catch (err) {
       if (err instanceof ApiError && err.code === 'PREMIUM_REQUIRED') {
-        toast({ title: 'Plan Premium requerido', description: err.message, variant: 'destructive' });
+        toast({ title: 'Plan Premium requerido', description: (err as Error).message, variant: 'destructive' });
       } else {
-        toast({ title: 'Error', description: err.message, variant: 'destructive' });
+        toast({ title: 'Error', description: (err as Error).message, variant: 'destructive' });
       }
     } finally {
       setIsSavingBook(false);
@@ -164,8 +168,8 @@ const ClubDetailSheet: React.FC<Props> = ({ club, token, userId, onClose, onClub
       setDetail(updated);
       onClubUpdated({ ...club, currentBookTitle: null, currentBookAuthor: null, currentBookCoverUrl: null });
       setEditingBook(false);
-    } catch (err: any) {
-      toast({ title: 'Error', description: err.message, variant: 'destructive' });
+    } catch (err) {
+      toast({ title: 'Error', description: (err as Error).message, variant: 'destructive' });
     } finally {
       setIsSavingBook(false);
     }
@@ -198,11 +202,11 @@ const ClubDetailSheet: React.FC<Props> = ({ club, token, userId, onClose, onClub
       setMeetDesc('');
       setShowMeetingForm(false);
       toast({ title: 'Reunión agendada' });
-    } catch (err: any) {
+    } catch (err) {
       if (err instanceof ApiError && err.code === 'PREMIUM_REQUIRED') {
-        toast({ title: 'Plan Premium requerido', description: err.message, variant: 'destructive' });
+        toast({ title: 'Plan Premium requerido', description: (err as Error).message, variant: 'destructive' });
       } else {
-        toast({ title: 'Error', description: err.message, variant: 'destructive' });
+        toast({ title: 'Error', description: (err as Error).message, variant: 'destructive' });
       }
     } finally {
       setIsAddingMeeting(false);
@@ -214,8 +218,8 @@ const ClubDetailSheet: React.FC<Props> = ({ club, token, userId, onClose, onClub
     try {
       await clubsAPI.deleteMeeting(token, club.id, meetingId);
       setDetail((prev) => prev ? { ...prev, meetings: prev.meetings.filter((m) => m.id !== meetingId) } : prev);
-    } catch (err: any) {
-      toast({ title: 'Error', description: err.message, variant: 'destructive' });
+    } catch (err) {
+      toast({ title: 'Error', description: (err as Error).message, variant: 'destructive' });
     } finally {
       setDeletingMeetingId(null);
     }
@@ -242,8 +246,8 @@ const ClubDetailSheet: React.FC<Props> = ({ club, token, userId, onClose, onClub
       onClubUpdated({ ...club, lat: newLat, lng: newLng });
       setLocationSaved(true);
       toast({ title: 'Ubicación en mapa guardada' });
-    } catch (err: any) {
-      toast({ title: 'Error', description: err.message, variant: 'destructive' });
+    } catch (err) {
+      toast({ title: 'Error', description: (err as Error).message, variant: 'destructive' });
     } finally {
       setIsGeocodingLocation(false);
     }
@@ -257,11 +261,11 @@ const ClubDetailSheet: React.FC<Props> = ({ club, token, userId, onClose, onClub
       const post = await clubsAPI.createPost(token, club.id, postContent.trim());
       setDetail((prev) => prev ? { ...prev, posts: [post, ...prev.posts] } : prev);
       setPostContent('');
-    } catch (err: any) {
+    } catch (err) {
       if (err instanceof ApiError && err.code === 'PREMIUM_REQUIRED') {
-        toast({ title: 'Plan Premium requerido', description: err.message, variant: 'destructive' });
+        toast({ title: 'Plan Premium requerido', description: (err as Error).message, variant: 'destructive' });
       } else {
-        toast({ title: 'Error', description: err.message, variant: 'destructive' });
+        toast({ title: 'Error', description: (err as Error).message, variant: 'destructive' });
       }
     } finally {
       setIsPosting(false);
@@ -273,8 +277,8 @@ const ClubDetailSheet: React.FC<Props> = ({ club, token, userId, onClose, onClub
     try {
       await clubsAPI.deletePost(token, club.id, postId);
       setDetail((prev) => prev ? { ...prev, posts: prev.posts.filter((p) => p.id !== postId) } : prev);
-    } catch (err: any) {
-      toast({ title: 'Error', description: err.message, variant: 'destructive' });
+    } catch (err) {
+      toast({ title: 'Error', description: (err as Error).message, variant: 'destructive' });
     } finally {
       setDeletingPostId(null);
     }
@@ -283,37 +287,38 @@ const ClubDetailSheet: React.FC<Props> = ({ club, token, userId, onClose, onClub
   return (
     <Sheet open onOpenChange={(open) => { if (!open) onClose(); }}>
       <SheetContent side="right" className="w-full sm:max-w-lg flex flex-col p-0 overflow-hidden">
-        <SheetHeader className="px-6 py-5 border-b border-border flex-shrink-0">
+        <SheetHeader className="px-6 py-5 pr-16 border-b-[1.5px] border-line flex-shrink-0">
           <div className="flex items-center gap-2">
-            <SheetTitle className="font-mono text-base text-left leading-snug">{club.nombre}</SheetTitle>
+            <SheetTitle className="text-left leading-snug">{club.nombre}</SheetTitle>
             {isPremium && (
-              <span className="flex items-center gap-1 text-xs font-mono px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 border border-amber-200 flex-shrink-0">
-                <Crown className="h-3 w-3" />
+              <span className="pill pill-sun gap-1 flex-shrink-0">
+                <Crown className="h-3 w-3" aria-hidden="true" />
                 Premium
               </span>
             )}
           </div>
           <div className="flex flex-col gap-1 mt-1">
-            {club.descripcion && <p className="text-xs text-muted-foreground">{club.descripcion}</p>}
-            <div className="flex items-center gap-3 text-xs text-muted-foreground mt-0.5">
+            {club.descripcion && <p className="font-serif text-base text-ink-muted">{club.descripcion}</p>}
+            <div className="label-mono flex flex-wrap items-center gap-3 text-ink-muted mt-0.5">
               {club.ubicacion && (
                 <span className="flex items-center gap-1">
-                  <MapPin className="h-3 w-3" />
+                  <MapPin className="h-3 w-3" aria-hidden="true" />
                   {club.ubicacion}
                 </span>
               )}
               <span className="flex items-center gap-1">
-                <Users className="h-3 w-3" />
+                <Users className="h-3 w-3" aria-hidden="true" />
                 {club.miembros} {club.miembros === 1 ? 'miembro' : 'miembros'}
               </span>
               {detail?.miRol === 'admin' && club.ubicacion && !club.lat && !locationSaved && (
                 <button
                   onClick={handleGeocodeAndSave}
                   disabled={isGeocodingLocation}
-                  className="flex items-center gap-1 text-muted-foreground hover:text-primary transition-colors"
+                  className="label-mono inline-flex min-h-11 md:min-h-0 items-center gap-1 rounded-btn text-terracotta hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                   title="Guardar coordenadas para aparecer en 'Cerca tuyo'"
+                  aria-label="Guardar coordenadas para aparecer en 'Cerca tuyo'"
                 >
-                  <Navigation className="h-3 w-3" />
+                  <Navigation className="h-3 w-3" aria-hidden="true" />
                   {isGeocodingLocation ? 'Ubicando...' : 'Ubicar en mapa'}
                 </button>
               )}
@@ -324,21 +329,21 @@ const ClubDetailSheet: React.FC<Props> = ({ club, token, userId, onClose, onClub
         {isLoading ? (
           <div className="flex-1 p-6 space-y-4">
             {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="h-20 rounded-xl bg-muted animate-pulse" />
+              <div key={i} className="h-20 rounded-lg shimmer" aria-hidden="true" />
             ))}
           </div>
         ) : !detail ? (
           <div className="flex-1 flex items-center justify-center p-6">
-            <p className="text-sm text-muted-foreground">No se pudo cargar el detalle.</p>
+            <p className="font-serif text-lg text-ink-muted">No se pudo cargar el detalle.</p>
           </div>
         ) : (
-          <div className="flex-1 overflow-y-auto px-6 py-5 space-y-6">
+          <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
 
             {/* Libro actual */}
-            <section className="space-y-3">
+            <section className="card-surface p-4 space-y-3">
               <div className="flex items-center justify-between">
-                <h3 className="font-mono text-xs font-bold text-muted-foreground uppercase tracking-wide flex items-center gap-1.5">
-                  <BookOpen className="h-3.5 w-3.5" />
+                <h3 className="font-serif font-normal text-xl text-forest flex items-center gap-1.5">
+                  <BookOpen className="h-4 w-4 text-terracotta" aria-hidden="true" />
                   Libro actual
                 </h3>
                 {isClubAdmin && !editingBook && isPremium && (
@@ -349,7 +354,7 @@ const ClubDetailSheet: React.FC<Props> = ({ club, token, userId, onClose, onClub
                       setBookCoverUrl(detail.currentBookCoverUrl ?? '');
                       setEditingBook(true);
                     }}
-                    className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                    className="label-mono inline-flex min-h-11 md:min-h-0 items-center rounded-btn text-terracotta hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                   >
                     {detail.currentBookTitle ? 'Cambiar' : 'Agregar'}
                   </button>
@@ -359,33 +364,30 @@ const ClubDetailSheet: React.FC<Props> = ({ club, token, userId, onClose, onClub
               {!isPremium ? (
                 <UpgradeBanner isAdmin={isClubAdmin} onUpgrade={handleUpgrade} isUpgrading={isUpgrading} />
               ) : editingBook ? (
-                <div className="space-y-3 bg-card border border-border rounded-xl p-4">
+                <div className="space-y-3 bg-warm-cream border-[1.5px] border-line rounded-lg p-4">
                   <div className="space-y-2">
                     <div className="space-y-1">
-                      <Label className="text-xs text-muted-foreground font-mono">Título</Label>
+                      <Label>Título</Label>
                       <Input
                         value={bookTitle}
                         onChange={(e) => setBookTitle(e.target.value)}
                         placeholder="Ej: El nombre del viento"
-                        className="bg-background text-sm"
                       />
                     </div>
                     <div className="space-y-1">
-                      <Label className="text-xs text-muted-foreground font-mono">Autor</Label>
+                      <Label>Autor</Label>
                       <Input
                         value={bookAuthor}
                         onChange={(e) => setBookAuthor(e.target.value)}
                         placeholder="Ej: Patrick Rothfuss"
-                        className="bg-background text-sm"
                       />
                     </div>
                     <div className="space-y-1">
-                      <Label className="text-xs text-muted-foreground font-mono">URL de portada (opcional)</Label>
+                      <Label>URL de portada (opcional)</Label>
                       <Input
                         value={bookCoverUrl}
                         onChange={(e) => setBookCoverUrl(e.target.value)}
                         placeholder="https://..."
-                        className="bg-background text-sm"
                       />
                     </div>
                   </div>
@@ -394,7 +396,7 @@ const ClubDetailSheet: React.FC<Props> = ({ club, token, userId, onClose, onClub
                       size="sm"
                       onClick={handleSaveBook}
                       disabled={isSavingBook}
-                      className="bg-accent text-accent-foreground hover:bg-accent/90 text-xs h-8"
+                      variant="accent"
                     >
                       {isSavingBook ? 'Guardando...' : 'Guardar'}
                     </Button>
@@ -402,7 +404,6 @@ const ClubDetailSheet: React.FC<Props> = ({ club, token, userId, onClose, onClub
                       size="sm"
                       variant="ghost"
                       onClick={() => setEditingBook(false)}
-                      className="text-xs h-8"
                     >
                       Cancelar
                     </Button>
@@ -412,7 +413,7 @@ const ClubDetailSheet: React.FC<Props> = ({ club, token, userId, onClose, onClub
                         variant="ghost"
                         onClick={handleClearBook}
                         disabled={isSavingBook}
-                        className="text-xs h-8 text-destructive hover:text-destructive ml-auto"
+                        className="text-destructive hover:bg-destructive hover:text-destructive-foreground ml-auto"
                       >
                         Quitar
                       </Button>
@@ -420,29 +421,19 @@ const ClubDetailSheet: React.FC<Props> = ({ club, token, userId, onClose, onClub
                   </div>
                 </div>
               ) : detail.currentBookTitle ? (
-                <div className="flex items-center gap-3 bg-card border border-border rounded-xl p-3">
-                  <div className="w-10 h-14 rounded-md overflow-hidden bg-muted flex-shrink-0 flex items-center justify-center">
-                    {detail.currentBookCoverUrl ? (
-                      <img
-                        src={detail.currentBookCoverUrl}
-                        alt={detail.currentBookTitle}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <BookOpen className="h-4 w-4 text-muted-foreground/40" />
-                    )}
-                  </div>
+                <div className="flex items-center gap-3">
+                  <CoverArt src={detail.currentBookCoverUrl} title={detail.currentBookTitle} size="thumb" />
                   <div>
-                    <p className="font-mono text-sm font-bold text-foreground leading-snug">
+                    <p className="font-serif text-lg text-forest leading-snug">
                       {detail.currentBookTitle}
                     </p>
                     {detail.currentBookAuthor && (
-                      <p className="text-xs text-muted-foreground mt-0.5">{detail.currentBookAuthor}</p>
+                      <p className="font-serif italic text-base text-ink-muted mt-0.5">{detail.currentBookAuthor}</p>
                     )}
                   </div>
                 </div>
               ) : (
-                <p className="text-xs text-muted-foreground">
+                <p className="font-serif text-base text-ink-muted">
                   {isClubAdmin
                     ? 'No hay libro actual. Hacé click en "Agregar".'
                     : 'El admin del club no ha elegido un libro todavía.'}
@@ -450,19 +441,19 @@ const ClubDetailSheet: React.FC<Props> = ({ club, token, userId, onClose, onClub
               )}
             </section>
 
-            <Separator />
+            <Separator className="bg-line" />
 
             {/* Próximas reuniones */}
-            <section className="space-y-3">
+            <section className="card-surface p-4 space-y-3">
               <div className="flex items-center justify-between">
-                <h3 className="font-mono text-xs font-bold text-muted-foreground uppercase tracking-wide flex items-center gap-1.5">
-                  <Calendar className="h-3.5 w-3.5" />
+                <h3 className="font-serif font-normal text-xl text-forest flex items-center gap-1.5">
+                  <Calendar className="h-4 w-4 text-terracotta" aria-hidden="true" />
                   Próximas reuniones
                 </h3>
                 {isClubAdmin && isPremium && (
                   <button
                     onClick={() => setShowMeetingForm((v) => !v)}
-                    className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                    className="label-mono inline-flex min-h-11 md:min-h-0 items-center rounded-btn text-terracotta hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                   >
                     {showMeetingForm ? 'Cancelar' : 'Agendar'}
                   </button>
@@ -470,7 +461,7 @@ const ClubDetailSheet: React.FC<Props> = ({ club, token, userId, onClose, onClub
               </div>
 
               {!isPremium ? (
-                <p className="text-xs text-muted-foreground">Disponible en plan Premium.</p>
+                <p className="font-serif text-base text-ink-muted">Disponible en plan Premium.</p>
               ) : (
                 <>
                   <AnimatePresence>
@@ -480,34 +471,31 @@ const ClubDetailSheet: React.FC<Props> = ({ club, token, userId, onClose, onClub
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -6 }}
                         onSubmit={handleAddMeeting}
-                        className="bg-card border border-border rounded-xl p-4 space-y-3"
+                        className="bg-warm-cream border-[1.5px] border-line rounded-lg p-4 space-y-3"
                       >
                         <div className="space-y-2">
                           <div className="space-y-1">
-                            <Label className="text-xs text-muted-foreground font-mono">Título *</Label>
+                            <Label>Título *</Label>
                             <Input
                               value={meetTitulo}
                               onChange={(e) => setMeetTitulo(e.target.value)}
                               placeholder="Ej: Encuentro mensual"
-                              className="bg-background text-sm"
                             />
                           </div>
                           <div className="space-y-1">
-                            <Label className="text-xs text-muted-foreground font-mono">Fecha y hora *</Label>
+                            <Label>Fecha y hora *</Label>
                             <Input
                               type="datetime-local"
                               value={meetFecha}
                               onChange={(e) => setMeetFecha(e.target.value)}
-                              className="bg-background text-sm"
                             />
                           </div>
                           <div className="space-y-1">
-                            <Label className="text-xs text-muted-foreground font-mono">Lugar</Label>
+                            <Label>Lugar</Label>
                             <Input
                               value={meetUbicacion}
                               onChange={(e) => setMeetUbicacion(e.target.value)}
                               placeholder="Ej: Café La Paloma, Palermo"
-                              className="bg-background text-sm"
                             />
                           </div>
                         </div>
@@ -515,7 +503,7 @@ const ClubDetailSheet: React.FC<Props> = ({ club, token, userId, onClose, onClub
                           type="submit"
                           disabled={isAddingMeeting || !meetTitulo.trim() || !meetFecha}
                           size="sm"
-                          className="bg-accent text-accent-foreground hover:bg-accent/90 text-xs h-8"
+                          variant="accent"
                         >
                           {isAddingMeeting ? 'Agendando...' : 'Agendar reunión'}
                         </Button>
@@ -524,34 +512,35 @@ const ClubDetailSheet: React.FC<Props> = ({ club, token, userId, onClose, onClub
                   </AnimatePresence>
 
                   {detail.meetings.length === 0 ? (
-                    <p className="text-xs text-muted-foreground">No hay reuniones próximas agendadas.</p>
+                    <p className="font-serif text-base text-ink-muted">No hay reuniones próximas agendadas.</p>
                   ) : (
                     <div className="space-y-2">
                       {detail.meetings.map((m: ClubMeeting) => (
                         <div
                           key={m.id}
-                          className="flex items-start gap-3 bg-card border border-border rounded-xl px-4 py-3"
+                          className="flex items-start gap-3 bg-warm-cream border-[1.5px] border-line rounded-lg px-4 py-3"
                         >
                           <div className="flex-1 min-w-0 space-y-0.5">
-                            <p className="font-mono text-sm font-bold text-foreground">{m.titulo}</p>
-                            <p className="text-xs text-muted-foreground">{fmtDate(m.fecha)}</p>
+                            <p className="font-serif text-lg text-forest">{m.titulo}</p>
+                            <p className="label-mono text-ink-muted normal-case tracking-[0.04em]">{fmtDate(m.fecha)}</p>
                             {m.ubicacion && (
-                              <p className="text-xs text-muted-foreground flex items-center gap-1">
-                                <MapPin className="h-3 w-3" />
+                              <p className="label-mono text-ink-muted normal-case tracking-[0.04em] flex items-center gap-1">
+                                <MapPin className="h-3 w-3" aria-hidden="true" />
                                 {m.ubicacion}
                               </p>
                             )}
                             {m.descripcion && (
-                              <p className="text-xs text-muted-foreground mt-1">{m.descripcion}</p>
+                              <p className="font-serif text-base text-ink-muted mt-1">{m.descripcion}</p>
                             )}
                           </div>
                           {isClubAdmin && (
                             <button
                               onClick={() => handleDeleteMeeting(m.id)}
                               disabled={deletingMeetingId === m.id}
-                              className="text-muted-foreground hover:text-destructive transition-colors flex-shrink-0 p-0.5 mt-0.5"
+                              className="inline-flex h-11 w-11 md:h-9 md:w-9 items-center justify-center rounded-pill text-ink-muted hover:text-destructive transition-colors flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50"
+                              aria-label="Eliminar"
                             >
-                              <Trash2 className="h-3.5 w-3.5" />
+                              <Trash2 className="h-4 w-4" aria-hidden="true" />
                             </button>
                           )}
                         </div>
@@ -562,17 +551,17 @@ const ClubDetailSheet: React.FC<Props> = ({ club, token, userId, onClose, onClub
               )}
             </section>
 
-            <Separator />
+            <Separator className="bg-line" />
 
             {/* Foro */}
-            <section className="space-y-3 pb-4">
-              <h3 className="font-mono text-xs font-bold text-muted-foreground uppercase tracking-wide flex items-center gap-1.5">
-                <Users className="h-3.5 w-3.5" />
+            <section className="card-surface p-4 space-y-3">
+              <h3 className="font-serif font-normal text-xl text-forest flex items-center gap-1.5">
+                <Users className="h-4 w-4 text-terracotta" aria-hidden="true" />
                 Foro del club
               </h3>
 
               {!isPremium ? (
-                <p className="text-xs text-muted-foreground">Disponible en plan Premium.</p>
+                <p className="font-serif text-base text-ink-muted">Disponible en plan Premium.</p>
               ) : (
                 <>
                   <form onSubmit={handlePost} className="flex gap-2 items-end">
@@ -580,7 +569,7 @@ const ClubDetailSheet: React.FC<Props> = ({ club, token, userId, onClose, onClub
                       value={postContent}
                       onChange={(e) => setPostContent(e.target.value)}
                       placeholder="Escribí algo para el club..."
-                      className="bg-card text-sm resize-none"
+                      className="resize-none"
                       rows={2}
                       maxLength={1000}
                       onKeyDown={(e) => {
@@ -594,34 +583,36 @@ const ClubDetailSheet: React.FC<Props> = ({ club, token, userId, onClose, onClub
                       type="submit"
                       size="icon"
                       disabled={isPosting || !postContent.trim()}
-                      className="h-9 w-9 flex-shrink-0 bg-accent text-accent-foreground hover:bg-accent/90"
+                      aria-label="Enviar"
+                      className="h-11 w-11 md:h-9 md:w-9 flex-shrink-0 bg-accent text-accent-foreground hover:bg-accent/90"
                     >
-                      <Send className="h-3.5 w-3.5" />
+                      <Send className="h-3.5 w-3.5" aria-hidden="true" />
                     </Button>
                   </form>
 
                   {detail.posts.length === 0 ? (
-                    <p className="text-xs text-muted-foreground">Nadie ha publicado todavía. ¡Sé el primero!</p>
+                    <p className="font-serif text-base text-ink-muted">Nadie ha publicado todavía. ¡Sé el primero!</p>
                   ) : (
                     <div className="space-y-2">
                       {detail.posts.map((p: ClubPost) => (
-                        <div key={p.id} className="bg-card border border-border rounded-xl px-4 py-3 space-y-1">
+                        <div key={p.id} className="bg-warm-cream border-[1.5px] border-line rounded-lg px-4 py-3 space-y-1">
                           <div className="flex items-center justify-between gap-2">
                             <div className="flex items-center gap-2">
-                              <span className="font-mono text-xs font-bold text-foreground">{p.autorUsername}</span>
-                              <span className="text-xs text-muted-foreground">{timeAgo(p.createdAt)}</span>
+                              <span className="label-mono text-wood-dark">{p.autorUsername}</span>
+                              <span className="label-mono text-ink-muted normal-case">{timeAgo(p.createdAt)}</span>
                             </div>
                             {(isClubAdmin || p.autorId === userId) && (
                               <button
                                 onClick={() => handleDeletePost(p.id)}
                                 disabled={deletingPostId === p.id}
-                                className="text-muted-foreground hover:text-destructive transition-colors flex-shrink-0 p-0.5"
+                                className="inline-flex h-11 w-11 md:h-9 md:w-9 items-center justify-center rounded-pill text-ink-muted hover:text-destructive transition-colors flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50"
+                                aria-label="Eliminar"
                               >
-                                <Trash2 className="h-3.5 w-3.5" />
+                                <Trash2 className="h-4 w-4" aria-hidden="true" />
                               </button>
                             )}
                           </div>
-                          <p className="text-sm text-foreground whitespace-pre-wrap break-words">{p.contenido}</p>
+                          <p className="font-serif text-base text-wood-dark whitespace-pre-wrap break-words">{p.contenido}</p>
                         </div>
                       ))}
                     </div>

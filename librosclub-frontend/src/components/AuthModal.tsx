@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,6 +7,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { authAPI } from '../utils/api';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import FloralSeal from './brand/FloralSeal';
 
 interface Props {
   open: boolean;
@@ -24,6 +25,14 @@ const AuthModal: React.FC<Props> = ({ open, onClose, defaultMode = 'login', onSu
   const { toast } = useToast();
 
   const reset = () => { setUsername(''); setPassword(''); };
+
+  useEffect(() => {
+    if (open) {
+      setMode(defaultMode);
+      setUsername('');
+      setPassword('');
+    }
+  }, [open, defaultMode]);
 
   const handleModeChange = (m: 'login' | 'register') => {
     setMode(m);
@@ -47,8 +56,8 @@ const AuthModal: React.FC<Props> = ({ open, onClose, defaultMode = 'login', onSu
       reset();
       onClose();
       onSuccess?.();
-    } catch (err: any) {
-      toast({ title: 'Error', description: err.message, variant: 'destructive' });
+    } catch (err) {
+      toast({ title: 'Error', description: (err as Error).message, variant: 'destructive' });
     } finally {
       setIsLoading(false);
     }
@@ -57,23 +66,23 @@ const AuthModal: React.FC<Props> = ({ open, onClose, defaultMode = 'login', onSu
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="sm:max-w-sm">
-        <DialogHeader>
-          <DialogTitle className="font-serif text-xl">
+        <DialogHeader className="flex-row items-center gap-3 space-y-0 text-left">
+          <FloralSeal size={40} centerColor="#FFFBF2" />
+          <DialogTitle>
             {mode === 'login' ? 'Iniciar sesión' : 'Crear cuenta'}
           </DialogTitle>
         </DialogHeader>
 
-        <div className="flex gap-1 p-1 bg-muted rounded-lg mb-1">
+        <div className="flex gap-1 p-1 rounded-pill border-[1.5px] border-control mb-1">
           {(['login', 'register'] as const).map((m) => (
             <button
               key={m}
               type="button"
               onClick={() => handleModeChange(m)}
+              aria-pressed={mode === m}
               className={cn(
-                'flex-1 py-1.5 text-sm font-mono rounded-md transition-colors',
-                mode === m
-                  ? 'bg-background text-foreground shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground'
+                'chip flex-1 justify-center border-0 px-3 ring-offset-surface',
+                mode === m ? 'bg-forest text-warm-cream' : 'text-wood-dark hover:bg-warm-cream'
               )}
             >
               {m === 'login' ? 'Iniciar sesión' : 'Registrarse'}
@@ -83,8 +92,9 @@ const AuthModal: React.FC<Props> = ({ open, onClose, defaultMode = 'login', onSu
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-1.5">
-            <Label className="text-xs font-mono text-muted-foreground">Email</Label>
+            <Label htmlFor="auth-email">Email</Label>
             <Input
+              id="auth-email"
               type="email"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
@@ -94,8 +104,9 @@ const AuthModal: React.FC<Props> = ({ open, onClose, defaultMode = 'login', onSu
             />
           </div>
           <div className="space-y-1.5">
-            <Label className="text-xs font-mono text-muted-foreground">Contraseña</Label>
+            <Label htmlFor="auth-password">Contraseña</Label>
             <Input
+              id="auth-password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -104,10 +115,10 @@ const AuthModal: React.FC<Props> = ({ open, onClose, defaultMode = 'login', onSu
               minLength={6}
             />
             {mode === 'register' && (
-              <p className="text-xs text-muted-foreground">Mínimo 6 caracteres.</p>
+              <p className="text-sm text-ink-muted">Mínimo 6 caracteres.</p>
             )}
           </div>
-          <Button type="submit" disabled={isLoading} className="w-full bg-primary text-primary-foreground hover:bg-primary/90">
+          <Button type="submit" disabled={isLoading} className="w-full">
             {isLoading ? 'Cargando...' : mode === 'login' ? 'Entrar' : 'Crear cuenta'}
           </Button>
         </form>
