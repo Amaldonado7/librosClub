@@ -38,7 +38,6 @@ exports.getGoogleFeed = async ({ topic = 'fiction', limit = 10, lang = 'es', pag
 
   const url = new URL('https://www.googleapis.com/books/v1/volumes');
   url.searchParams.set('q', `subject:${topic}`);
-  url.searchParams.set('orderBy', 'newest');
   url.searchParams.set('maxResults', String(safeLimit));
   url.searchParams.set('startIndex', String(startIndex));
   url.searchParams.set('printType', 'books');
