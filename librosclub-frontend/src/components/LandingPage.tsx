@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { BookOpen, Rss, Search, Library, ArrowRight, Users, MapPin, ArrowLeftRight, Check, Crown, X } from 'lucide-react';
+import { Rss, Search, Library, ArrowRight, Users, MapPin, ArrowLeftRight, Check, Crown, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 import AuthModal from './AuthModal';
 import PremiumUpgradeModal from './PremiumUpgradeModal';
+import FloralSeal from './brand/FloralSeal';
+import Sticker from './brand/Sticker';
 import { useAuth } from '../contexts/AuthContext';
 
 const features = [
@@ -40,6 +42,29 @@ const features = [
   },
 ];
 
+const FREE_INCLUDED = [
+  'Feed de novedades por género',
+  'Búsqueda de libros',
+  'Catálogo de la comunidad',
+  'Intercambios P2P',
+  'Unirse a clubes de lectura',
+  'Hasta 10 miembros por club',
+];
+
+const FREE_EXCLUDED = ['Libro actual del club', 'Reuniones del club', 'Foro del club'];
+
+const PREMIUM_INCLUDED = [
+  'Todo lo del plan Gratis',
+  'Sin límite de miembros',
+  'Libro actual del club',
+  'Reuniones y agenda del club',
+  'Foro asíncrono del club',
+];
+
+const DARK_FOCUS = 'focus-visible:ring-sunlight';
+const TEXT_LINK =
+  'inline-flex min-h-11 sm:min-h-0 items-center underline underline-offset-2 rounded-btn focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2';
+
 const LandingPage: React.FC = () => {
   const navigate = useNavigate();
   const { isAuthenticated, isPremium, username } = useAuth();
@@ -54,258 +79,247 @@ const LandingPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Hero */}
-      <section className="bg-sidebar relative overflow-hidden">
-        <div className="absolute inset-0 pointer-events-none" aria-hidden>
-          <div className="absolute -top-32 -right-32 w-[480px] h-[480px] rounded-full bg-sidebar-primary/10 blur-3xl" />
-          <div className="absolute -bottom-40 -left-20 w-96 h-96 rounded-full bg-sidebar-primary/8 blur-3xl" />
-        </div>
-
-        <div className="relative max-w-5xl mx-auto px-6 py-20 sm:py-28">
-          <div className="flex items-center gap-3 mb-10">
-            <BookOpen className="h-7 w-7 text-sidebar-primary" />
-            <span className="font-serif text-xl font-bold text-sidebar-foreground">LibrosClub</span>
+      <section className="bg-forest text-warm-cream overflow-hidden">
+        <div className="mx-auto max-w-[1200px] px-6 pt-7 pb-[104px] flex flex-col gap-14">
+          <div className="flex items-center gap-3">
+            <FloralSeal variant="mark" size={34} centerColor="#5E5827" />
+            <span className="font-mono text-[15px] font-semibold uppercase tracking-[0.16em]">LibrosClub</span>
           </div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl font-bold text-sidebar-foreground leading-tight max-w-2xl">
-              Tu comunidad de lectores
-            </h1>
-            <p className="mt-5 text-lg text-sidebar-foreground/70 max-w-xl leading-relaxed" style={{ fontFamily: 'Lora, serif' }}>
-              Descubrí nuevos libros, intercambialos con otros lectores, unite a clubes de lectura y encontrá tu próxima historia favorita.
-            </p>
-          </motion.div>
-
-          <motion.div
-            className="mt-8 flex flex-wrap gap-3"
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.15 }}
-          >
-            <Button
-              size="lg"
-              className="bg-sidebar-primary text-sidebar-primary-foreground hover:bg-sidebar-primary/90 font-mono"
-              onClick={() => navigate('/app')}
-            >
-              Explorar la plataforma
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-            {!isAuthenticated && (
-              <Button
-                size="lg"
-                variant="outline"
-                className="border-sidebar-foreground/30 text-sidebar-foreground bg-transparent hover:bg-sidebar-accent/50 hover:text-sidebar-foreground font-mono"
-                onClick={() => openAuth('register')}
+          <div className="grid items-center gap-12 lg:grid-cols-[minmax(0,1fr)_auto]">
+            <div className="flex min-w-0 flex-col gap-6">
+              <motion.div
+                className="flex flex-col gap-5"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
               >
-                Crear cuenta gratis
-              </Button>
-            )}
-          </motion.div>
+                <p className="accent-hand text-2xl text-sunlight">hola libro nuevo</p>
+                <h1 className="font-serif font-normal text-[clamp(52px,7vw,92px)] leading-[0.98] max-w-2xl">
+                  Tu comunidad de lectores
+                </h1>
+                <p className="font-serif text-[21px] leading-relaxed max-w-xl">
+                  Descubrí nuevos libros, intercambialos con otros lectores, unite a clubes de lectura y encontrá tu próxima historia favorita.
+                </p>
+              </motion.div>
 
-          <motion.p
-            className="mt-5 text-xs text-sidebar-foreground/40 font-mono"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-          >
-            {isAuthenticated ? (
-              <>
-                Hola, <span className="text-sidebar-foreground/60">{username}</span>.{' '}
-                <button
+              <motion.div
+                className="flex flex-wrap gap-3"
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.15 }}
+              >
+                <Button
+                  variant="accent"
+                  size="lg"
+                  className={`${DARK_FOCUS} ring-offset-forest`}
                   onClick={() => navigate('/app')}
-                  className="underline underline-offset-2 hover:text-sidebar-foreground/70 transition-colors"
                 >
-                  Ir a la plataforma
-                </button>
-              </>
-            ) : (
-              <>
-                ¿Ya tenés cuenta?{' '}
-                <button
-                  onClick={() => openAuth('login')}
-                  className="underline underline-offset-2 hover:text-sidebar-foreground/70 transition-colors"
-                >
-                  Iniciá sesión
-                </button>
-              </>
-            )}
-          </motion.p>
+                  Explorar la plataforma
+                  <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                </Button>
+                {!isAuthenticated && (
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className={`border-warm-cream text-warm-cream hover:bg-warm-cream hover:text-forest ${DARK_FOCUS} ring-offset-forest`}
+                    onClick={() => openAuth('register')}
+                  >
+                    Crear cuenta gratis
+                  </Button>
+                )}
+              </motion.div>
+
+              <motion.p
+                className="font-mono text-[13px] tracking-[0.04em]"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.5, delay: 0.3 }}
+              >
+                {isAuthenticated ? (
+                  <>
+                    Hola, <span className="text-sunlight">{username}</span>.{' '}
+                    <button
+                      onClick={() => navigate('/app')}
+                      className={`${TEXT_LINK} text-sunlight ${DARK_FOCUS} ring-offset-forest`}
+                    >
+                      Ir a la plataforma
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    ¿Ya tenés cuenta?{' '}
+                    <button
+                      onClick={() => openAuth('login')}
+                      className={`${TEXT_LINK} text-sunlight ${DARK_FOCUS} ring-offset-forest`}
+                    >
+                      Iniciá sesión
+                    </button>
+                  </>
+                )}
+              </motion.p>
+            </div>
+
+            <div className="relative mx-auto w-[260px] sm:w-[400px] max-w-full">
+              <FloralSeal variant="emblem" size={400} label="LibrosClub" className="h-auto w-full max-w-full" />
+              <Sticker tone="sun" rotate={-8} className="absolute bottom-[8%] left-0">
+                Olor a libro nuevo
+              </Sticker>
+              <Sticker tone="terracotta" rotate={6} className="absolute top-[6%] right-0">
+                Compro, apilo, algún día leo
+              </Sticker>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* Features */}
-      <section className="max-w-5xl mx-auto px-6 py-20">
-        <div className="mb-12">
-          <h2 className="font-mono text-2xl sm:text-3xl font-bold text-foreground">
+      <section className="mx-auto max-w-[1200px] px-6 py-[104px] flex flex-col gap-12">
+        <div className="flex flex-col gap-3">
+          <h2 className="font-serif font-normal text-[clamp(36px,5vw,52px)] leading-[1.05] text-forest">
             Todo lo que encontrás
           </h2>
-          <p className="mt-2 text-muted-foreground">
-            Una plataforma pensada para los que aman leer.
-          </p>
+          <p className="font-serif text-xl text-ink-muted">Una plataforma pensada para los que aman leer.</p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(min(320px,100%),1fr))] gap-5">
           {features.map((f, i) => {
             const Icon = f.icon;
             return (
               <motion.div
                 key={f.title}
-                className="bg-card border border-border rounded-xl p-6"
+                className="card-surface p-7 flex flex-col gap-4"
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.35, delay: i * 0.07 }}
               >
-                <div className="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10 mb-4">
-                  <Icon className="h-5 w-5 text-primary" />
+                <div className="flex items-center justify-between">
+                  <span className="inline-flex h-[52px] w-[52px] items-center justify-center rounded-full bg-forest">
+                    <Icon className="h-6 w-6 text-sunlight" aria-hidden="true" />
+                  </span>
+                  <span className="font-mono text-[13px] font-medium text-terracotta" aria-hidden="true">
+                    {String(i + 1).padStart(2, '0')}
+                  </span>
                 </div>
-                <h3 className="font-mono text-sm font-bold text-foreground mb-1.5">{f.title}</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">{f.description}</p>
+                <h3 className="font-serif font-normal text-[27px] leading-tight text-forest">{f.title}</h3>
+                <p className="font-serif text-lg leading-relaxed text-wood-dark">{f.description}</p>
               </motion.div>
             );
           })}
         </div>
 
-        <div className="mt-12 text-center">
-          <Button
-            size="lg"
-            onClick={() => navigate('/app')}
-            className="bg-primary text-primary-foreground hover:bg-primary/90 font-mono"
-          >
+        <div className="text-center">
+          <Button size="lg" onClick={() => navigate('/app')}>
             Entrar a la plataforma
-            <ArrowRight className="ml-2 h-4 w-4" />
+            <ArrowRight className="h-4 w-4 text-sunlight" aria-hidden="true" />
           </Button>
         </div>
       </section>
 
-      {/* Pricing */}
-      <section className="bg-muted/40 border-y border-border py-20">
-        <div className="max-w-5xl mx-auto px-6">
-          <div className="mb-12">
-            <h2 className="font-mono text-2xl sm:text-3xl font-bold text-foreground">
-              Planes
-            </h2>
-            <p className="mt-2 text-muted-foreground">
-              Empezá gratis. Desbloqueá todo con Premium.
-            </p>
+      <section className="bg-wood-dark text-warm-cream">
+        <div className="mx-auto max-w-[1000px] px-6 py-[104px] flex flex-col gap-12">
+          <div className="flex flex-col items-center gap-3 text-center">
+            <p className="accent-hand text-2xl text-sunlight">para cada lector</p>
+            <h2 className="font-serif font-normal text-[clamp(36px,5vw,52px)] leading-[1.05]">Planes</h2>
+            <p className="font-serif text-xl">Empezá gratis. Desbloqueá todo con Premium.</p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {/* Free */}
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(min(380px,100%),1fr))] gap-6">
             <motion.div
-              className="bg-card border border-border rounded-xl p-6 flex flex-col gap-4"
+              className="bg-warm-cream text-wood-dark rounded-lg px-8 py-9 flex flex-col gap-6"
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.35, delay: 0.05 }}
             >
-              <div>
-                <p className="font-mono text-xs text-muted-foreground uppercase tracking-widest mb-1">Gratis</p>
-                <p className="font-mono text-3xl font-bold text-foreground">$0</p>
-                <p className="text-xs text-muted-foreground mt-1">Para siempre</p>
+              <div className="flex flex-col gap-1">
+                <p className="label-mono text-terracotta">Gratis</p>
+                <p className="font-serif text-[60px] leading-none text-forest">$0</p>
+                <p className="font-mono text-[13px] text-ink-muted">Para siempre</p>
               </div>
-              <ul className="flex flex-col gap-2.5 text-sm flex-1">
-                {[
-                  'Feed de novedades por género',
-                  'Búsqueda de libros',
-                  'Catálogo de la comunidad',
-                  'Intercambios P2P',
-                  'Unirse a clubes de lectura',
-                  'Hasta 10 miembros por club',
-                ].map((item) => (
-                  <li key={item} className="flex items-start gap-2 text-foreground">
-                    <Check className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
+              <ul className="flex flex-col gap-3 font-serif text-lg flex-1">
+                {FREE_INCLUDED.map((item) => (
+                  <li key={item} className="flex items-start gap-2.5">
+                    <Check className="h-5 w-5 text-forest flex-shrink-0 mt-0.5" aria-hidden="true" />
                     {item}
                   </li>
                 ))}
-                {[
-                  'Libro actual del club',
-                  'Reuniones del club',
-                  'Foro del club',
-                ].map((item) => (
-                  <li key={item} className="flex items-start gap-2 text-muted-foreground/50">
-                    <X className="h-4 w-4 flex-shrink-0 mt-0.5" />
+                {FREE_EXCLUDED.map((item) => (
+                  <li key={item} className="flex items-start gap-2.5 text-ink-muted">
+                    <X className="h-5 w-5 text-terracotta flex-shrink-0 mt-0.5" aria-hidden="true" />
                     {item}
                   </li>
                 ))}
               </ul>
               <Button
                 variant="outline"
-                className="w-full font-mono"
+                className="w-full ring-offset-warm-cream"
                 onClick={() => isAuthenticated ? navigate('/app') : openAuth('register')}
               >
                 {isAuthenticated ? 'Ir a la plataforma' : 'Empezar gratis'}
               </Button>
             </motion.div>
 
-            {/* Premium */}
             <motion.div
-              className="bg-card border-2 border-amber-400 rounded-xl p-6 flex flex-col gap-4 relative"
+              className="relative bg-forest text-warm-cream rounded-lg px-8 py-9 flex flex-col gap-6"
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.35, delay: 0.12 }}
             >
-              <div className="absolute top-4 right-4">
-                <span className="flex items-center gap-1 text-xs font-mono px-2.5 py-1 rounded-full bg-amber-100 text-amber-700 border border-amber-200">
-                  <Crown className="h-3 w-3" />
-                  Premium
-                </span>
-              </div>
-              <div>
-                <p className="font-mono text-xs text-muted-foreground uppercase tracking-widest mb-1">Premium</p>
-                <p className="font-mono text-3xl font-bold text-foreground">
-                  $5<span className="text-base font-normal text-muted-foreground">/mes</span>
+              <Sticker tone="sun" rotate={4} decorative={false} className="absolute -top-4 right-6">
+                <Crown className="h-3.5 w-3.5" aria-hidden="true" />
+                Premium
+              </Sticker>
+              <div className="flex flex-col gap-1">
+                <p className="label-mono text-sunlight">Premium</p>
+                <p className="font-serif text-[60px] leading-none">
+                  $5<span className="font-mono text-base">/mes</span>
                 </p>
-                <p className="text-xs text-muted-foreground mt-1">Por club</p>
+                <p className="font-mono text-[13px] text-sidebar-muted">Por club</p>
               </div>
-              <ul className="flex flex-col gap-2.5 text-sm flex-1">
-                {[
-                  'Todo lo del plan Gratis',
-                  'Sin límite de miembros',
-                  'Libro actual del club',
-                  'Reuniones y agenda del club',
-                  'Foro asíncrono del club',
-                ].map((item) => (
-                  <li key={item} className="flex items-start gap-2 text-foreground">
-                    <Check className="h-4 w-4 text-amber-600 flex-shrink-0 mt-0.5" />
+              <ul className="flex flex-col gap-3 font-serif text-lg flex-1">
+                {PREMIUM_INCLUDED.map((item) => (
+                  <li key={item} className="flex items-start gap-2.5">
+                    <Check className="h-5 w-5 text-sunlight flex-shrink-0 mt-0.5" aria-hidden="true" />
                     {item}
                   </li>
                 ))}
               </ul>
 
-              {/* CTA según estado de auth */}
               {isPremium ? (
                 <div className="flex flex-col gap-2">
-                  <div className="flex items-center justify-center gap-2 py-2 rounded-lg bg-amber-50 border border-amber-200">
-                    <Crown className="h-4 w-4 text-amber-600" />
-                    <span className="text-sm font-mono font-bold text-amber-700">Ya sos Premium</span>
-                  </div>
-                  <Button variant="outline" className="w-full font-mono text-xs" onClick={() => navigate('/app')}>
+                  <span className="pill pill-sun justify-center gap-1.5 py-2 text-xs">
+                    <Crown className="h-4 w-4" aria-hidden="true" />
+                    Ya sos Premium
+                  </span>
+                  <Button
+                    variant="outline"
+                    className={`w-full border-warm-cream text-warm-cream hover:bg-warm-cream hover:text-forest ${DARK_FOCUS} ring-offset-forest`}
+                    onClick={() => navigate('/app')}
+                  >
                     Ir a la plataforma
                   </Button>
                 </div>
               ) : isAuthenticated ? (
                 <Button
-                  className="w-full font-mono bg-amber-600 hover:bg-amber-700 text-white"
+                  variant="accent"
+                  className={`w-full ${DARK_FOCUS} ring-offset-forest`}
                   onClick={() => setPaymentOpen(true)}
                 >
-                  <Crown className="h-3.5 w-3.5 mr-1.5" />
+                  <Crown className="h-3.5 w-3.5" aria-hidden="true" />
                   Activar Premium
                 </Button>
               ) : (
                 <div className="flex flex-col gap-2">
                   <Button
-                    className="w-full font-mono bg-amber-600 hover:bg-amber-700 text-white"
+                    variant="accent"
+                    className={`w-full ${DARK_FOCUS} ring-offset-forest`}
                     onClick={() => openAuth('login')}
                   >
                     Iniciá sesión para activar
                   </Button>
-                  <p className="text-center text-xs text-muted-foreground">
+                  <p className="text-center font-mono text-[13px]">
                     ¿No tenés cuenta?{' '}
                     <button
-                      className="underline underline-offset-2 hover:text-foreground transition-colors"
+                      className={`${TEXT_LINK} text-sunlight ${DARK_FOCUS} ring-offset-forest`}
                       onClick={() => openAuth('register')}
                     >
                       Registrate
@@ -318,13 +332,9 @@ const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t border-border py-8 px-6">
-        <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-muted-foreground font-mono">
-          <div className="flex items-center gap-2">
-            <BookOpen className="h-4 w-4" />
-            <span>LibrosClub</span>
-          </div>
+      <footer className="bg-forest text-warm-cream">
+        <div className="mx-auto max-w-[1200px] px-6 py-7 flex flex-col sm:flex-row items-center justify-between gap-3 font-mono">
+          <span className="text-sm font-semibold uppercase tracking-[0.16em]">LibrosClub</span>
           <span className="text-xs">Trabajo final · Analista de Sistemas · Escuela Da Vinci</span>
         </div>
       </footer>

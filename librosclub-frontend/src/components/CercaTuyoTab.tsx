@@ -6,6 +6,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { MapPin, Users, BookOpen, Navigation, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { escapeHtml } from '@/lib/escape-html';
 
 interface Props {
   token: string | null;
@@ -15,10 +16,10 @@ interface Props {
 const RADIUS_OPTIONS = [5, 10, 20, 50] as const;
 
 function makeClubIcon(isMember: boolean) {
-  const color = isMember ? '#5c7a6b' : '#7c6e5b';
+  const color = isMember ? '#5E5827' : '#91551F';
   return L.divIcon({
     className: '',
-    html: `<div style="width:26px;height:26px;background:${color};border:3px solid white;border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,0.35)"></div>`,
+    html: `<div style="width:26px;height:26px;background:${color};border:3px solid #FFFBF2;border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,0.35)"></div>`,
     iconSize: [26, 26],
     iconAnchor: [13, 13],
     popupAnchor: [0, -16],
@@ -27,7 +28,7 @@ function makeClubIcon(isMember: boolean) {
 
 const userIcon = L.divIcon({
   className: '',
-  html: `<div style="width:18px;height:18px;background:#3b82f6;border:3px solid white;border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,0.35)"></div>`,
+  html: `<div style="width:18px;height:18px;background:#F2D661;border:3px solid #492710;border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,0.35)"></div>`,
   iconSize: [18, 18],
   iconAnchor: [9, 9],
 });
@@ -69,13 +70,15 @@ const CercaTuyoTab: React.FC<Props> = ({ token, onViewClub }) => {
     nearbyClubs.forEach((club) => {
       if (club.lat == null || club.lng == null) return;
       const isMember = !!club.miRol;
+      const members = Number(club.miembros);
+      const meta = 'font-family:IBM Plex Mono,monospace;font-size:11px;color:#6B4A2A';
       const popup = L.popup({ maxWidth: 240 }).setContent(`
-        <div style="font-family:monospace;font-size:13px">
-          <strong>${club.nombre}</strong><br/>
-          ${club.ubicacion ? `<span style="font-size:11px;color:#666">📍 ${club.ubicacion}</span><br/>` : ''}
-          <span style="font-size:11px;color:#666">👥 ${club.miembros} ${club.miembros === 1 ? 'miembro' : 'miembros'}</span>
-          ${club.distanceKm !== undefined ? `<br/><span style="font-size:11px;color:#666">📏 ${club.distanceKm.toFixed(1)} km</span>` : ''}
-          ${club.currentBookTitle ? `<br/><span style="font-size:11px;color:#666">📖 ${club.currentBookTitle}</span>` : ''}
+        <div style="color:#492710">
+          <strong style="font-family:Sorts Mill Goudy,Georgia,serif;font-size:16px;font-weight:400">${escapeHtml(club.nombre)}</strong><br/>
+          ${club.ubicacion ? `<span style="${meta}">📍 ${escapeHtml(club.ubicacion)}</span><br/>` : ''}
+          <span style="${meta}">👥 ${String(members)} ${members === 1 ? 'miembro' : 'miembros'}</span>
+          ${club.distanceKm !== undefined ? `<br/><span style="${meta}">📏 ${Number(club.distanceKm).toFixed(1)} km</span>` : ''}
+          ${club.currentBookTitle ? `<br/><span style="${meta}">📖 ${escapeHtml(club.currentBookTitle)}</span>` : ''}
         </div>
       `);
       L.marker([club.lat!, club.lng!], { icon: makeClubIcon(isMember) })
@@ -93,8 +96,8 @@ const CercaTuyoTab: React.FC<Props> = ({ token, onViewClub }) => {
       if (mapRef.current) {
         mapRef.current.setView([lat, lng], r <= 5 ? 14 : r <= 10 ? 13 : r <= 20 ? 12 : 11);
       }
-    } catch (err: any) {
-      toast({ title: 'Error', description: err.message, variant: 'destructive' });
+    } catch (err) {
+      toast({ title: 'Error', description: (err as Error).message, variant: 'destructive' });
     } finally {
       setIsLoadingClubs(false);
     }
@@ -141,10 +144,12 @@ const CercaTuyoTab: React.FC<Props> = ({ token, onViewClub }) => {
   if (locationError) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center gap-4">
-        <MapPin className="h-10 w-10 text-muted-foreground/30" />
-        <p className="font-mono text-sm font-bold text-foreground">Ubicación no disponible</p>
-        <p className="text-xs text-muted-foreground max-w-xs">{locationError}</p>
-        <Button size="sm" onClick={requestLocation} variant="outline">
+        <span className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-forest">
+          <MapPin className="h-8 w-8 text-sunlight" aria-hidden="true" />
+        </span>
+        <p className="font-serif text-[27px] text-forest">Ubicación no disponible</p>
+        <p className="font-serif text-lg text-ink-muted max-w-xs">{locationError}</p>
+        <Button onClick={requestLocation} variant="outline">
           Intentar de nuevo
         </Button>
       </div>
@@ -154,43 +159,40 @@ const CercaTuyoTab: React.FC<Props> = ({ token, onViewClub }) => {
   if (!location) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center gap-4">
-        <div className="h-16 w-16 rounded-2xl bg-primary/10 flex items-center justify-center">
-          <Navigation className="h-8 w-8 text-primary" />
-        </div>
-        <div>
-          <p className="font-mono text-sm font-bold text-foreground">Encontrá clubes cerca tuyo</p>
-          <p className="text-xs text-muted-foreground mt-1 max-w-xs">
+        <span className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-forest">
+          <Navigation className="h-8 w-8 text-sunlight" aria-hidden="true" />
+        </span>
+        <div className="flex flex-col gap-1 items-center">
+          <p className="font-serif text-[27px] text-forest">Encontrá clubes cerca tuyo</p>
+          <p className="font-serif text-lg text-ink-muted max-w-xs">
             Necesitamos tu ubicación para mostrar los clubes en el mapa.
           </p>
         </div>
-        <Button onClick={requestLocation} disabled={isLocating} className="bg-accent text-accent-foreground hover:bg-accent/90">
-          {isLocating ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Obteniendo ubicación...</> : <><Navigation className="h-4 w-4 mr-2" /> Compartir ubicación</>}
+        <Button onClick={requestLocation} disabled={isLocating} variant="accent">
+          {isLocating ? <><Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> Obteniendo ubicación...</> : <><Navigation className="h-4 w-4" aria-hidden="true" /> Compartir ubicación</>}
         </Button>
       </div>
     );
   }
 
   return (
-    <div className="space-y-4">
+    <div className="flex flex-col gap-5">
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <div>
-          <h3 className="font-mono text-sm font-bold text-foreground">Clubes cercanos</h3>
-          <p className="text-xs text-muted-foreground mt-0.5">
+        <div className="flex flex-col gap-1">
+          <h2 className="font-serif font-normal text-[30px] leading-tight text-forest">Clubes cercanos</h2>
+          <p className="label-mono text-ink-muted normal-case tracking-[0.04em]">
             {isLoadingClubs ? 'Buscando...' : `${clubs.length} ${clubs.length === 1 ? 'club' : 'clubes'} en un radio de ${radius} km`}
           </p>
         </div>
-        <div className="flex items-center gap-1.5">
-          <span className="text-xs text-muted-foreground font-mono mr-1">Radio:</span>
+        <div className="flex flex-wrap items-center gap-1.5">
+          <span className="label-mono text-ink-muted mr-1">Radio:</span>
           {RADIUS_OPTIONS.map((r) => (
             <button
               key={r}
+              type="button"
+              aria-pressed={radius === r}
               onClick={() => handleRadiusChange(r)}
-              className={cn(
-                'px-2.5 py-1 rounded-full text-xs font-mono border transition-colors',
-                radius === r
-                  ? 'bg-primary text-primary-foreground border-primary'
-                  : 'bg-card text-muted-foreground border-border hover:border-primary hover:text-primary'
-              )}
+              className={cn('chip px-3.5', radius === r ? 'chip-on' : 'chip-off')}
             >
               {r} km
             </button>
@@ -200,39 +202,39 @@ const CercaTuyoTab: React.FC<Props> = ({ token, onViewClub }) => {
 
       <div
         ref={mapContainerRef}
-        className="w-full rounded-xl overflow-hidden border border-border isolate"
+        className="w-full rounded-lg overflow-hidden border-[1.5px] border-line isolate"
         style={{ height: 420 }}
       />
 
       {clubs.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        <div className="grid grid-cols-[repeat(auto-fill,minmax(min(260px,100%),1fr))] gap-3">
           {clubs.map((club) => (
             <div
               key={club.id}
-              className="bg-card border border-border rounded-xl p-4 space-y-2 hover:shadow-sm transition-shadow"
+              className="card-surface p-4 flex flex-col gap-2"
             >
               <div className="flex items-start justify-between gap-2">
-                <p className="font-mono text-sm font-bold text-foreground leading-snug">{club.nombre}</p>
+                <p className="font-serif text-[22px] leading-snug text-forest">{club.nombre}</p>
                 {club.distanceKm !== undefined && (
-                  <span className="text-xs font-mono text-muted-foreground flex-shrink-0 bg-muted px-2 py-0.5 rounded-full">
+                  <span className="pill pill-outline text-ink-muted flex-shrink-0">
                     {club.distanceKm.toFixed(1)} km
                   </span>
                 )}
               </div>
-              <div className="flex flex-col gap-1 text-xs text-muted-foreground">
+              <div className="label-mono flex flex-col gap-1 text-ink-muted normal-case tracking-[0.04em]">
                 {club.ubicacion && (
                   <span className="flex items-center gap-1.5">
-                    <MapPin className="h-3.5 w-3.5 flex-shrink-0" />
+                    <MapPin className="h-3.5 w-3.5 flex-shrink-0" aria-hidden="true" />
                     {club.ubicacion}
                   </span>
                 )}
                 <span className="flex items-center gap-1.5">
-                  <Users className="h-3.5 w-3.5 flex-shrink-0" />
+                  <Users className="h-3.5 w-3.5 flex-shrink-0" aria-hidden="true" />
                   {club.miembros} {club.miembros === 1 ? 'miembro' : 'miembros'}
                 </span>
                 {club.currentBookTitle && (
                   <span className="flex items-center gap-1.5">
-                    <BookOpen className="h-3.5 w-3.5 flex-shrink-0" />
+                    <BookOpen className="h-3.5 w-3.5 flex-shrink-0" aria-hidden="true" />
                     <span className="truncate">{club.currentBookTitle}</span>
                   </span>
                 )}
@@ -242,7 +244,7 @@ const CercaTuyoTab: React.FC<Props> = ({ token, onViewClub }) => {
                   size="sm"
                   variant="outline"
                   onClick={() => onViewClub(club)}
-                  className="w-full text-xs h-7"
+                  className="w-full"
                 >
                   Ver detalle
                 </Button>
@@ -254,8 +256,8 @@ const CercaTuyoTab: React.FC<Props> = ({ token, onViewClub }) => {
 
       {!isLoadingClubs && clubs.length === 0 && (
         <div className="text-center py-8">
-          <p className="text-sm text-muted-foreground">No hay clubes con ubicación registrada en {radius} km.</p>
-          <p className="text-xs text-muted-foreground mt-1">Los admins de clubes pueden agregar su ubicación desde el detalle del club.</p>
+          <p className="font-serif text-lg text-ink-muted">No hay clubes con ubicación registrada en {radius} km.</p>
+          <p className="font-serif text-base text-ink-muted mt-1">Los admins de clubes pueden agregar su ubicación desde el detalle del club.</p>
         </div>
       )}
     </div>

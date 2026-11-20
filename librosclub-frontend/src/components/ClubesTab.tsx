@@ -35,51 +35,51 @@ const ClubCard: React.FC<{
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: Math.min(index * 0.05, 0.4) }}
       className={cn(
-        'bg-card border border-border rounded-xl p-5 flex flex-col gap-3 transition-shadow',
-        isMember ? 'hover:shadow-card cursor-pointer' : 'hover:shadow-card'
+        'card-surface p-5 flex flex-col gap-3 transition-colors',
+        isMember ? 'hover:border-line-strong cursor-pointer' : 'hover:border-line-strong'
       )}
       onClick={isMember ? () => onView(club) : undefined}
     >
       <div className="flex items-start justify-between gap-2">
-        <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-          <BookOpen className="h-5 w-5 text-primary" />
+        <div className="h-10 w-10 rounded-full bg-forest flex items-center justify-center flex-shrink-0">
+          <BookOpen className="h-5 w-5 text-sunlight" aria-hidden="true" />
         </div>
         <div className="flex items-center gap-1.5 flex-shrink-0">
           {club.plan === 'premium' && (
-            <span className="flex items-center gap-1 text-xs font-mono px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 border border-amber-200">
-              <Crown className="h-3 w-3" />
+            <span className="pill pill-sun gap-1">
+              <Crown className="h-3 w-3" aria-hidden="true" />
               Premium
             </span>
           )}
           {isMember && (
-            <span className="text-xs font-mono px-2.5 py-1 rounded-full bg-primary/10 text-primary border border-primary/20">
+            <span className="pill pill-forest">
               {isClubAdmin ? 'Admin' : 'Miembro'}
             </span>
           )}
         </div>
       </div>
 
-      <div className="flex-1 space-y-1">
-        <p className="font-mono text-sm font-bold text-foreground leading-snug">{club.nombre}</p>
+      <div className="flex-1 flex flex-col gap-1">
+        <p className="font-serif text-[22px] leading-snug text-forest">{club.nombre}</p>
         {club.descripcion && (
-          <p className="text-xs text-muted-foreground line-clamp-2">{club.descripcion}</p>
+          <p className="font-serif text-base text-ink-muted line-clamp-2">{club.descripcion}</p>
         )}
       </div>
 
-      <div className="flex flex-col gap-1.5 text-xs text-muted-foreground">
+      <div className="label-mono flex flex-col gap-1.5 text-ink-muted normal-case tracking-[0.04em]">
         {club.ubicacion && (
           <span className="flex items-center gap-1.5">
-            <MapPin className="h-3.5 w-3.5 flex-shrink-0" />
+            <MapPin className="h-3.5 w-3.5 flex-shrink-0" aria-hidden="true" />
             {club.ubicacion}
           </span>
         )}
         <span className="flex items-center gap-1.5">
-          <Users className="h-3.5 w-3.5 flex-shrink-0" />
+          <Users className="h-3.5 w-3.5 flex-shrink-0" aria-hidden="true" />
           {club.miembros} {club.miembros === 1 ? 'miembro' : 'miembros'}
         </span>
         {club.currentBookTitle && (
           <span className="flex items-center gap-1.5">
-            <BookOpen className="h-3.5 w-3.5 flex-shrink-0" />
+            <BookOpen className="h-3.5 w-3.5 flex-shrink-0" aria-hidden="true" />
             <span className="truncate">{club.currentBookTitle}</span>
           </span>
         )}
@@ -88,11 +88,11 @@ const ClubCard: React.FC<{
       {!isAdmin && (
         isClubAdmin ? (
           <div className="flex items-center justify-between pt-1">
-            <div className="flex items-center gap-1.5 text-xs font-mono text-muted-foreground">
-              <Check className="h-3.5 w-3.5 text-primary" />
+            <div className="label-mono flex items-center gap-1.5 text-ink-muted">
+              <Check className="h-3.5 w-3.5 text-forest" aria-hidden="true" />
               Sos el creador
             </div>
-            <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
+            <ChevronRight className="h-3.5 w-3.5 text-ink-muted" aria-hidden="true" />
           </div>
         ) : isMember ? (
           <div className="flex gap-2 pt-1">
@@ -101,12 +101,12 @@ const ClubCard: React.FC<{
               variant="outline"
               onClick={(e) => { e.stopPropagation(); onLeave(club); }}
               disabled={loading}
-              className="flex-1 text-xs h-8 text-muted-foreground hover:text-destructive hover:border-destructive"
+              className="flex-1 hover:bg-destructive hover:border-destructive"
             >
               Salir
             </Button>
-            <div className="flex items-center text-xs text-muted-foreground gap-1 px-2">
-              Ver detalle <ChevronRight className="h-3 w-3" />
+            <div className="label-mono flex items-center text-ink-muted gap-1 px-2">
+              Ver detalle <ChevronRight className="h-3 w-3" aria-hidden="true" />
             </div>
           </div>
         ) : (
@@ -114,9 +114,10 @@ const ClubCard: React.FC<{
             size="sm"
             onClick={(e) => { e.stopPropagation(); onJoin(club); }}
             disabled={loading}
-            className="w-full text-xs h-8 bg-accent text-accent-foreground hover:bg-accent/90"
+            variant="accent"
+            className="w-full"
           >
-            <Plus className="h-3 w-3 mr-1.5" />
+            <Plus className="h-3 w-3" aria-hidden="true" />
             Unirse
           </Button>
         )
@@ -208,8 +209,8 @@ const ClubesTab: React.FC<Props> = ({ token, isAdmin, userId, onAuthRequired }) 
       setNombre(''); setDescripcion(''); setUbicacion(''); setLat(null); setLng(null);
       setShowForm(false);
       toast({ title: 'Club creado', description: `"${club.nombre}" fue creado.` });
-    } catch (err: any) {
-      toast({ title: 'Error', description: err.message, variant: 'destructive' });
+    } catch (err) {
+      toast({ title: 'Error', description: (err as Error).message, variant: 'destructive' });
     } finally {
       setIsCreating(false);
     }
@@ -224,8 +225,8 @@ const ClubesTab: React.FC<Props> = ({ token, isAdmin, userId, onAuthRequired }) 
         c.id === club.id ? { ...c, miembros: c.miembros + 1, miRol: 'miembro' } : c
       ));
       toast({ title: `Te uniste a "${club.nombre}"` });
-    } catch (err: any) {
-      toast({ title: 'Error', description: err.message, variant: 'destructive' });
+    } catch (err) {
+      toast({ title: 'Error', description: (err as Error).message, variant: 'destructive' });
     } finally {
       setActionId(null);
     }
@@ -240,8 +241,8 @@ const ClubesTab: React.FC<Props> = ({ token, isAdmin, userId, onAuthRequired }) 
         c.id === club.id ? { ...c, miembros: c.miembros - 1, miRol: null } : c
       ));
       toast({ title: `Saliste de "${club.nombre}"` });
-    } catch (err: any) {
-      toast({ title: 'Error', description: err.message, variant: 'destructive' });
+    } catch (err) {
+      toast({ title: 'Error', description: (err as Error).message, variant: 'destructive' });
     } finally {
       setActionId(null);
     }
@@ -254,16 +255,16 @@ const ClubesTab: React.FC<Props> = ({ token, isAdmin, userId, onAuthRequired }) 
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-[repeat(auto-fill,minmax(min(280px,100%),1fr))] gap-4" aria-hidden="true">
         {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="bg-card border border-border rounded-xl p-5 h-44 animate-pulse" />
+          <div key={i} className="card-surface shimmer h-44" />
         ))}
       </div>
     );
   }
 
   return (
-    <div className="space-y-5">
+    <div className="flex flex-col gap-6">
       {isAdmin && (
         <div>
           <AnimatePresence mode="wait">
@@ -273,37 +274,40 @@ const ClubesTab: React.FC<Props> = ({ token, isAdmin, userId, onAuthRequired }) 
                 initial={{ opacity: 0, y: -8 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -8 }}
-                className="bg-card border border-border rounded-xl p-6"
+                className="card-surface p-6"
               >
                 <div className="flex items-center justify-between mb-5">
-                  <h3 className="font-mono text-sm font-bold text-foreground flex items-center gap-2">
-                    <Plus className="h-4 w-4 text-accent" />
+                  <h3 className="font-serif font-normal text-2xl text-forest flex items-center gap-2">
+                    <Plus className="h-5 w-5 text-terracotta" aria-hidden="true" />
                     Nuevo club de lectura
                   </h3>
-                  <button onClick={() => setShowForm(false)} className="text-muted-foreground hover:text-foreground">
-                    <X className="h-4 w-4" />
+                  <button
+                    type="button"
+                    onClick={() => setShowForm(false)}
+                    aria-label="Cerrar"
+                    className="inline-flex h-11 w-11 md:h-9 md:w-9 items-center justify-center rounded-pill text-ink-muted hover:text-forest focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ring-offset-surface"
+                  >
+                    <X className="h-4 w-4" aria-hidden="true" />
                   </button>
                 </div>
                 <form onSubmit={handleCreate} className="space-y-4">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-1.5">
-                      <Label className="text-xs text-muted-foreground font-mono">Nombre *</Label>
+                      <Label>Nombre *</Label>
                       <Input
                         placeholder="Ej: Club Fantástico Palermo"
                         value={nombre}
                         onChange={(e) => setNombre(e.target.value)}
-                        className="bg-background"
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <Label className="text-xs text-muted-foreground font-mono">Ubicación</Label>
+                      <Label>Ubicación</Label>
                       <div className="flex gap-2">
                         <Input
                           placeholder="Ej: Palermo, CABA"
                           value={ubicacion}
                           onChange={(e) => { setUbicacion(e.target.value); setLat(null); setLng(null); }}
-                          className="bg-background"
-                        />
+                          />
                         <Button
                           type="button"
                           size="icon"
@@ -311,32 +315,33 @@ const ClubesTab: React.FC<Props> = ({ token, isAdmin, userId, onAuthRequired }) 
                           onClick={handleGeocode}
                           disabled={isGeocoding || !ubicacion.trim()}
                           title="Ubicar en mapa"
-                          className={cn('flex-shrink-0 h-10 w-10', lat !== null && 'border-primary text-primary')}
+                          aria-label="Ubicar en mapa"
+                          className={cn('flex-shrink-0 h-11 w-11', lat !== null && 'bg-forest text-warm-cream')}
                         >
-                          <Navigation className={cn('h-4 w-4', isGeocoding && 'animate-pulse')} />
+                          <Navigation className={cn('h-4 w-4', isGeocoding && 'animate-pulse')} aria-hidden="true" />
                         </Button>
                       </div>
                       {lat !== null && (
-                        <p className="text-xs text-primary font-mono">
+                        <p className="label-mono text-forest normal-case">
                           Coordenadas guardadas ({lat.toFixed(4)}, {lng?.toFixed(4)})
                         </p>
                       )}
                     </div>
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs text-muted-foreground font-mono">Descripción</Label>
+                    <Label>Descripción</Label>
                     <Textarea
                       placeholder="Contá de qué trata el club, cuándo se reúnen, qué leen..."
                       value={descripcion}
                       onChange={(e) => setDescripcion(e.target.value)}
-                      className="bg-background text-sm resize-none"
+                      className="resize-none"
                       rows={3}
                     />
                   </div>
                   <Button
                     type="submit"
                     disabled={isCreating}
-                    className="bg-accent text-accent-foreground hover:bg-accent/90"
+                    variant="accent"
                   >
                     {isCreating ? 'Creando...' : 'Crear club'}
                   </Button>
@@ -349,9 +354,9 @@ const ClubesTab: React.FC<Props> = ({ token, isAdmin, userId, onAuthRequired }) 
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 onClick={() => setShowForm(true)}
-                className="w-full flex items-center justify-center gap-2 border border-dashed border-border rounded-xl py-4 text-sm text-muted-foreground hover:text-foreground hover:border-primary transition-colors"
+                className="label-mono w-full min-h-11 flex items-center justify-center gap-2 border-[1.5px] border-dashed border-control rounded-lg py-4 text-ink-muted hover:text-forest hover:border-forest transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               >
-                <Plus className="h-4 w-4" />
+                <Plus className="h-4 w-4" aria-hidden="true" />
                 Crear nuevo club
               </motion.button>
             )}
@@ -361,14 +366,16 @@ const ClubesTab: React.FC<Props> = ({ token, isAdmin, userId, onAuthRequired }) 
 
       {clubs.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center gap-3">
-          <BookOpen className="h-10 w-10 text-muted-foreground/30" />
-          <p className="font-mono text-sm font-bold text-foreground">No hay clubes todavía</p>
-          <p className="text-xs text-muted-foreground">
+          <span className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-forest">
+            <BookOpen className="h-8 w-8 text-sunlight" aria-hidden="true" />
+          </span>
+          <p className="font-serif text-[27px] text-forest">No hay clubes todavía</p>
+          <p className="font-serif text-lg text-ink-muted">
             {isAdmin ? 'Creá el primero usando el botón de arriba.' : 'Cuando haya clubes disponibles, los verás acá.'}
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-[repeat(auto-fill,minmax(min(280px,100%),1fr))] gap-4">
           {clubs.map((club, i) => (
             <ClubCard
               key={club.id}

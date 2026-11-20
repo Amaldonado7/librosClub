@@ -49,7 +49,7 @@ export const authAPI = {
     });
     if (!response.ok) {
       const body = await response.json().catch(() => ({}));
-      throw new Error((body as any).message ?? 'Credenciales incorrectas.');
+      throw new Error((body as { message?: string }).message ?? 'Credenciales incorrectas.');
     }
     return response.json();
   },
@@ -62,7 +62,7 @@ export const authAPI = {
     });
     if (!response.ok) {
       const body = await response.json().catch(() => ({}));
-      throw new Error((body as any).message ?? 'Error al registrarse.');
+      throw new Error((body as { message?: string }).message ?? 'Error al registrarse.');
     }
     return response.json();
   },
@@ -74,7 +74,7 @@ export const authAPI = {
     });
     if (!response.ok) {
       const body = await response.json().catch(() => ({}));
-      throw new ApiError((body as any).message ?? 'Error al actualizar el plan.');
+      throw new ApiError((body as { message?: string }).message ?? 'Error al actualizar el plan.');
     }
     return response.json();
   },
@@ -554,7 +554,7 @@ export const bookRequestsAPI = {
     }));
     if (!r.ok) {
       const body = await r.json().catch(() => ({}));
-      throw new Error((body as any).message ?? 'Error al enviar mensaje.');
+      throw new Error((body as { message?: string }).message ?? 'Error al enviar mensaje.');
     }
     return r.json();
   },

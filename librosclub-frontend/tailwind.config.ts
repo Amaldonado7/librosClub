@@ -1,4 +1,5 @@
 import type { Config } from "tailwindcss";
+import animate from "tailwindcss-animate";
 
 export default {
   darkMode: ["class"],
@@ -14,9 +15,10 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ['Lora', 'Georgia', 'serif'],
-        mono: ['Space Mono', 'monospace'],
-        handwriting: ['Beth Ellen', 'cursive'],
+        sans: ['"Sorts Mill Goudy"', 'Georgia', 'serif'],
+        serif: ['"Sorts Mill Goudy"', 'Georgia', 'serif'],
+        mono: ['"IBM Plex Mono"', 'ui-monospace', 'monospace'],
+        handwriting: ['"Beth Ellen"', 'cursive'],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -61,6 +63,7 @@ export default {
           "accent-foreground": "hsl(var(--sidebar-accent-foreground))",
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
+          muted: "hsl(var(--sidebar-muted))",
         },
         forest: {
           DEFAULT: "hsl(var(--forest))",
@@ -74,11 +77,22 @@ export default {
         "wood-dark": "hsl(var(--wood-dark))",
         "wood-light": "hsl(var(--wood-light))",
         sunlight: "hsl(var(--sunlight))",
+        surface: "hsl(var(--surface))",
+        line: {
+          DEFAULT: "hsl(var(--line))",
+          strong: "hsl(var(--line-strong))",
+        },
+        control: "hsl(var(--border-control))",
+        "ink-muted": "hsl(var(--ink-muted))",
+        "wood-mid": "hsl(var(--wood-mid))",
       },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+        btn: "4px",
+        spine: "3px 8px 8px 3px",
+        pill: "999px",
       },
       boxShadow: {
         warm: "var(--shadow-warm)",
@@ -105,5 +119,5 @@ export default {
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [animate],
 } satisfies Config;

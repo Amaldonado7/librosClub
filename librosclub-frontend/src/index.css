@@ -1,59 +1,48 @@
-@import url('https://fonts.googleapis.com/css2?family=Beth+Ellen&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    /* Cremita — fondo principal */
     --background: 40 57% 93%;
     --foreground: 24 64% 17%;
 
-    /* Cards: blanco cremoso */
-    --card: 40 60% 96%;
+    --card: 41.5 100% 97.5%;
     --card-foreground: 24 64% 17%;
 
-    --popover: 40 60% 96%;
+    --popover: 41.5 100% 97.5%;
     --popover-foreground: 24 64% 17%;
 
-    /* Primary: Verde Oliva #5E5827 */
     --primary: 53 41% 26%;
     --primary-foreground: 40 57% 93%;
 
-    /* Secondary: oliva suave */
     --secondary: 53 25% 85%;
     --secondary-foreground: 53 41% 26%;
 
-    /* Muted: beige cálido */
     --muted: 40 30% 88%;
-    --muted-foreground: 24 30% 45%;
+    --muted-foreground: 29.5 43.6% 29.2%;
 
-    /* Accent: Amarillo #F2D661 */
     --accent: 48 85% 67%;
     --accent-foreground: 24 64% 17%;
 
-    /* Destructive */
-    --destructive: 0 65% 50%;
+    --destructive: 0 65.1% 44.9%;
     --destructive-foreground: 40 57% 93%;
 
-    --border: 40 25% 83%;
-    --input: 40 25% 83%;
+    --border: 42 40.8% 80.8%;
+    --input: 39.6 21.7% 45.1%;
     --ring: 53 41% 26%;
 
-    --radius: 0.75rem;
+    --radius: 0.5rem;
 
-    /* Sidebar: Marrón Oscuro #492710 */
     --sidebar-background: 24 64% 17%;
-    --sidebar-foreground: 40 57% 88%;
+    --sidebar-foreground: 40.6 44.7% 85.1%;
     --sidebar-primary: 48 85% 67%;
     --sidebar-primary-foreground: 24 64% 17%;
-    --sidebar-accent: 24 55% 24%;
+    --sidebar-accent: 53 41% 26%;
     --sidebar-accent-foreground: 40 57% 93%;
-    --sidebar-border: 24 45% 24%;
+    --sidebar-border: 25.5 57.9% 22.4%;
     --sidebar-ring: 48 85% 67%;
 
-    /* Custom tokens — paleta de marca */
     --forest: 53 41% 26%;
     --forest-foreground: 40 57% 93%;
     --terracotta: 28 65% 35%;
@@ -63,9 +52,14 @@
     --wood-light: 28 65% 35%;
     --sunlight: 48 85% 67%;
 
-    /* Gradients as custom properties */
-    --gradient-warm: linear-gradient(135deg, hsl(40 57% 93%), hsl(40 45% 88%), hsl(53 30% 85%));
-    --gradient-hero: linear-gradient(135deg, hsl(24 64% 17% / 0.88), hsl(24 55% 24% / 0.72));
+    --surface: 41.5 100% 97.5%;
+    --line: 42 40.8% 80.8%;
+    --line-strong: 42.4 29.9% 73.1%;
+    --border-control: 39.6 21.7% 45.1%;
+    --ink-muted: 29.5 43.6% 29.2%;
+    --wood-mid: 25.5 57.9% 22.4%;
+    --sidebar-muted: 40.6 44.7% 85.1%;
+
     --shadow-warm: 0 4px 20px -4px hsl(24 64% 17% / 0.14);
     --shadow-card: 0 2px 12px -2px hsl(24 64% 17% / 0.09);
   }
@@ -107,24 +101,116 @@
   }
 
   body {
-    @apply bg-background text-foreground font-sans;
+    @apply bg-background text-foreground font-sans text-base;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Space Mono', monospace;
+    @apply font-serif font-normal;
   }
 }
 
 @layer components {
+  .label-mono {
+    @apply font-mono uppercase tracking-[0.08em] text-xs font-medium;
+  }
+
+  .card-surface {
+    @apply bg-surface border-[1.5px] border-line rounded-lg;
+  }
+
+  .pill {
+    @apply inline-flex items-center rounded-pill font-mono uppercase tracking-[0.06em] text-[11px] font-semibold px-[9px] py-[3px];
+  }
+
+  .pill-sun {
+    @apply bg-sunlight text-wood-dark;
+  }
+
+  .pill-forest {
+    @apply bg-forest text-warm-cream;
+  }
+
+  .pill-terracotta {
+    @apply bg-terracotta text-warm-cream;
+  }
+
+  .pill-outline {
+    @apply bg-transparent border-[1.5px] border-current;
+  }
+
+  .chip {
+    @apply inline-flex items-center min-h-11 px-[18px] rounded-pill border-[1.5px] font-mono uppercase tracking-[0.08em] text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2;
+  }
+
+  .chip-off {
+    @apply bg-surface border-control text-wood-dark hover:border-forest;
+  }
+
+  .chip-on {
+    @apply bg-forest border-forest text-warm-cream;
+  }
+
+  .cover-spine {
+    position: relative;
+    overflow: hidden;
+    border-radius: 3px 8px 8px 3px;
+  }
+
+  .cover-spine::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    border-radius: inherit;
+    box-shadow: inset 7px 0 0 rgba(0, 0, 0, 0.18);
+  }
+
+  .cover-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px 16px;
+  }
+
+  .accent-hand {
+    @apply font-handwriting;
+  }
+
   .shimmer {
-    @apply animate-pulse rounded-lg;
-    background: linear-gradient(90deg, hsl(var(--muted)) 25%, hsl(var(--warm-cream)) 50%, hsl(var(--muted)) 75%);
+    background: linear-gradient(90deg, hsl(var(--line)) 25%, hsl(var(--surface)) 50%, hsl(var(--line)) 75%);
     background-size: 200% 100%;
     animation: shimmer 1.5s infinite;
+  }
+}
+
+@media (max-width: 767px) {
+  .cover-spine::after {
+    box-shadow: inset 6px 0 0 rgba(0, 0, 0, 0.18);
+  }
+}
+
+@media (min-width: 640px) {
+  .cover-grid {
+    grid-template-columns: repeat(auto-fill, minmax(min(180px, 100%), 1fr));
+    gap: 32px 22px;
   }
 }
 
 @keyframes shimmer {
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .shimmer {
+    animation: none !important;
+  }
 }

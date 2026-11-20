@@ -2,6 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { MotionConfig } from "framer-motion";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 import Dashboard from "./components/Dashboard";
@@ -25,7 +26,9 @@ const App = () => (
       <AuthProvider>
         <Toaster />
         <Sonner />
-        <AppContent />
+        <MotionConfig reducedMotion="user">
+          <AppContent />
+        </MotionConfig>
       </AuthProvider>
     </TooltipProvider>
   </QueryClientProvider>

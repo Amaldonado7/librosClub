@@ -68,8 +68,8 @@ const NewListingForm: React.FC<{ token: string; onCreated: (l: ExchangeListing) 
       });
       onCreated(listing);
       toast({ title: 'Publicado', description: `"${listing.title}" ya está disponible para intercambiar.` });
-    } catch (err: any) {
-      toast({ title: 'Error', description: err.message, variant: 'destructive' });
+    } catch (err) {
+      toast({ title: 'Error', description: (err as Error).message, variant: 'destructive' });
     } finally {
       setSaving(false);
     }
@@ -218,8 +218,8 @@ const MyListingsView: React.FC<{
       await exchangeAPI.deleteListing(token, id);
       onDeleted(id);
       toast({ title: 'Eliminado', description: 'Tu publicación fue eliminada.' });
-    } catch (err: any) {
-      toast({ title: 'Error', description: err.message, variant: 'destructive' });
+    } catch (err) {
+      toast({ title: 'Error', description: (err as Error).message, variant: 'destructive' });
     } finally {
       setDeletingId(null);
     }
@@ -234,8 +234,8 @@ const MyListingsView: React.FC<{
         title: status === 'accepted' ? 'Intercambio aceptado' : 'Solicitud rechazada',
         description: status === 'accepted' ? 'Coordiná con el solicitante para el intercambio.' : undefined,
       });
-    } catch (err: any) {
-      toast({ title: 'Error', description: err.message, variant: 'destructive' });
+    } catch (err) {
+      toast({ title: 'Error', description: (err as Error).message, variant: 'destructive' });
     } finally {
       setRespondingId(null);
     }
@@ -352,14 +352,14 @@ const ExchangeTab: React.FC<Props> = ({ token, currentUserId }) => {
   const fetchListings = async () => {
     setLoadingExplore(true);
     try { setListings(await exchangeAPI.getListings(token)); }
-    catch (err: any) { toast({ title: 'Error', description: err.message, variant: 'destructive' }); }
+    catch (err) { toast({ title: 'Error', description: (err as Error).message, variant: 'destructive' }); }
     finally { setLoadingExplore(false); }
   };
 
   const fetchMyListings = async () => {
     setLoadingMine(true);
     try { setMyListings(await exchangeAPI.getMyListings(token)); }
-    catch (err: any) { toast({ title: 'Error', description: err.message, variant: 'destructive' }); }
+    catch (err) { toast({ title: 'Error', description: (err as Error).message, variant: 'destructive' }); }
     finally { setLoadingMine(false); }
   };
 
@@ -388,9 +388,9 @@ const ExchangeTab: React.FC<Props> = ({ token, currentUserId }) => {
         prev.map((l) => l.id === listingId ? { ...l, myRequestStatus: 'pending' } : l)
       );
       toast({ title: 'Solicitud enviada', description: 'El dueño del libro verá tu solicitud.' });
-    } catch (err: any) {
-      toast({ title: 'Error', description: err.message, variant: 'destructive' });
-      if (err.message?.includes('ya no está disponible')) {
+    } catch (err) {
+      toast({ title: 'Error', description: (err as Error).message, variant: 'destructive' });
+      if ((err as Error).message?.includes('ya no está disponible')) {
         setListings((prev) => prev.filter((l) => l.id !== listingId));
       }
     } finally {
