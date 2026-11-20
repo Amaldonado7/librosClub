@@ -12,6 +12,7 @@ const protectedRoutes = require('./routes/protected');
 const googleBooksRoutes = require('./routes/googleBooks');
 const exchangeRoutes   = require('./routes/exchanges');
 const clubsRoutes      = require('./routes/clubs');
+const errorHandler     = require('./middlewares/errorHandler');
 
 // Crear la instancia de Express
 const app = express();
@@ -75,5 +76,7 @@ app.use('/api/protected', protectedRoutes); // Rutas protegidas
 app.use('/api/google-books', googleBooksRoutes);
 app.use('/api/exchanges',   exchangeRoutes);
 app.use('/api/clubs',       clubsRoutes);
+
+app.use(errorHandler);
 
 module.exports = app;
