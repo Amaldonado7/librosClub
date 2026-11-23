@@ -209,31 +209,3 @@ Patrón routes → controllers del resto del backend; los tests de backend mocke
 ### Notas (edición humana libre)
 
 <!-- no generar contenido acá; si la entrada ya existía, preservar lo que haya -->
-
-## roleMiddleware / allowRoles — autorización por rol
-
-- **Tipo:** módulo
-- **Fuente:** LLM (PLAN, Paso 6)
-- **Fingerprint:** -
-- **Última actualización:** 2026-11-20 — FIX-001
-
-### Estructura (determinístico — hechos verificables por grep/AST)
-
-**Siblings / implementaciones paralelas:**
-- `librosclub-backend/src/middlewares/roleMiddleware.js` — `allowRoles(...roles)`, 403 `{ message: 'Acceso denegado' }`
-- `librosclub-backend/src/middlewares/allowRoles.js` — misma firma, 403 `{ message: 'Acceso denegado. Rol no autorizado.' }`
-
-**Callers:**
-- `roleMiddleware`: `librosclub-backend/src/routes/protected.js:3` (`GET /api/admin-only`)
-- `allowRoles`: `librosclub-backend/src/routes/books.js:8` (5 rutas admin), `librosclub-backend/src/routes/exchanges.js:4` (`GET /admin`)
-
-**Exports / imports:**
-- Ambos exportan la factory `allowRoles` como `module.exports`.
-
-### Patrón (requiere criterio — interpretación, no hecho verificable mecánicamente)
-
-Dos middlewares de rol duplicados con distinto mensaje de 403; candidatos a consolidar en uno. `app.js` configura `trust proxy` = 1 (FIX-001) y el `loginLimiter` de `express-rate-limit` keyea por `req.ip`.
-
-### Notas (edición humana libre)
-
-<!-- no generar contenido acá; si la entrada ya existía, preservar lo que haya -->
