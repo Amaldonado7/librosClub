@@ -17,6 +17,8 @@ const errorHandler     = require('./middlewares/errorHandler');
 // Crear la instancia de Express
 const app = express();
 
+app.set('trust proxy', 1);
+
 // Configuración de seguridad con Helmet
 app.use(
   helmet({
