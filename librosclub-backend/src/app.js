@@ -12,6 +12,7 @@ const protectedRoutes = require('./routes/protected');
 const googleBooksRoutes = require('./routes/googleBooks');
 const exchangeRoutes   = require('./routes/exchanges');
 const clubsRoutes      = require('./routes/clubs');
+const giftRoutes       = require('./routes/gift');
 const errorHandler     = require('./middlewares/errorHandler');
 
 // Crear la instancia de Express
@@ -63,6 +64,17 @@ const loginLimiter = rateLimit({
   message: { message: 'Demasiados intentos. Intentá de nuevo en 15 minutos.' },
 });
 
+const giftLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: 'Demasiadas solicitudes. Probá de nuevo en unos minutos.' },
+});
+
+app.use('/api/gift/recommendations', giftLimiter);
+app.use('/api/gift', bodyParser.json({ limit: '2kb', type: () => true }));
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
@@ -78,6 +90,7 @@ app.use('/api/protected', protectedRoutes); // Rutas protegidas
 app.use('/api/google-books', googleBooksRoutes);
 app.use('/api/exchanges',   exchangeRoutes);
 app.use('/api/clubs',       clubsRoutes);
+app.use('/api/gift',        giftRoutes);
 
 app.use(errorHandler);
 

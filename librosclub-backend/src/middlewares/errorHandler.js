@@ -6,6 +6,9 @@ module.exports = (err, req, res, next) => {
   if (err.type === 'entity.parse.failed') {
     return res.status(400).json({ message: 'JSON inválido.' });
   }
+  if (err.type === 'entity.too.large') {
+    return res.status(413).json({ message: 'El pedido es demasiado grande.' });
+  }
   if (err.message === CORS_REJECTION) {
     return res.status(403).json({ message: 'Origen no permitido.' });
   }

@@ -6,6 +6,8 @@
   "scripts": {
     "start": "node src/server.js",
     "test": "node --test",
+    "test:coverage": "node --test --experimental-test-coverage",
+    "seed:gift:build": "node scripts/build-gift-seed.js",
     "dev": "kill $(lsof -ti :3000) 2>/dev/null; nodemon src/server.js"
   },
   "keywords": [],
