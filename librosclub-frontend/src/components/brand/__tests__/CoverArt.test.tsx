@@ -43,6 +43,25 @@ describe('CoverArt', () => {
     expect(thumb).toHaveClass('cover-spine');
   });
 
+  it('con fallbackColor el respaldo usa ese color y texto crema; sin él mantiene la paleta', () => {
+    const { unmount } = render(<CoverArt title="Rayuela" fallbackColor="#91551F" />);
+    const fallback = screen.getByText('Rayuela').parentElement as HTMLElement;
+    expect(fallback.style.backgroundColor).toBe('rgb(145, 85, 31)');
+    expect(fallback.style.color).toBe(hexToRgb('#F7F0E2'));
+    unmount();
+
+    render(<CoverArt title="Rayuela" />);
+    const paletteFallback = screen.getByText('Rayuela').parentElement as HTMLElement;
+    expect(paletteFallback.style.backgroundColor).toBe(hexToRgb(coverPaletteFor('Rayuela').bg));
+  });
+
+  it('con fallbackColor y la imagen rota el respaldo usa ese color', () => {
+    render(<CoverArt src="https://example.com/broken.jpg" title="Rayuela" fallbackColor="#492710" size="thumb" />);
+    fireEvent.error(screen.getByRole('img', { name: 'Rayuela' }));
+    const thumb = screen.getByRole('img', { name: 'Rayuela' });
+    expect((thumb.firstElementChild as HTMLElement).style.backgroundColor).toBe('rgb(73, 39, 16)');
+  });
+
   it('al cambiar src después de un error vuelve a mostrar la imagen', () => {
     const { rerender, container } = render(<CoverArt src="https://example.com/a.jpg" title="Rayuela" />);
     fireEvent.error(screen.getByRole('img', { name: 'Rayuela' }));

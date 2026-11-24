@@ -10,8 +10,11 @@ export interface CoverArtProps {
   subtitle?: string;
   size?: CoverArtSize;
   className?: string;
+  fallbackColor?: string;
   children?: React.ReactNode;
 }
+
+const FALLBACK_TEXT_COLOR = '#F7F0E2';
 
 const SIZE_CLASSES: Record<CoverArtSize, string> = {
   card: 'w-full aspect-[2/3]',
@@ -24,6 +27,7 @@ const CoverArt: React.FC<CoverArtProps> = ({
   subtitle,
   size = 'card',
   className,
+  fallbackColor,
   children,
 }) => {
   const [imgFailed, setImgFailed] = useState(false);
@@ -33,7 +37,7 @@ const CoverArt: React.FC<CoverArtProps> = ({
   }, [src]);
 
   const showImage = Boolean(src) && !imgFailed;
-  const palette = coverPaletteFor(title);
+  const palette = fallbackColor ? { bg: fallbackColor, fg: FALLBACK_TEXT_COLOR } : coverPaletteFor(title);
   const isThumbFallback = size === 'thumb' && !showImage;
 
   return (

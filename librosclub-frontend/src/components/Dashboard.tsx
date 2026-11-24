@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { booksAPI, bookRequestsAPI, Book, BookRequest } from '../utils/api';
 import RequestChatModal from './RequestChatModal';
@@ -33,6 +33,7 @@ import {
   Clock,
   MessageCircle,
   Crown,
+  Gift,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { jwtDecode } from 'jwt-decode';
@@ -688,6 +689,11 @@ const Dashboard: React.FC = () => {
                   </button>
                 );
               })}
+
+              <Link to="/regalo" className={sidebarItemClass(false)}>
+                <Gift className="h-[18px] w-[18px] shrink-0" aria-hidden="true" />
+                <span>Regalá un libro</span>
+              </Link>
 
               {isAdmin && (
                 <div className="pt-4 mt-4 border-t-[1.5px] border-wood-mid flex flex-col gap-2">

@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Rss, Search, Library, ArrowRight, Users, MapPin, ArrowLeftRight, Check, Crown, X } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Link, useNavigate } from 'react-router-dom';
+import { Rss, Search, Library, ArrowRight, Users, MapPin, ArrowLeftRight, Check, Crown, X, Gift } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 import AuthModal from './AuthModal';
 import PremiumUpgradeModal from './PremiumUpgradeModal';
@@ -128,6 +129,16 @@ const LandingPage: React.FC = () => {
                     Crear cuenta gratis
                   </Button>
                 )}
+                <Link
+                  to="/regalo"
+                  className={cn(
+                    buttonVariants({ variant: 'outline', size: 'lg' }),
+                    `min-h-11 border-sunlight text-sunlight hover:bg-sunlight hover:text-forest ${DARK_FOCUS} ring-offset-forest`,
+                  )}
+                >
+                  <Gift className="h-4 w-4" aria-hidden="true" />
+                  Regalá un libro
+                </Link>
               </motion.div>
 
               <motion.p

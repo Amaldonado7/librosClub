@@ -145,6 +145,13 @@ describe('Dashboard', () => {
       ),
     );
   });
+
+  it('sidebar: tiene un enlace "Regalá un libro" hacia /regalo', () => {
+    renderDashboard();
+    const link = within(screen.getByRole('navigation', { name: 'Secciones' })).getByRole('link', { name: 'Regalá un libro' });
+    expect(link).toHaveAttribute('href', '/regalo');
+    expect(link).toHaveClass('min-h-11');
+  });
 });
 
 const nav = () => screen.getByRole('navigation', { name: 'Secciones' });
