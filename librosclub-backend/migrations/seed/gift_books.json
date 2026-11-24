@@ -1,0 +1,1955 @@
+[
+  {
+    "id": 1,
+    "title": "Caballo de fuego",
+    "author": "Florencia Bonelli",
+    "coverUrl": null,
+    "coverColor": "#5E5827",
+    "genreLabel": "Romance histórico",
+    "why": "Una saga apasionante de amor y aventura, de la autora de romance más leída de la Argentina. Para devorar.",
+    "dedication": "Para que te pierdas en esta historia de amor como yo me pierdo en vos.",
+    "shareQuote": "Amor, aventura y pasión en una saga de Florencia Bonelli que no se puede soltar.",
+    "ageRanges": [
+      "joven",
+      "adulto"
+    ],
+    "readingLevels": [
+      "mensual",
+      "devora"
+    ],
+    "hooks": [
+      "amor"
+    ],
+    "kinds": [
+      "novela"
+    ],
+    "length": "largo",
+    "tones": [
+      "emotivo",
+      "intenso"
+    ],
+    "active": true
+  },
+  {
+    "id": 2,
+    "title": "Romper el círculo",
+    "author": "Colleen Hoover",
+    "coverUrl": null,
+    "coverColor": "#91551F",
+    "genreLabel": "Romance contemporáneo",
+    "why": "Una historia de amor que emociona y deja pensando. El libro del que todo el mundo habla.",
+    "dedication": "Para que siempre elijas el amor que te hace bien.",
+    "shareQuote": "Una historia de amor que emociona y se queda con vos mucho después de cerrarlo.",
+    "ageRanges": [
+      "joven",
+      "adulto"
+    ],
+    "readingLevels": [
+      "vacaciones",
+      "mensual",
+      "devora"
+    ],
+    "hooks": [
+      "amor"
+    ],
+    "kinds": [
+      "novela"
+    ],
+    "length": "mediano",
+    "tones": [
+      "emotivo",
+      "intenso"
+    ],
+    "active": true
+  },
+  {
+    "id": 3,
+    "title": "Verity",
+    "author": "Colleen Hoover",
+    "coverUrl": null,
+    "coverColor": "#492710",
+    "genreLabel": "Thriller",
+    "why": "Un manuscrito secreto y una verdad perturbadora. Un thriller que se lee de un tirón.",
+    "dedication": "Para tus noches de insomnio: después no digas que no te avisé.",
+    "shareQuote": "Un manuscrito secreto y una verdad perturbadora: se lee de un tirón.",
+    "ageRanges": [
+      "joven",
+      "adulto"
+    ],
+    "readingLevels": [
+      "vacaciones",
+      "mensual",
+      "devora"
+    ],
+    "hooks": [
+      "misterio",
+      "amor"
+    ],
+    "kinds": [
+      "novela"
+    ],
+    "length": "mediano",
+    "tones": [
+      "intenso"
+    ],
+    "active": true
+  },
+  {
+    "id": 4,
+    "title": "Book Lovers",
+    "author": "Emily Henry",
+    "coverUrl": null,
+    "coverColor": "#6B4A2A",
+    "genreLabel": "Comedia romántica",
+    "why": "Una editora y un pueblito que parece salido de una novela romántica. Divertida, tierna y muy lectora.",
+    "dedication": "Para la persona más lectora que conozco, con todo mi amor.",
+    "shareQuote": "Una comedia romántica para quienes aman los libros tanto como las buenas historias de amor.",
+    "ageRanges": [
+      "joven",
+      "adulto"
+    ],
+    "readingLevels": [
+      "vacaciones",
+      "mensual",
+      "devora"
+    ],
+    "hooks": [
+      "amor",
+      "humor"
+    ],
+    "kinds": [
+      "novela"
+    ],
+    "length": "largo",
+    "tones": [
+      "liviano"
+    ],
+    "active": true
+  },
+  {
+    "id": 5,
+    "title": "Todo lo que nunca fuimos",
+    "author": "Alice Kellen",
+    "coverUrl": null,
+    "coverColor": "#8C7B5A",
+    "genreLabel": "Romance juvenil",
+    "why": "Una historia de amor y segundas oportunidades que conmueve. Ideal para quien ama llorar con un libro.",
+    "dedication": "Para que nunca dejemos de ser todo lo que podemos ser.",
+    "shareQuote": "Amor, pérdida y segundas oportunidades: para llorar un poquito y abrazar el libro.",
+    "ageRanges": [
+      "joven"
+    ],
+    "readingLevels": [
+      "casi_nunca",
+      "vacaciones",
+      "mensual"
+    ],
+    "hooks": [
+      "amor"
+    ],
+    "kinds": [
+      "novela"
+    ],
+    "length": "mediano",
+    "tones": [
+      "emotivo"
+    ],
+    "active": true
+  },
+  {
+    "id": 6,
+    "title": "En los zapatos de Valeria",
+    "author": "Elísabet Benavent",
+    "coverUrl": null,
+    "coverColor": "#5A3418",
+    "genreLabel": "Comedia romántica",
+    "why": "Amigas, amores y enredos en Madrid. Divertida y fresca, la saga que dio origen a la serie.",
+    "dedication": "Para mi amiga de siempre, que se merece un amor de novela.",
+    "shareQuote": "Amigas, amores y enredos: una comedia romántica fresca para reírse y suspirar.",
+    "ageRanges": [
+      "joven",
+      "adulto"
+    ],
+    "readingLevels": [
+      "casi_nunca",
+      "vacaciones",
+      "mensual"
+    ],
+    "hooks": [
+      "amor",
+      "humor"
+    ],
+    "kinds": [
+      "novela"
+    ],
+    "length": "largo",
+    "tones": [
+      "liviano"
+    ],
+    "active": true
+  },
+  {
+    "id": 7,
+    "title": "Culpa mía",
+    "author": "Mercedes Ron",
+    "coverUrl": null,
+    "coverColor": "#5E5827",
+    "genreLabel": "Romance juvenil",
+    "why": "Un romance intenso y adictivo que arrasó entre lectoras jóvenes. Para leer de una sentada.",
+    "dedication": "Para que te enganches tanto como yo con esta historia.",
+    "shareQuote": "Un romance intenso y adictivo, imposible de soltar.",
+    "ageRanges": [
+      "joven"
+    ],
+    "readingLevels": [
+      "casi_nunca",
+      "vacaciones",
+      "mensual"
+    ],
+    "hooks": [
+      "amor"
+    ],
+    "kinds": [
+      "novela"
+    ],
+    "length": "largo",
+    "tones": [
+      "intenso"
+    ],
+    "active": true
+  },
+  {
+    "id": 8,
+    "title": "Antes de diciembre",
+    "author": "Joana Marcús",
+    "coverUrl": null,
+    "coverColor": "#91551F",
+    "genreLabel": "Romance juvenil",
+    "why": "Una historia de amor universitaria, divertida y con mucha química. Un fenómeno entre lectoras jóvenes.",
+    "dedication": "Para que nunca te falten las mariposas en la panza.",
+    "shareQuote": "Amor universitario, humor y mucha química: un fenómeno entre lectoras jóvenes.",
+    "ageRanges": [
+      "joven"
+    ],
+    "readingLevels": [
+      "casi_nunca",
+      "vacaciones",
+      "mensual"
+    ],
+    "hooks": [
+      "amor",
+      "humor"
+    ],
+    "kinds": [
+      "novela"
+    ],
+    "length": "largo",
+    "tones": [
+      "liviano",
+      "emotivo"
+    ],
+    "active": true
+  },
+  {
+    "id": 9,
+    "title": "Yo antes de ti",
+    "author": "Jojo Moyes",
+    "coverUrl": null,
+    "coverColor": "#492710",
+    "genreLabel": "Romance contemporáneo",
+    "why": "Una historia de amor tan divertida como emocionante. De esas que se recomiendan a todo el mundo.",
+    "dedication": "Para que vivas con todas las ganas, siempre.",
+    "shareQuote": "Divertida y emocionante a la vez: una historia de amor que se recomienda a todo el mundo.",
+    "ageRanges": [
+      "joven",
+      "adulto"
+    ],
+    "readingLevels": [
+      "casi_nunca",
+      "vacaciones",
+      "mensual",
+      "devora"
+    ],
+    "hooks": [
+      "amor",
+      "humor"
+    ],
+    "kinds": [
+      "novela"
+    ],
+    "length": "largo",
+    "tones": [
+      "emotivo"
+    ],
+    "active": true
+  },
+  {
+    "id": 10,
+    "title": "La hipótesis del amor",
+    "author": "Ali Hazelwood",
+    "coverUrl": null,
+    "coverColor": "#6B4A2A",
+    "genreLabel": "Comedia romántica",
+    "why": "Una científica, un noviazgo falso y mucha química. Comedia romántica inteligente y adorable.",
+    "dedication": "Para vos, que sos mi mejor hipótesis comprobada.",
+    "shareQuote": "Ciencia, un noviazgo falso y mucha química: comedia romántica inteligente y adorable.",
+    "ageRanges": [
+      "joven",
+      "adulto"
+    ],
+    "readingLevels": [
+      "vacaciones",
+      "mensual",
+      "devora"
+    ],
+    "hooks": [
+      "amor",
+      "humor"
+    ],
+    "kinds": [
+      "novela"
+    ],
+    "length": "mediano",
+    "tones": [
+      "liviano"
+    ],
+    "active": true
+  },
+  {
+    "id": 11,
+    "title": "Una corte de rosas y espinas",
+    "author": "Sarah J. Maas",
+    "coverUrl": null,
+    "coverColor": "#8C7B5A",
+    "genreLabel": "Fantasía romántica",
+    "why": "Fantasía, hadas y un romance épico. La puerta de entrada a una de las sagas más populares del momento.",
+    "dedication": "Para que te animes a entrar a un mundo mágico y no quieras salir.",
+    "shareQuote": "Hadas, magia y un romance épico: la saga de fantasía romántica del momento.",
+    "ageRanges": [
+      "joven",
+      "adulto"
+    ],
+    "readingLevels": [
+      "mensual",
+      "devora"
+    ],
+    "hooks": [
+      "amor",
+      "misterio"
+    ],
+    "kinds": [
+      "novela"
+    ],
+    "length": "largo",
+    "tones": [
+      "intenso"
+    ],
+    "active": true
+  },
+  {
+    "id": 12,
+    "title": "Alas de sangre",
+    "author": "Rebecca Yarros",
+    "coverUrl": null,
+    "coverColor": "#5A3418",
+    "genreLabel": "Fantasía romántica",
+    "why": "Dragones, una academia militar y un romance que quema. El fenómeno de fantasía de los últimos años.",
+    "dedication": "Para que vueles alto, con dragón incluido.",
+    "shareQuote": "Dragones, una academia militar y un romance que quema: imposible soltarlo.",
+    "ageRanges": [
+      "joven",
+      "adulto"
+    ],
+    "readingLevels": [
+      "vacaciones",
+      "mensual",
+      "devora"
+    ],
+    "hooks": [
+      "amor",
+      "misterio"
+    ],
+    "kinds": [
+      "novela"
+    ],
+    "length": "largo",
+    "tones": [
+      "intenso"
+    ],
+    "active": true
+  },
+  {
+    "id": 13,
+    "title": "El duque y yo",
+    "author": "Julia Quinn",
+    "coverUrl": null,
+    "coverColor": "#5E5827",
+    "genreLabel": "Romance histórico",
+    "why": "Bailes, chismes y un falso cortejo en la Londres de 1813. El primer libro de Los Bridgerton.",
+    "dedication": "Para que te sientas protagonista de tu propia historia de amor.",
+    "shareQuote": "Bailes, chismes y un falso cortejo: así empieza la saga de Los Bridgerton.",
+    "ageRanges": [
+      "joven",
+      "adulto"
+    ],
+    "readingLevels": [
+      "casi_nunca",
+      "vacaciones",
+      "mensual"
+    ],
+    "hooks": [
+      "amor",
+      "humor"
+    ],
+    "kinds": [
+      "novela"
+    ],
+    "length": "mediano",
+    "tones": [
+      "liviano"
+    ],
+    "active": true
+  },
+  {
+    "id": 14,
+    "title": "Pídeme lo que quieras",
+    "author": "Megan Maxwell",
+    "coverUrl": null,
+    "coverColor": "#91551F",
+    "genreLabel": "Romance erótico",
+    "why": "Un romance apasionado y atrevido, de la reina de la novela romántica en español. Para adultos.",
+    "dedication": "Para que te animes a pedir todo lo que quieras.",
+    "shareQuote": "Un romance apasionado y atrevido de la reina de la novela romántica en español.",
+    "ageRanges": [
+      "adulto"
+    ],
+    "readingLevels": [
+      "casi_nunca",
+      "vacaciones",
+      "mensual"
+    ],
+    "hooks": [
+      "amor"
+    ],
+    "kinds": [
+      "novela"
+    ],
+    "length": "largo",
+    "tones": [
+      "intenso"
+    ],
+    "active": true
+  },
+  {
+    "id": 15,
+    "title": "El cuaderno de Noah",
+    "author": "Nicholas Sparks",
+    "coverUrl": null,
+    "coverColor": "#492710",
+    "genreLabel": "Romance",
+    "why": "Un amor que resiste el paso del tiempo. Un clásico romántico para emocionarse.",
+    "dedication": "Para que nuestro amor también resista todo.",
+    "shareQuote": "Un amor que resiste al tiempo: el clásico romántico para emocionarse.",
+    "ageRanges": [
+      "joven",
+      "adulto"
+    ],
+    "readingLevels": [
+      "casi_nunca",
+      "vacaciones",
+      "mensual"
+    ],
+    "hooks": [
+      "amor"
+    ],
+    "kinds": [
+      "novela"
+    ],
+    "length": "mediano",
+    "tones": [
+      "emotivo"
+    ],
+    "active": true
+  },
+  {
+    "id": 16,
+    "title": "Antes de que se enfríe el café",
+    "author": "Toshikazu Kawaguchi",
+    "coverUrl": null,
+    "coverColor": "#6B4A2A",
+    "genreLabel": "Ficción japonesa",
+    "why": "Tierno y se lee en dos tardes. Un café donde se puede viajar en el tiempo, pero solo hasta que se enfríe la taza.",
+    "dedication": "Para que lo leas con un cafecito y te acuerdes de mí en cada capítulo.",
+    "shareQuote": "Tierno y perfecto para leer con un cafecito un domingo tranqui.",
+    "ageRanges": [
+      "joven",
+      "adulto"
+    ],
+    "readingLevels": [
+      "casi_nunca",
+      "vacaciones",
+      "mensual"
+    ],
+    "hooks": [
+      "amor"
+    ],
+    "kinds": [
+      "novela"
+    ],
+    "length": "mediano",
+    "tones": [
+      "liviano",
+      "emotivo"
+    ],
+    "active": true
+  },
+  {
+    "id": 17,
+    "title": "Los siete maridos de Evelyn Hugo",
+    "author": "Taylor Jenkins Reid",
+    "coverUrl": null,
+    "coverColor": "#8C7B5A",
+    "genreLabel": "Novela contemporánea",
+    "why": "Una estrella de Hollywood cuenta por fin la verdad de su vida. Glamour, secretos y un gran amor.",
+    "dedication": "Para que nunca te guardes quién sos.",
+    "shareQuote": "Una estrella de Hollywood cuenta su verdad: glamour, secretos y un gran amor.",
+    "ageRanges": [
+      "joven",
+      "adulto"
+    ],
+    "readingLevels": [
+      "vacaciones",
+      "mensual",
+      "devora"
+    ],
+    "hooks": [
+      "amor",
+      "misterio"
+    ],
+    "kinds": [
+      "novela"
+    ],
+    "length": "largo",
+    "tones": [
+      "emotivo"
+    ],
+    "active": true
+  },
+  {
+    "id": 18,
+    "title": "Gente normal",
+    "author": "Sally Rooney",
+    "coverUrl": null,
+    "coverColor": "#5A3418",
+    "genreLabel": "Novela contemporánea",
+    "why": "Dos jóvenes que se encuentran y desencuentran durante años. Una historia de amor real y muy actual.",
+    "dedication": "Para que sigamos encontrándonos siempre.",
+    "shareQuote": "Dos jóvenes que se encuentran y se pierden una y otra vez: amor real y actual.",
+    "ageRanges": [
+      "joven"
+    ],
+    "readingLevels": [
+      "mensual",
+      "devora"
+    ],
+    "hooks": [
+      "amor"
+    ],
+    "kinds": [
+      "novela"
+    ],
+    "length": "mediano",
+    "tones": [
+      "emotivo",
+      "intenso"
+    ],
+    "active": true
+  },
+  {
+    "id": 19,
+    "title": "Cien años de soledad",
+    "author": "Gabriel García Márquez",
+    "coverUrl": null,
+    "coverColor": "#5E5827",
+    "genreLabel": "Clásico latinoamericano",
+    "why": "La saga de los Buendía en Macondo: realismo mágico en su máxima expresión. Un regalo que dura toda la vida.",
+    "dedication": "Para que tengas en tu biblioteca uno de los libros más lindos que existen.",
+    "shareQuote": "La saga de los Buendía en Macondo: el realismo mágico en su máxima expresión.",
+    "ageRanges": [
+      "adulto"
+    ],
+    "readingLevels": [
+      "devora"
+    ],
+    "hooks": [
+      "misterio"
+    ],
+    "kinds": [
+      "novela"
+    ],
+    "length": "largo",
+    "tones": [
+      "intenso"
+    ],
+    "active": true
+  },
+  {
+    "id": 20,
+    "title": "Leche y miel",
+    "author": "Rupi Kaur",
+    "coverUrl": null,
+    "coverColor": "#91551F",
+    "genreLabel": "Poesía contemporánea",
+    "why": "Poemas cortitos sobre el amor, el dolor y sanar. Fáciles de leer y muy compartibles.",
+    "dedication": "Para que te acompañe en los días buenos y en los otros.",
+    "shareQuote": "Poemas cortitos sobre el amor, la pérdida y sanar: para leer y compartir.",
+    "ageRanges": [
+      "joven"
+    ],
+    "readingLevels": [
+      "casi_nunca",
+      "vacaciones",
+      "mensual"
+    ],
+    "hooks": [
+      "amor"
+    ],
+    "kinds": [
+      "poesia"
+    ],
+    "length": "mediano",
+    "tones": [
+      "emotivo"
+    ],
+    "active": true
+  },
+  {
+    "id": 21,
+    "title": "Árbol de Diana",
+    "author": "Alejandra Pizarnik",
+    "coverUrl": null,
+    "coverColor": "#492710",
+    "genreLabel": "Poesía argentina",
+    "why": "Poemas breves e intensos de una de las grandes poetas argentinas. Para leer despacio.",
+    "dedication": "Para que tengas a mano palabras para los días intensos.",
+    "shareQuote": "Poemas breves e intensos de una de las grandes poetas argentinas.",
+    "ageRanges": [
+      "joven",
+      "adulto"
+    ],
+    "readingLevels": [
+      "mensual",
+      "devora"
+    ],
+    "hooks": [
+      "misterio"
+    ],
+    "kinds": [
+      "poesia"
+    ],
+    "length": "corto",
+    "tones": [
+      "intenso"
+    ],
+    "active": true
+  },
+  {
+    "id": 22,
+    "title": "La paciente silenciosa",
+    "author": "Alex Michaelides",
+    "coverUrl": null,
+    "coverColor": "#6B4A2A",
+    "genreLabel": "Thriller psicológico",
+    "why": "Una mujer deja de hablar después de un crimen y un psicoterapeuta se obsesiona con su silencio. Final inesperado.",
+    "dedication": "Para que adivines el final... si podés.",
+    "shareQuote": "Una mujer que deja de hablar tras un crimen y un final que nadie ve venir.",
+    "ageRanges": [
+      "joven",
+      "adulto"
+    ],
+    "readingLevels": [
+      "casi_nunca",
+      "vacaciones",
+      "mensual",
+      "devora"
+    ],
+    "hooks": [
+      "misterio"
+    ],
+    "kinds": [
+      "novela"
+    ],
+    "length": "mediano",
+    "tones": [
+      "intenso"
+    ],
+    "active": true
+  },
+  {
+    "id": 23,
+    "title": "Asesinato en el Orient Express",
+    "author": "Agatha Christie",
+    "coverUrl": null,
+    "coverColor": "#8C7B5A",
+    "genreLabel": "Policial clásico",
+    "why": "Un crimen en un tren atrapado por la nieve y Hercule Poirot en su mejor forma. El policial clásico por excelencia.",
+    "dedication": "Para el mejor detective que conozco.",
+    "shareQuote": "Un crimen en un tren varado en la nieve y Poirot en su mejor forma.",
+    "ageRanges": [
+      "joven",
+      "adulto"
+    ],
+    "readingLevels": [
+      "casi_nunca",
+      "vacaciones",
+      "mensual",
+      "devora"
+    ],
+    "hooks": [
+      "misterio"
+    ],
+    "kinds": [
+      "novela"
+    ],
+    "length": "mediano",
+    "tones": [
+      "liviano"
+    ],
+    "active": true
+  },
+  {
+    "id": 24,
+    "title": "La sombra del viento",
+    "author": "Carlos Ruiz Zafón",
+    "coverUrl": null,
+    "coverColor": "#5A3418",
+    "genreLabel": "Misterio",
+    "why": "Un libro misterioso, una Barcelona de posguerra y una historia que atrapa desde la primera página.",
+    "dedication": "Para que te pierdas en el Cementerio de los Libros Olvidados.",
+    "shareQuote": "Un libro misterioso en la Barcelona de posguerra: atrapa desde la primera página.",
+    "ageRanges": [
+      "joven",
+      "adulto"
+    ],
+    "readingLevels": [
+      "mensual",
+      "devora"
+    ],
+    "hooks": [
+      "misterio",
+      "amor"
+    ],
+    "kinds": [
+      "novela"
+    ],
+    "length": "largo",
+    "tones": [
+      "intenso"
+    ],
+    "active": true
+  },
+  {
+    "id": 25,
+    "title": "Elena sabe",
+    "author": "Claudia Piñeiro",
+    "coverUrl": null,
+    "coverColor": "#5E5827",
+    "genreLabel": "Novela argentina",
+    "why": "Una madre enferma busca la verdad sobre la muerte de su hija. Breve, intensa y muy humana.",
+    "dedication": "Para vos, que siempre vas a fondo con lo que importa.",
+    "shareQuote": "Una madre enferma busca la verdad sobre su hija: breve, intensa y muy humana.",
+    "ageRanges": [
+      "adulto"
+    ],
+    "readingLevels": [
+      "vacaciones",
+      "mensual",
+      "devora"
+    ],
+    "hooks": [
+      "misterio"
+    ],
+    "kinds": [
+      "novela"
+    ],
+    "length": "corto",
+    "tones": [
+      "intenso",
+      "emotivo"
+    ],
+    "active": true
+  },
+  {
+    "id": 26,
+    "title": "Las viudas de los jueves",
+    "author": "Claudia Piñeiro",
+    "coverUrl": null,
+    "coverColor": "#91551F",
+    "genreLabel": "Novela argentina",
+    "why": "Un country, unos amigos y una noche que termina mal. Un policial argentino filoso y muy nuestro.",
+    "dedication": "Para que veas lo que pasa detrás de las rejas de un country.",
+    "shareQuote": "Un country, una noche de jueves y un final trágico: policial argentino filoso.",
+    "ageRanges": [
+      "adulto"
+    ],
+    "readingLevels": [
+      "casi_nunca",
+      "vacaciones",
+      "mensual"
+    ],
+    "hooks": [
+      "misterio"
+    ],
+    "kinds": [
+      "novela"
+    ],
+    "length": "mediano",
+    "tones": [
+      "intenso"
+    ],
+    "active": true
+  },
+  {
+    "id": 27,
+    "title": "Las cosas que perdimos en el fuego",
+    "author": "Mariana Enriquez",
+    "coverUrl": null,
+    "coverColor": "#492710",
+    "genreLabel": "Terror",
+    "why": "Cuentos de terror ambientados en la Argentina de hoy. Inquietantes, actuales y muy bien escritos.",
+    "dedication": "Para tus noches de insomnio, con la luz prendida.",
+    "shareQuote": "Cuentos de terror en la Argentina de hoy: inquietantes y difíciles de olvidar.",
+    "ageRanges": [
+      "joven",
+      "adulto"
+    ],
+    "readingLevels": [
+      "mensual",
+      "devora"
+    ],
+    "hooks": [
+      "misterio"
+    ],
+    "kinds": [
+      "novela"
+    ],
+    "length": "corto",
+    "tones": [
+      "intenso"
+    ],
+    "active": true
+  },
+  {
+    "id": 28,
+    "title": "La chica del tren",
+    "author": "Paula Hawkins",
+    "coverUrl": null,
+    "coverColor": "#6B4A2A",
+    "genreLabel": "Thriller",
+    "why": "Una mujer que mira por la ventanilla del tren cada día ve algo que no debía. Suspenso puro.",
+    "dedication": "Para que no vuelvas a mirar por la ventanilla igual que antes.",
+    "shareQuote": "Lo que se ve desde la ventanilla del tren puede cambiarlo todo: suspenso puro.",
+    "ageRanges": [
+      "joven",
+      "adulto"
+    ],
+    "readingLevels": [
+      "casi_nunca",
+      "vacaciones",
+      "mensual"
+    ],
+    "hooks": [
+      "misterio"
+    ],
+    "kinds": [
+      "novela"
+    ],
+    "length": "largo",
+    "tones": [
+      "intenso"
+    ],
+    "active": true
+  },
+  {
+    "id": 29,
+    "title": "1984",
+    "author": "George Orwell",
+    "coverUrl": null,
+    "coverColor": "#8C7B5A",
+    "genreLabel": "Distopía",
+    "why": "La distopía que inventó al Gran Hermano. Un clásico inquietante que sigue más vigente que nunca.",
+    "dedication": "Para que nunca dejes de pensar con tu propia cabeza.",
+    "shareQuote": "El Gran Hermano te vigila: la distopía clásica que sigue más vigente que nunca.",
+    "ageRanges": [
+      "joven",
+      "adulto"
+    ],
+    "readingLevels": [
+      "mensual",
+      "devora"
+    ],
+    "hooks": [
+      "misterio"
+    ],
+    "kinds": [
+      "novela"
+    ],
+    "length": "mediano",
+    "tones": [
+      "intenso"
+    ],
+    "active": true
+  },
+  {
+    "id": 30,
+    "title": "Guía del autoestopista galáctico",
+    "author": "Douglas Adams",
+    "coverUrl": null,
+    "coverColor": "#5A3418",
+    "genreLabel": "Ciencia ficción humorística",
+    "why": "Ciencia ficción absurda y desopilante. Ideal para quien ama reírse de todo, hasta del fin del mundo.",
+    "dedication": "Para que nunca te olvides la toalla. Y que no cunda el pánico.",
+    "shareQuote": "La Tierra destruida, una toalla y mucho humor absurdo: que no cunda el pánico.",
+    "ageRanges": [
+      "joven",
+      "adulto"
+    ],
+    "readingLevels": [
+      "vacaciones",
+      "mensual",
+      "devora"
+    ],
+    "hooks": [
+      "humor"
+    ],
+    "kinds": [
+      "novela"
+    ],
+    "length": "mediano",
+    "tones": [
+      "liviano"
+    ],
+    "active": true
+  },
+  {
+    "id": 31,
+    "title": "Crónicas del ángel gris",
+    "author": "Alejandro Dolina",
+    "coverUrl": null,
+    "coverColor": "#5E5827",
+    "genreLabel": "Relatos",
+    "why": "Relatos del barrio de Flores con humor, nostalgia y amores imposibles. Puro Dolina.",
+    "dedication": "Para que nunca te falten los amigos ni las historias del barrio.",
+    "shareQuote": "Flores, amores imposibles y los Refutadores de Leyendas: humor y nostalgia puro Dolina.",
+    "ageRanges": [
+      "adulto"
+    ],
+    "readingLevels": [
+      "vacaciones",
+      "mensual",
+      "devora"
+    ],
+    "hooks": [
+      "humor",
+      "amor"
+    ],
+    "kinds": [
+      "novela"
+    ],
+    "length": "mediano",
+    "tones": [
+      "liviano",
+      "emotivo"
+    ],
+    "active": true
+  },
+  {
+    "id": 32,
+    "title": "Puro fútbol",
+    "author": "Roberto Fontanarrosa",
+    "coverUrl": null,
+    "coverColor": "#91551F",
+    "genreLabel": "Humor",
+    "why": "Cuentos y humor futbolero del Negro Fontanarrosa. Para el que vive el fútbol con pasión.",
+    "dedication": "Para que te rías tanto como cuando gana tu equipo.",
+    "shareQuote": "Cuentos futboleros del Negro Fontanarrosa: humor para los que viven la pelota.",
+    "ageRanges": [
+      "joven",
+      "adulto"
+    ],
+    "readingLevels": [
+      "casi_nunca",
+      "vacaciones",
+      "mensual"
+    ],
+    "hooks": [
+      "humor"
+    ],
+    "kinds": [
+      "novela"
+    ],
+    "length": "corto",
+    "tones": [
+      "liviano"
+    ],
+    "active": true
+  },
+  {
+    "id": 33,
+    "title": "Toda Mafalda",
+    "author": "Quino",
+    "coverUrl": null,
+    "coverColor": "#492710",
+    "genreLabel": "Historieta",
+    "why": "Todas las tiras de Mafalda en un solo libro. Humor argentino que hace pensar, para leer a cualquier edad.",
+    "dedication": "Para que Mafalda te acompañe y te haga reír como a mí.",
+    "shareQuote": "Todas las tiras de Mafalda en un libro: humor argentino que hace pensar.",
+    "ageRanges": [
+      "joven",
+      "adulto"
+    ],
+    "readingLevels": [
+      "casi_nunca",
+      "vacaciones",
+      "mensual",
+      "devora"
+    ],
+    "hooks": [
+      "humor"
+    ],
+    "kinds": [
+      "novela"
+    ],
+    "length": "largo",
+    "tones": [
+      "liviano"
+    ],
+    "active": true
+  },
+  {
+    "id": 34,
+    "title": "Chainsaw Man 1",
+    "author": "Tatsuki Fujimoto",
+    "coverUrl": null,
+    "coverColor": "#6B4A2A",
+    "genreLabel": "Manga de acción",
+    "why": "Acción desenfrenada y humor negro en uno de los mangas más populares de los últimos años.",
+    "dedication": "Para que tengas acción de la buena en tu biblioteca.",
+    "shareQuote": "Acción desenfrenada y humor negro: uno de los mangas más populares de los últimos años.",
+    "ageRanges": [
+      "joven"
+    ],
+    "readingLevels": [
+      "casi_nunca",
+      "vacaciones",
+      "mensual",
+      "devora"
+    ],
+    "hooks": [
+      "anime_manga",
+      "humor"
+    ],
+    "kinds": [
+      "novela"
+    ],
+    "length": "corto",
+    "tones": [
+      "intenso"
+    ],
+    "active": true
+  },
+  {
+    "id": 35,
+    "title": "Death Note 1",
+    "author": "Tsugumi Ohba y Takeshi Obata",
+    "coverUrl": null,
+    "coverColor": "#8C7B5A",
+    "genreLabel": "Manga de suspenso",
+    "why": "Un cuaderno que mata a quien se escriba en él y un duelo de inteligencia atrapante. Clásico del manga.",
+    "dedication": "Para que lo leas de un tirón, como me pasó a mí.",
+    "shareQuote": "Un cuaderno mortal y un duelo de genios: el manga de suspenso que no se puede soltar.",
+    "ageRanges": [
+      "joven"
+    ],
+    "readingLevels": [
+      "casi_nunca",
+      "vacaciones",
+      "mensual",
+      "devora"
+    ],
+    "hooks": [
+      "anime_manga",
+      "misterio"
+    ],
+    "kinds": [
+      "novela"
+    ],
+    "length": "corto",
+    "tones": [
+      "intenso"
+    ],
+    "active": true
+  },
+  {
+    "id": 36,
+    "title": "Your Name.",
+    "author": "Makoto Shinkai",
+    "coverUrl": null,
+    "coverColor": "#5A3418",
+    "genreLabel": "Novela japonesa",
+    "why": "La novela de la película de anime: dos chicos que intercambian sus cuerpos en sueños. Romántica y emocionante.",
+    "dedication": "Para que, aunque estemos lejos, siempre nos encontremos.",
+    "shareQuote": "Dos desconocidos que intercambian sus vidas en sueños: la novela de un anime inolvidable.",
+    "ageRanges": [
+      "joven"
+    ],
+    "readingLevels": [
+      "casi_nunca",
+      "vacaciones",
+      "mensual"
+    ],
+    "hooks": [
+      "anime_manga",
+      "amor"
+    ],
+    "kinds": [
+      "novela"
+    ],
+    "length": "corto",
+    "tones": [
+      "emotivo"
+    ],
+    "active": true
+  },
+  {
+    "id": 37,
+    "title": "Jujutsu Kaisen 1",
+    "author": "Gege Akutami",
+    "coverUrl": null,
+    "coverColor": "#5E5827",
+    "genreLabel": "Manga de acción",
+    "why": "Maldiciones, hechiceros y peleas espectaculares. Uno de los mangas más leídos del momento.",
+    "dedication": "Para que sumes un manga de los buenos a tu colección.",
+    "shareQuote": "Maldiciones, hechiceros y peleas espectaculares: uno de los mangas del momento.",
+    "ageRanges": [
+      "joven"
+    ],
+    "readingLevels": [
+      "casi_nunca",
+      "vacaciones",
+      "mensual"
+    ],
+    "hooks": [
+      "anime_manga",
+      "misterio"
+    ],
+    "kinds": [
+      "novela"
+    ],
+    "length": "corto",
+    "tones": [
+      "intenso"
+    ],
+    "active": true
+  },
+  {
+    "id": 38,
+    "title": "Spy x Family 1",
+    "author": "Tatsuya Endo",
+    "coverUrl": null,
+    "coverColor": "#91551F",
+    "genreLabel": "Manga de comedia",
+    "why": "Un espía, una asesina y una nena que lee mentes forman una familia falsa. Comedia tierna y muy divertida.",
+    "dedication": "Para mi familia favorita, aunque a veces seamos un poco caóticos.",
+    "shareQuote": "Un espía, una asesina y una nena telépata forman una familia falsa: comedia tierna.",
+    "ageRanges": [
+      "joven",
+      "adulto"
+    ],
+    "readingLevels": [
+      "casi_nunca",
+      "vacaciones",
+      "mensual"
+    ],
+    "hooks": [
+      "anime_manga",
+      "humor"
+    ],
+    "kinds": [
+      "novela"
+    ],
+    "length": "corto",
+    "tones": [
+      "liviano"
+    ],
+    "active": true
+  },
+  {
+    "id": 39,
+    "title": "Pluto 1",
+    "author": "Naoki Urasawa",
+    "coverUrl": null,
+    "coverColor": "#492710",
+    "genreLabel": "Manga de suspenso",
+    "why": "Un policía robot investiga una serie de asesinatos. Suspenso adulto de uno de los grandes del manga.",
+    "dedication": "Para que descubras que el manga también es para grandes.",
+    "shareQuote": "Un detective robot y una serie de crímenes: suspenso adulto de un maestro del manga.",
+    "ageRanges": [
+      "joven",
+      "adulto"
+    ],
+    "readingLevels": [
+      "casi_nunca",
+      "vacaciones",
+      "mensual",
+      "devora"
+    ],
+    "hooks": [
+      "anime_manga",
+      "misterio"
+    ],
+    "kinds": [
+      "novela"
+    ],
+    "length": "corto",
+    "tones": [
+      "intenso"
+    ],
+    "active": true
+  },
+  {
+    "id": 40,
+    "title": "Monster 1",
+    "author": "Naoki Urasawa",
+    "coverUrl": null,
+    "coverColor": "#6B4A2A",
+    "genreLabel": "Manga de suspenso",
+    "why": "Un cirujano salva a un chico que resulta ser un asesino. Thriller adulto, oscuro y adictivo.",
+    "dedication": "Para que te atrape este thriller como me atrapó a mí.",
+    "shareQuote": "Un cirujano, un niño salvado y un asesino: thriller adulto, oscuro y adictivo.",
+    "ageRanges": [
+      "adulto"
+    ],
+    "readingLevels": [
+      "casi_nunca",
+      "vacaciones",
+      "mensual",
+      "devora"
+    ],
+    "hooks": [
+      "anime_manga",
+      "misterio"
+    ],
+    "kinds": [
+      "novela"
+    ],
+    "length": "corto",
+    "tones": [
+      "intenso"
+    ],
+    "active": true
+  },
+  {
+    "id": 41,
+    "title": "El almanaque de mi padre",
+    "author": "Jiro Taniguchi",
+    "coverUrl": null,
+    "coverColor": "#8C7B5A",
+    "genreLabel": "Manga adulto",
+    "why": "Un hombre vuelve a su pueblo para el velorio de su padre y descubre quién era. Manga sereno y conmovedor.",
+    "dedication": "Para que sigamos conociéndonos un poquito más cada día.",
+    "shareQuote": "Un hijo descubre quién fue su padre: un manga sereno y profundamente conmovedor.",
+    "ageRanges": [
+      "adulto"
+    ],
+    "readingLevels": [
+      "casi_nunca",
+      "vacaciones",
+      "mensual"
+    ],
+    "hooks": [
+      "anime_manga"
+    ],
+    "kinds": [
+      "novela"
+    ],
+    "length": "mediano",
+    "tones": [
+      "emotivo"
+    ],
+    "active": true
+  },
+  {
+    "id": 42,
+    "title": "El gourmet solitario",
+    "author": "Jiro Taniguchi y Masayuki Kusumi",
+    "coverUrl": null,
+    "coverColor": "#5A3418",
+    "genreLabel": "Manga costumbrista",
+    "why": "Un hombre recorre Tokio comiendo solo y disfrutando cada plato. Un manga tranquilo, para saborear.",
+    "dedication": "Para que disfrutes cada momento como un buen plato de comida.",
+    "shareQuote": "Un hombre, Tokio y el placer de comer solo: un manga tranquilo para saborear.",
+    "ageRanges": [
+      "adulto"
+    ],
+    "readingLevels": [
+      "casi_nunca",
+      "vacaciones",
+      "mensual"
+    ],
+    "hooks": [
+      "anime_manga",
+      "humor"
+    ],
+    "kinds": [
+      "novela"
+    ],
+    "length": "corto",
+    "tones": [
+      "liviano"
+    ],
+    "active": true
+  },
+  {
+    "id": 43,
+    "title": "Vagabond 1",
+    "author": "Takehiko Inoue",
+    "coverUrl": null,
+    "coverColor": "#5E5827",
+    "genreLabel": "Manga histórico",
+    "why": "La vida del legendario samurái Miyamoto Musashi con un dibujo impresionante. Manga para grandes.",
+    "dedication": "Para que encuentres tu propio camino, como un samurái.",
+    "shareQuote": "La vida del samurái Miyamoto Musashi con un dibujo impresionante.",
+    "ageRanges": [
+      "joven",
+      "adulto"
+    ],
+    "readingLevels": [
+      "vacaciones",
+      "mensual",
+      "devora"
+    ],
+    "hooks": [
+      "anime_manga"
+    ],
+    "kinds": [
+      "novela"
+    ],
+    "length": "corto",
+    "tones": [
+      "intenso"
+    ],
+    "active": true
+  },
+  {
+    "id": 44,
+    "title": "Sapiens. De animales a dioses",
+    "author": "Yuval Noah Harari",
+    "coverUrl": null,
+    "coverColor": "#91551F",
+    "genreLabel": "Divulgación histórica",
+    "why": "La historia de la humanidad contada de forma clara y apasionante. Te cambia la forma de mirar el mundo.",
+    "dedication": "Para que sigamos haciéndonos las grandes preguntas juntos.",
+    "shareQuote": "La historia de la humanidad contada de forma clara y apasionante.",
+    "ageRanges": [
+      "joven",
+      "adulto"
+    ],
+    "readingLevels": [
+      "mensual",
+      "devora"
+    ],
+    "hooks": [
+      "misterio"
+    ],
+    "kinds": [
+      "historia_real",
+      "aprender"
+    ],
+    "length": "largo",
+    "tones": [
+      "intenso"
+    ],
+    "active": true
+  },
+  {
+    "id": 45,
+    "title": "Chicas muertas",
+    "author": "Selva Almada",
+    "coverUrl": null,
+    "coverColor": "#492710",
+    "genreLabel": "Crónica",
+    "why": "Una crónica sobre tres crímenes reales en el interior argentino. Necesaria, dura y muy bien escrita.",
+    "dedication": "Para que sigamos hablando de lo que importa.",
+    "shareQuote": "Tres crímenes reales en el interior argentino, contados con una prosa precisa y necesaria.",
+    "ageRanges": [
+      "joven",
+      "adulto"
+    ],
+    "readingLevels": [
+      "mensual",
+      "devora"
+    ],
+    "hooks": [
+      "misterio"
+    ],
+    "kinds": [
+      "historia_real"
+    ],
+    "length": "corto",
+    "tones": [
+      "intenso"
+    ],
+    "active": true
+  },
+  {
+    "id": 46,
+    "title": "Persépolis",
+    "author": "Marjane Satrapi",
+    "coverUrl": null,
+    "coverColor": "#6B4A2A",
+    "genreLabel": "Novela gráfica",
+    "why": "La autora cuenta en viñetas su infancia en Irán durante la revolución. Con humor, aunque duela.",
+    "dedication": "Para que sigamos contándonos nuestras historias.",
+    "shareQuote": "Una infancia en Irán durante la revolución contada en viñetas, con humor aunque duela.",
+    "ageRanges": [
+      "joven",
+      "adulto"
+    ],
+    "readingLevels": [
+      "casi_nunca",
+      "vacaciones",
+      "mensual",
+      "devora"
+    ],
+    "hooks": [
+      "humor"
+    ],
+    "kinds": [
+      "historia_real"
+    ],
+    "length": "mediano",
+    "tones": [
+      "intenso",
+      "emotivo"
+    ],
+    "active": true
+  },
+  {
+    "id": 47,
+    "title": "Operación Masacre",
+    "author": "Rodolfo Walsh",
+    "coverUrl": null,
+    "coverColor": "#8C7B5A",
+    "genreLabel": "Periodismo narrativo",
+    "why": "La investigación periodística de fusilamientos clandestinos de 1956. Se lee como un policial y es todo real.",
+    "dedication": "Para que sigamos buscando la verdad.",
+    "shareQuote": "Se lee como un policial, pero todo es real: la investigación clásica de Rodolfo Walsh.",
+    "ageRanges": [
+      "adulto"
+    ],
+    "readingLevels": [
+      "mensual",
+      "devora"
+    ],
+    "hooks": [
+      "misterio"
+    ],
+    "kinds": [
+      "historia_real"
+    ],
+    "length": "corto",
+    "tones": [
+      "intenso"
+    ],
+    "active": true
+  },
+  {
+    "id": 48,
+    "title": "El infinito en un junco",
+    "author": "Irene Vallejo",
+    "coverUrl": null,
+    "coverColor": "#5A3418",
+    "genreLabel": "Ensayo",
+    "why": "La historia de los libros contada como una aventura. Un homenaje a la lectura que enamora a cualquier lector.",
+    "dedication": "Para vos, que hacés de cada libro un viaje.",
+    "shareQuote": "La historia de los libros contada como una aventura: un homenaje a la lectura.",
+    "ageRanges": [
+      "adulto"
+    ],
+    "readingLevels": [
+      "mensual",
+      "devora"
+    ],
+    "hooks": [
+      "misterio"
+    ],
+    "kinds": [
+      "historia_real",
+      "aprender"
+    ],
+    "length": "largo",
+    "tones": [
+      "emotivo"
+    ],
+    "active": true
+  },
+  {
+    "id": 49,
+    "title": "Yo soy Malala",
+    "author": "Malala Yousafzai",
+    "coverUrl": null,
+    "coverColor": "#5E5827",
+    "genreLabel": "Testimonio",
+    "why": "La historia real de una chica que defendió su derecho a estudiar. Inspiradora y valiente.",
+    "dedication": "Para que nunca dejes de alzar tu voz.",
+    "shareQuote": "La chica que defendió su derecho a estudiar: una historia real inspiradora.",
+    "ageRanges": [
+      "joven"
+    ],
+    "readingLevels": [
+      "casi_nunca",
+      "vacaciones",
+      "mensual"
+    ],
+    "hooks": [
+      "amor"
+    ],
+    "kinds": [
+      "historia_real"
+    ],
+    "length": "mediano",
+    "tones": [
+      "emotivo",
+      "intenso"
+    ],
+    "active": true
+  },
+  {
+    "id": 50,
+    "title": "Hábitos atómicos",
+    "author": "James Clear",
+    "coverUrl": null,
+    "coverColor": "#91551F",
+    "genreLabel": "Desarrollo personal",
+    "why": "Ideas simples y prácticas para mejorar de a poquito todos los días. Se lee fácil y se aplica enseguida.",
+    "dedication": "Para que cumplas cada meta que te propongas, de a un pasito por vez.",
+    "shareQuote": "Pequeños cambios, grandes resultados: ideas simples para mejorar un poquito cada día.",
+    "ageRanges": [
+      "joven",
+      "adulto"
+    ],
+    "readingLevels": [
+      "casi_nunca",
+      "vacaciones",
+      "mensual"
+    ],
+    "hooks": [
+      "humor"
+    ],
+    "kinds": [
+      "aprender"
+    ],
+    "length": "mediano",
+    "tones": [
+      "liviano"
+    ],
+    "active": true
+  },
+  {
+    "id": 51,
+    "title": "Pensar rápido, pensar despacio",
+    "author": "Daniel Kahneman",
+    "coverUrl": null,
+    "coverColor": "#492710",
+    "genreLabel": "Psicología",
+    "why": "Un Nobel explica cómo tomamos decisiones y por qué nos equivocamos. Te cambia la forma de pensar.",
+    "dedication": "Para tu cabeza inquieta, que siempre quiere entender por qué.",
+    "shareQuote": "Cómo decidimos y por qué nos equivocamos, explicado por un premio Nobel.",
+    "ageRanges": [
+      "adulto"
+    ],
+    "readingLevels": [
+      "mensual",
+      "devora"
+    ],
+    "hooks": [
+      "misterio"
+    ],
+    "kinds": [
+      "aprender"
+    ],
+    "length": "largo",
+    "tones": [
+      "intenso"
+    ],
+    "active": true
+  },
+  {
+    "id": 52,
+    "title": "Ikigai. Los secretos de Japón para una vida larga y feliz",
+    "author": "Héctor García y Francesc Miralles",
+    "coverUrl": null,
+    "coverColor": "#6B4A2A",
+    "genreLabel": "Bienestar",
+    "why": "Ideas sencillas para vivir más y mejor, inspiradas en los habitantes más longevos de Japón.",
+    "dedication": "Para que encuentres tu razón de ser y la disfrutes muchos años.",
+    "shareQuote": "Ideas sencillas de Japón para vivir más y mejor, encontrando tu razón de ser.",
+    "ageRanges": [
+      "adulto"
+    ],
+    "readingLevels": [
+      "casi_nunca",
+      "vacaciones",
+      "mensual"
+    ],
+    "hooks": [
+      "amor"
+    ],
+    "kinds": [
+      "aprender"
+    ],
+    "length": "corto",
+    "tones": [
+      "liviano"
+    ],
+    "active": true
+  },
+  {
+    "id": 53,
+    "title": "Breve historia del tiempo",
+    "author": "Stephen Hawking",
+    "coverUrl": null,
+    "coverColor": "#8C7B5A",
+    "genreLabel": "Divulgación científica",
+    "why": "El universo, los agujeros negros y el tiempo explicados por uno de los grandes científicos. Para mentes curiosas.",
+    "dedication": "Para que sigamos mirando las estrellas y haciéndonos preguntas.",
+    "shareQuote": "El universo, los agujeros negros y el tiempo explicados para mentes curiosas.",
+    "ageRanges": [
+      "joven",
+      "adulto"
+    ],
+    "readingLevels": [
+      "mensual",
+      "devora"
+    ],
+    "hooks": [
+      "misterio"
+    ],
+    "kinds": [
+      "aprender"
+    ],
+    "length": "mediano",
+    "tones": [
+      "intenso"
+    ],
+    "active": true
+  },
+  {
+    "id": 54,
+    "title": "La canción de Aquiles",
+    "author": "Madeline Miller",
+    "coverUrl": null,
+    "coverColor": "#5A3418",
+    "genreLabel": "Mitología romántica",
+    "why": "La historia de Aquiles y Patroclo contada como el gran amor que fue. Épica, tierna y desgarradora.",
+    "dedication": "Para que nuestra historia también sea de leyenda.",
+    "shareQuote": "Aquiles y Patroclo, contados como el gran amor que fueron: épica, tierna y desgarradora.",
+    "ageRanges": [
+      "joven",
+      "adulto"
+    ],
+    "readingLevels": [
+      "vacaciones",
+      "mensual",
+      "devora"
+    ],
+    "hooks": [
+      "amor"
+    ],
+    "kinds": [
+      "novela"
+    ],
+    "length": "mediano",
+    "tones": [
+      "emotivo"
+    ],
+    "active": true
+  },
+  {
+    "id": 55,
+    "title": "Mañana, y mañana, y mañana",
+    "author": "Gabrielle Zevin",
+    "coverUrl": null,
+    "coverColor": "#5E5827",
+    "genreLabel": "Novela contemporánea",
+    "why": "Dos amigos que crean videojuegos juntos durante treinta años. Una historia sobre la amistad, el amor y crear.",
+    "dedication": "Para mi compañero de juego de toda la vida.",
+    "shareQuote": "Treinta años de amistad, amor y videojuegos: una novela que se queda con vos.",
+    "ageRanges": [
+      "joven",
+      "adulto"
+    ],
+    "readingLevels": [
+      "mensual",
+      "devora"
+    ],
+    "hooks": [
+      "amor"
+    ],
+    "kinds": [
+      "novela"
+    ],
+    "length": "largo",
+    "tones": [
+      "emotivo"
+    ],
+    "active": true
+  },
+  {
+    "id": 56,
+    "title": "El verano en que me enamoré",
+    "author": "Jenny Han",
+    "coverUrl": null,
+    "coverColor": "#91551F",
+    "genreLabel": "Romance juvenil",
+    "why": "Un verano en la playa, dos hermanos y el primer amor. Fresca y nostálgica, la saga detrás de la serie.",
+    "dedication": "Para que todos tus veranos tengan un poquito de este.",
+    "shareQuote": "Un verano en la playa y el primer amor: fresca, nostálgica y para leer al sol.",
+    "ageRanges": [
+      "joven"
+    ],
+    "readingLevels": [
+      "casi_nunca",
+      "vacaciones",
+      "mensual"
+    ],
+    "hooks": [
+      "amor"
+    ],
+    "kinds": [
+      "novela"
+    ],
+    "length": "mediano",
+    "tones": [
+      "liviano"
+    ],
+    "active": true
+  },
+  {
+    "id": 57,
+    "title": "A través de mi ventana",
+    "author": "Ariana Godoy",
+    "coverUrl": null,
+    "coverColor": "#492710",
+    "genreLabel": "Romance juvenil",
+    "why": "Raquel y el vecino de enfrente: un romance juvenil que nació en Wattpad y conquistó a millones.",
+    "dedication": "Para que siempre tengas una ventana abierta a algo lindo.",
+    "shareQuote": "Raquel, el vecino de enfrente y un romance que conquistó a millones.",
+    "ageRanges": [
+      "joven"
+    ],
+    "readingLevels": [
+      "casi_nunca",
+      "vacaciones",
+      "mensual"
+    ],
+    "hooks": [
+      "amor"
+    ],
+    "kinds": [
+      "novela"
+    ],
+    "length": "largo",
+    "tones": [
+      "liviano",
+      "intenso"
+    ],
+    "active": true
+  },
+  {
+    "id": 58,
+    "title": "Hasta que nos quedemos sin estrellas",
+    "author": "Inma Rubiales",
+    "coverUrl": null,
+    "coverColor": "#6B4A2A",
+    "genreLabel": "Romance juvenil",
+    "why": "Una historia de amor tierna y emotiva sobre segundas oportunidades. Para quien ama emocionarse con un libro.",
+    "dedication": "Para que sigamos mirando estrellas juntos hasta que se acaben.",
+    "shareQuote": "Un amor tierno y emotivo que te deja mirando el cielo un rato más.",
+    "ageRanges": [
+      "joven"
+    ],
+    "readingLevels": [
+      "casi_nunca",
+      "vacaciones",
+      "mensual"
+    ],
+    "hooks": [
+      "amor"
+    ],
+    "kinds": [
+      "novela"
+    ],
+    "length": "mediano",
+    "tones": [
+      "emotivo"
+    ],
+    "active": true
+  },
+  {
+    "id": 59,
+    "title": "Mejor que en las películas",
+    "author": "Lynn Painter",
+    "coverUrl": null,
+    "coverColor": "#8C7B5A",
+    "genreLabel": "Comedia romántica",
+    "why": "Una fan de las comedias románticas que intenta vivir una. Divertida, tierna y llena de guiños al cine.",
+    "dedication": "Para que nuestra historia sea mejor que cualquier película.",
+    "shareQuote": "Una fan de las comedias románticas intenta vivir una: divertida y tierna.",
+    "ageRanges": [
+      "joven"
+    ],
+    "readingLevels": [
+      "casi_nunca",
+      "vacaciones",
+      "mensual"
+    ],
+    "hooks": [
+      "amor",
+      "humor"
+    ],
+    "kinds": [
+      "novela"
+    ],
+    "length": "mediano",
+    "tones": [
+      "liviano"
+    ],
+    "active": true
+  },
+  {
+    "id": 60,
+    "title": "El trato",
+    "author": "Elle Kennedy",
+    "coverUrl": null,
+    "coverColor": "#5A3418",
+    "genreLabel": "Comedia romántica",
+    "why": "Un trato entre una estudiante y la estrella del equipo de hockey que se complica. Romance universitario con mucho humor.",
+    "dedication": "Para que nunca dejemos de cumplir nuestro mejor trato: querernos.",
+    "shareQuote": "Un trato universitario que se complica: romance con humor y mucha química.",
+    "ageRanges": [
+      "joven"
+    ],
+    "readingLevels": [
+      "casi_nunca",
+      "vacaciones",
+      "mensual"
+    ],
+    "hooks": [
+      "amor",
+      "humor"
+    ],
+    "kinds": [
+      "novela"
+    ],
+    "length": "mediano",
+    "tones": [
+      "liviano"
+    ],
+    "active": true
+  },
+  {
+    "id": 61,
+    "title": "De sangre y cenizas",
+    "author": "Jennifer L. Armentrout",
+    "coverUrl": null,
+    "coverColor": "#5E5827",
+    "genreLabel": "Fantasía romántica",
+    "why": "Una doncella elegida, un guardia misterioso y un reino lleno de secretos. Fantasía romántica adictiva.",
+    "dedication": "Para que te pierdas en un mundo de secretos y no quieras volver.",
+    "shareQuote": "Una doncella, un guardia misterioso y un reino lleno de secretos: fantasía romántica adictiva.",
+    "ageRanges": [
+      "joven",
+      "adulto"
+    ],
+    "readingLevels": [
+      "vacaciones",
+      "mensual",
+      "devora"
+    ],
+    "hooks": [
+      "amor",
+      "misterio"
+    ],
+    "kinds": [
+      "novela"
+    ],
+    "length": "largo",
+    "tones": [
+      "intenso"
+    ],
+    "active": true
+  },
+  {
+    "id": 62,
+    "title": "En cinco años",
+    "author": "Rebecca Serle",
+    "coverUrl": null,
+    "coverColor": "#91551F",
+    "genreLabel": "Novela contemporánea",
+    "why": "Una mujer ve cómo será su vida dentro de cinco años y todo cambia. Breve, emotiva y sorprendente.",
+    "dedication": "Para que dentro de cinco años sigamos eligiéndonos.",
+    "shareQuote": "Una mujer ve su vida dentro de cinco años y nada sale como esperaba.",
+    "ageRanges": [
+      "adulto"
+    ],
+    "readingLevels": [
+      "casi_nunca",
+      "vacaciones",
+      "mensual"
+    ],
+    "hooks": [
+      "amor"
+    ],
+    "kinds": [
+      "novela"
+    ],
+    "length": "mediano",
+    "tones": [
+      "emotivo"
+    ],
+    "active": true
+  },
+  {
+    "id": 63,
+    "title": "Casi sin querer",
+    "author": "Defreds",
+    "coverUrl": null,
+    "coverColor": "#492710",
+    "genreLabel": "Poesía contemporánea",
+    "why": "Poemas y textos breves sobre el amor y el desamor. Cercanos, sencillos y para leer de a uno.",
+    "dedication": "Para vos, que llegaste casi sin querer y te quedaste.",
+    "shareQuote": "Poemas breves sobre el amor y el desamor: cercanos, sencillos y para leer de a uno.",
+    "ageRanges": [
+      "joven",
+      "adulto"
+    ],
+    "readingLevels": [
+      "casi_nunca",
+      "vacaciones",
+      "mensual"
+    ],
+    "hooks": [
+      "amor"
+    ],
+    "kinds": [
+      "poesia"
+    ],
+    "length": "corto",
+    "tones": [
+      "emotivo"
+    ],
+    "active": true
+  }
+]

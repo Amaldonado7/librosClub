@@ -98,6 +98,27 @@ CREATE TABLE public.exchange_requests (
 );
 ```
 
+#### Migraciones
+
+Las migraciones de `librosclub-backend/migrations/` se aplican a mano y son idempotentes (se pueden correr más de una vez):
+
+```bash
+cd librosclub-backend
+psql -d librosclub -f migrations/001_add_book_type.sql
+psql -d librosclub -f migrations/002_create_gift_books.sql
+psql -d librosclub -f migrations/003_seed_gift_books.sql
+```
+
+| Tabla | Descripción |
+|-------|-------------|
+| `public.gift_books` | Catálogo curado para el test de regalo: `id, title, author, cover_url, cover_color, genre_label, why, dedication, share_quote, age_ranges, reading_levels, hooks, kinds, length, tones, active, created_at, updated_at`. Las etiquetas están restringidas por `CHECK` a valores cerrados; `age_ranges` solo admite `joven` y `adulto`. |
+
+`002_create_gift_books.sql` crea la tabla del catálogo de regalo y `003_seed_gift_books.sql` carga la semilla curada.
+
+> Solo en bases **locales**: si ya aplicaste una versión anterior de `002_create_gift_books.sql`, corré `DROP TABLE IF EXISTS public.gift_books;` antes de re-aplicar 002 y 003, porque `CREATE TABLE IF NOT EXISTS` no actualiza los `CHECK` de una tabla que ya existe. **Nunca** lo hagas en producción.
+
+`003_seed_gift_books.sql` se genera desde `migrations/seed/gift_books.json` con `npm run seed:gift:build`; no se edita a mano. Una vez aplicada en producción queda **congelada**: se registra su sha256 en `migrations/seed/frozen.json` (`{ "003_seed_gift_books.sql": "<sha256>" }`), el generador se niega a sobrescribirla y toda curación posterior (alta, edición o desactivación de libros) va en una migración nueva `004+` con `INSERT ... ON CONFLICT (id) DO UPDATE` / `UPDATE ... WHERE id = ...` explícitos.
+
 ### 4. Frontend
 
 ```bash
@@ -162,6 +183,13 @@ Panel exclusivo para admins:
 | GET | `/api/exchanges/my` | Sí | Mis publicaciones con solicitudes |
 | POST | `/api/exchanges/:id/request` | Sí | Solicitar intercambio |
 | PUT | `/api/exchanges/requests/:id` | Sí | `{ status: 'accepted' \| 'rejected' }` |
+
+### Regalo
+| Método | Ruta | Auth | Descripción |
+|--------|------|------|-------------|
+| POST | `/api/gift/recommendations` | No | Recibe las 8 respuestas del test (`relationship, occasion, age, readingLevel, hook, kind, length, tone`; `age` admite `joven` (18–30) o `adulto` (31–60)) y devuelve `{ profile, books }` con 3 libros. Límite: 30 pedidos / 15 min por IP y cuerpo ≤2 KB (413 si se excede). |
+
+> Despliegue: el límite por IP asume exactamente un proxy delante del backend (`trust proxy` = 1, como en Railway). Sin proxy, el header `X-Forwarded-For` lo controla el cliente y el límite se puede evadir.
 
 ## Roles
 
