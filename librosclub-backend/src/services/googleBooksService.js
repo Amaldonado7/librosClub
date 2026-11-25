@@ -1,4 +1,10 @@
-const fetch = require('node-fetch');
+async function requestGoogleBooks(url) {
+  try {
+    return await globalThis.fetch(url);
+  } catch {
+    throw new Error('No se pudo conectar con Google Books');
+  }
+}
 
 function getApiKey() {
   const raw = process.env.GOOGLE_BOOKS_API_KEY;
@@ -49,7 +55,7 @@ exports.getGoogleFeed = async ({ topic = 'fiction', limit = 10, lang = 'es', pag
   );
   url.searchParams.set('key', API_KEY);
 
-  const r = await fetch(url.toString());
+  const r = await requestGoogleBooks(url.toString());
   const rawText = await r.text();
 
   if (!r.ok) {
@@ -111,7 +117,7 @@ exports.searchVolumes = async ({ q, page = 0, pageSize = 20, lang = 'es' }) => {
   );
   url.searchParams.set('key', API_KEY);
 
-  const r = await fetch(url.toString());
+  const r = await requestGoogleBooks(url.toString());
   const rawText = await r.text();
 
   if (!r.ok) {

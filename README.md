@@ -11,14 +11,14 @@ Plataforma web para descubrir, buscar e intercambiar libros. Trabajo final de la
 - TanStack Query · React Router DOM · jwt-decode
 
 ### Backend
-- Node.js 18+ + Express
+- Node.js 24 + Express
 - PostgreSQL (`pg`)
-- JWT (`jsonwebtoken`) · BcryptJS · node-fetch v2
+- JWT (`jsonwebtoken`) · BcryptJS · `fetch` nativo de Node
 
 ## Instalación
 
 ### Requisitos
-- Node.js 20+ (recomendado; mínimo 18)
+- Node.js 24 para backend y frontend. Cada proyecto tiene un `.nvmrc`: con `nvm use` dentro de `librosclub-backend/` o `librosclub-frontend/` se selecciona la versión correcta (`nvm install 24` si todavía no está instalada)
 - PostgreSQL
 - npm
 
@@ -33,6 +33,7 @@ cd librosClub
 
 ```bash
 cd librosclub-backend
+nvm use
 npm install
 ```
 
@@ -139,9 +140,17 @@ Las portadas se buscan en Google Books desde la máquina de desarrollo y se apru
 
 ```bash
 cd ../librosclub-frontend
+nvm use
 npm install
 npm run dev   # Vite, puerto 8080
 ```
+
+## Deploy
+
+Backend y frontend declaran `"engines": { "node": "24.x" }` en su `package.json`, que es la fuente de verdad de la versión de Node en producción.
+
+- **Railway (backend, nixpacks):** toma la versión de `engines.node`. Si el log de build no muestra Node 24, seteá la variable `NIXPACKS_NODE_VERSION=24` o cambiá el builder a Railpack en `railway.toml`. Confirmalo en el log de build.
+- **Vercel (frontend):** en Settings › Node.js Version elegí `24.x`, coherente con `engines`.
 
 ## Funcionalidades
 

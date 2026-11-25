@@ -4,7 +4,7 @@
   "description": "",
   "main": "src/server.js",
   "engines": {
-    "node": ">=20"
+    "node": "24.x"
   },
   "scripts": {
     "start": "node src/server.js",
@@ -27,7 +27,6 @@
     "express-rate-limit": "^8.4.1",
     "helmet": "^8.0.0",
     "jsonwebtoken": "^9.0.2",
-    "node-fetch": "^2.7.0",
     "pg": "^8.13.1"
   },
   "devDependencies": {
