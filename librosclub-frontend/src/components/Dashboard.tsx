@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { booksAPI, bookRequestsAPI, Book, BookRequest } from '../utils/api';
+import { ApiError, booksAPI, bookRequestsAPI, Book, BookRequest } from '../utils/api';
 import RequestChatModal from './RequestChatModal';
 import BookCoverCard from './BookCoverCard';
 import BookAdminRow from './BookAdminRow';
@@ -73,6 +73,11 @@ const GENRES = [
   { key: 'science', label: 'Ciencia' },
   { key: 'poetry', label: 'Poesía' },
 ] as const;
+
+const RATE_LIMITED_MESSAGE = 'Hiciste muchas búsquedas seguidas. Probá de nuevo en unos minutos.';
+
+const googleBooksErrorMessage = (err: unknown, fallback: string) =>
+  err instanceof ApiError && err.code === 'rate_limited' ? RATE_LIMITED_MESSAGE : fallback;
 
 const Dashboard: React.FC = () => {
   // DB (solo para tab "all")
@@ -165,8 +170,8 @@ const Dashboard: React.FC = () => {
     try {
       const data = await booksAPI.searchGoogleBooks(query);
       setSearchResults((data?.items ?? []) as GoogleBook[]);
-    } catch {
-      toast({ title: 'Error', description: 'Error en la búsqueda.', variant: 'destructive' });
+    } catch (err) {
+      toast({ title: 'Error', description: googleBooksErrorMessage(err, 'Error en la búsqueda.'), variant: 'destructive' });
     } finally {
       setIsSearching(false);
     }
@@ -192,10 +197,10 @@ const Dashboard: React.FC = () => {
       }
       setGooglePage(page);
       setHasMore(newItems.length > 0);
-    } catch {
+    } catch (err) {
       toast({
         title: 'Error',
-        description: 'No se pudo cargar el feed de Google Books.',
+        description: googleBooksErrorMessage(err, 'No se pudo cargar el feed de Google Books.'),
         variant: 'destructive',
       });
     } finally {

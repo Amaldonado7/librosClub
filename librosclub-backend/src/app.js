@@ -78,6 +78,14 @@ const giftLimiter = rateLimit({
   message: { message: 'Demasiadas solicitudes. Probá de nuevo en unos minutos.' },
 });
 
+const googleBooksLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 60,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: 'Demasiadas solicitudes. Probá de nuevo en unos minutos.' },
+});
+
 const giftCoverLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   limit: 60,
@@ -102,6 +110,7 @@ app.use('/api/auth/register', loginLimiter);
 app.use('/api/auth', authRoutes);
 app.use('/api/books', booksRoutes); // Rutas de libros
 app.use('/api/protected', protectedRoutes); // Rutas protegidas
+app.use('/api/google-books', googleBooksLimiter);
 app.use('/api/google-books', googleBooksRoutes);
 app.use('/api/exchanges',   exchangeRoutes);
 app.use('/api/clubs',       clubsRoutes);
