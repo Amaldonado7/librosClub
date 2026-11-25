@@ -8,6 +8,8 @@
     "test": "node --test",
     "test:coverage": "node --test --experimental-test-coverage",
     "seed:gift:build": "node scripts/build-gift-seed.js",
+    "covers:gift:find": "node scripts/find-gift-covers.js",
+    "covers:gift:apply": "node scripts/apply-gift-covers.js",
     "dev": "kill $(lsof -ti :3000) 2>/dev/null; nodemon src/server.js"
   },
   "keywords": [],
