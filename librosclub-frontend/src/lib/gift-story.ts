@@ -29,6 +29,9 @@ const YELLOW = '#F2D661';
 const TERRACOTTA = '#91551F';
 const BROWN = '#492710';
 
+export const STORY_INSTAGRAM_HANDLE = '@librosclub';
+const INSTAGRAM_ICON_SIZE = 34;
+
 const MONO = '"IBM Plex Mono", monospace';
 const SCRIPT = '"Beth Ellen", cursive';
 const SERIF = '"Sorts Mill Goudy", Georgia, serif';
@@ -250,13 +253,29 @@ function drawLogo(ctx: CanvasRenderingContext2D, x: number, y: number) {
   ctx.stroke();
 }
 
+function drawInstagramIcon(ctx: CanvasRenderingContext2D, x: number, centerY: number) {
+  const top = centerY - INSTAGRAM_ICON_SIZE / 2;
+  ctx.strokeStyle = BROWN;
+  ctx.lineWidth = 3;
+  roundedRectPath(ctx, x, top, INSTAGRAM_ICON_SIZE, INSTAGRAM_ICON_SIZE, [9, 9, 9, 9]);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(x + INSTAGRAM_ICON_SIZE / 2, centerY, 7, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(x + INSTAGRAM_ICON_SIZE - 8, top + 8, 2, 0, Math.PI * 2);
+  ctx.fillStyle = BROWN;
+  ctx.fill();
+}
+
 function drawFooter(ctx: CanvasRenderingContext2D) {
   const question = '¿Y vos qué le regalás?';
-  const site = 'librosclub.vercel.app';
+  const site = STORY_INSTAGRAM_HANDLE;
   ctx.font = `38px ${SERIF}`;
   const questionWidth = ctx.measureText(question).width;
   ctx.font = `600 30px ${MONO}`;
-  const siteWidth = ctx.measureText(site).width + 52;
+  const iconSpace = INSTAGRAM_ICON_SIZE + 14;
+  const siteWidth = iconSpace + ctx.measureText(site).width + 52;
   const siteHeight = 30 + 24;
   const columnWidth = Math.max(questionWidth, siteWidth);
   const columnHeight = 38 + 14 + siteHeight;
@@ -275,11 +294,13 @@ function drawFooter(ctx: CanvasRenderingContext2D) {
   ctx.fillStyle = YELLOW;
   pillPath(ctx, columnLeft, pillTop, siteWidth, siteHeight);
   ctx.fill();
+  const pillCenterY = pillTop + siteHeight / 2;
+  drawInstagramIcon(ctx, columnLeft + 26, pillCenterY);
   ctx.font = `600 30px ${MONO}`;
   ctx.fillStyle = BROWN;
-  ctx.textAlign = 'center';
+  ctx.textAlign = 'left';
   ctx.textBaseline = 'middle';
-  ctx.fillText(site, columnLeft + siteWidth / 2, pillTop + siteHeight / 2);
+  ctx.fillText(site, columnLeft + 26 + iconSpace, pillCenterY);
 }
 
 export function drawGiftStory(ctx: CanvasRenderingContext2D, { heading, book, cover }: GiftStoryDrawInput): void {

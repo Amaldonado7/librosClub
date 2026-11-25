@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import {
   STORY_FILE_NAME,
   STORY_HEIGHT,
+  STORY_INSTAGRAM_HANDLE,
   STORY_SHARE_TEXT,
   STORY_SHARE_URL,
   STORY_WIDTH,
@@ -140,7 +141,7 @@ describe('drawGiftStory', () => {
     const all = texts(ops);
     expect(all.some((text) => text.includes('“') || text.includes('”'))).toBe(false);
     expect(all).toContain('¿Y vos qué le regalás?');
-    expect(all).toContain('librosclub.vercel.app');
+    expect(all).toContain('@librosclub');
     expect(joinedSingles(ops)).toContain('LIBROS');
     expect(joinedSingles(ops)).toContain('CLUB');
     expect(textsWithFont(ops, 52).join(' ')).toBe(BOOK.title);
@@ -151,8 +152,25 @@ describe('drawGiftStory', () => {
     const all = texts(ops);
     expect(all).toContain('OLOR A LIBRO NUEVO');
     expect(all).toContain('¿Y vos qué le regalás?');
-    expect(all).toContain('librosclub.vercel.app');
+    expect(all).toContain('@librosclub');
+    expect(all.some((text) => text.includes('librosclub.vercel.app'))).toBe(false);
     expect(joinedSingles(ops)).toBe('LIBROSCLUB');
+  });
+
+  it('dibuja el ícono de Instagram en la pastilla, antes del usuario', () => {
+    const { ops } = draw();
+    const question = ops.findIndex((op) => op.op === 'fillText' && op.args[0] === '¿Y vos qué le regalás?');
+    const pillFill = ops.findIndex((op, index) => index > question && op.op === 'fill' && op.fillStyle === '#F2D661');
+    const handle = ops.findIndex((op) => op.op === 'fillText' && op.args[0] === STORY_INSTAGRAM_HANDLE);
+    expect(STORY_INSTAGRAM_HANDLE).toBe('@librosclub');
+    expect(pillFill).toBeGreaterThan(-1);
+    expect(handle).toBeGreaterThan(pillFill);
+    const icon = ops.slice(pillFill + 1, handle);
+    expect(icon.filter((op) => op.op === 'stroke')).toHaveLength(2);
+    expect(icon.filter((op) => op.op === 'arc')).toHaveLength(2);
+    expect(icon.filter((op) => op.op === 'fill')).toHaveLength(1);
+    expect(icon.find((op) => op.op === 'fill')?.fillStyle).toBe('#492710');
+    expect(ops[handle].fillStyle).toBe('#492710');
   });
 
   it('dibuja un título con HTML como texto literal sin crear imágenes', () => {
