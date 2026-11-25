@@ -220,7 +220,7 @@ if (require.main === module) {
   const { promisify } = require('node:util');
   run({
     env: process.env,
-    fetchImpl: require('node-fetch'),
+    fetchImpl: globalThis.fetch,
     sleep: promisify(setTimeout),
   }).then((code) => {
     process.exitCode = code;

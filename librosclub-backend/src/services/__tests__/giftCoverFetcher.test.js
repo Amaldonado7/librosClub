@@ -197,11 +197,11 @@ describe('giftCoverFetcher.fetchCoverImage', () => {
 });
 
 describe('runtime de Node', () => {
-  it('package.json exige Node >= 20 sin dependencias nuevas', () => {
+  it('package.json exige Node 24 sin dependencias nuevas', () => {
     const pkg = JSON.parse(fs.readFileSync(path.join(__dirname, '..', '..', '..', 'package.json'), 'utf8'));
-    assert.equal(pkg.engines.node, '>=20');
+    assert.equal(pkg.engines.node, '24.x');
     assert.deepEqual(Object.keys(pkg.dependencies).sort(), [
-      'bcryptjs', 'body-parser', 'cors', 'dotenv', 'express', 'express-rate-limit', 'helmet', 'jsonwebtoken', 'node-fetch', 'pg',
+      'bcryptjs', 'body-parser', 'cors', 'dotenv', 'express', 'express-rate-limit', 'helmet', 'jsonwebtoken', 'pg',
     ]);
   });
 
