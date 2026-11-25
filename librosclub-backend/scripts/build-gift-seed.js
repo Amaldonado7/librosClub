@@ -1,11 +1,13 @@
 const fs = require('node:fs');
 const path = require('node:path');
 
+const { isAllowedCoverUrl } = require('./lib/giftCoverUrl');
+
 const MIGRATIONS_DIR = path.join(__dirname, '..', 'migrations');
 const SEED_JSON = path.join(MIGRATIONS_DIR, 'seed', 'gift_books.json');
 const FROZEN_JSON = path.join(MIGRATIONS_DIR, 'seed', 'frozen.json');
 const OUTPUT_NAME = '003_seed_gift_books.sql';
-const FROZEN_MESSAGE = '003 está congelada (aplicada en producción): creá una migración 004+ con INSERT ... ON CONFLICT (id) DO UPDATE / UPDATE explícitos';
+const COVERS_OUTPUT_NAME = '004_update_gift_books_covers.sql';
 
 const COLUMNS = [
   ['id', 'id'],
@@ -64,18 +66,67 @@ function isFrozen(fileName, frozenPath = FROZEN_JSON) {
   return Object.prototype.hasOwnProperty.call(readFrozen(frozenPath), fileName);
 }
 
-function main() {
-  if (isFrozen(OUTPUT_NAME)) {
-    console.error(FROZEN_MESSAGE);
-    process.exitCode = 1;
-    return;
-  }
-  const books = JSON.parse(fs.readFileSync(SEED_JSON, 'utf8'));
-  fs.writeFileSync(path.join(MIGRATIONS_DIR, OUTPUT_NAME), buildSeedSql(books));
+function buildCoversSql(books) {
+  const updates = books
+    .filter((book) => book.coverUrl !== null && book.coverUrl !== undefined)
+    .sort((a, b) => a.id - b.id)
+    .map((book) => {
+      if (!Number.isInteger(book.id) || book.id <= 0 || !isAllowedCoverUrl(book.coverUrl)) {
+        throw new Error(`coverUrl inválida en el libro ${book.id}`);
+      }
+      return `UPDATE public.gift_books SET cover_url = ${sqlString(book.coverUrl)}, updated_at = now() WHERE id = ${book.id};`;
+    });
+  return ['BEGIN;', ...updates, 'COMMIT;', ''].join('\n');
 }
 
-if (require.main === module) main();
+function build({
+  migrationsDir = MIGRATIONS_DIR,
+  seedPath = SEED_JSON,
+  frozenPath = FROZEN_JSON,
+  log = console.log,
+  error = console.error,
+} = {}) {
+  let books;
+  let frozen;
+  try {
+    books = JSON.parse(fs.readFileSync(seedPath, 'utf8'));
+    frozen = readFrozen(frozenPath);
+  } catch {
+    error(`No se pudo leer ${path.basename(seedPath)} o ${path.basename(frozenPath)}: revisá que exista y sea JSON válido`);
+    return 1;
+  }
+  if (!Array.isArray(books)) {
+    error(`${path.basename(seedPath)} debe ser un array de libros`);
+    return 1;
+  }
+  let outputs;
+  try {
+    outputs = [[OUTPUT_NAME, buildSeedSql(books)], [COVERS_OUTPUT_NAME, buildCoversSql(books)]];
+  } catch (err) {
+    error(err.message);
+    return 1;
+  }
+  for (const [fileName, sql] of outputs) {
+    if (Object.prototype.hasOwnProperty.call(frozen, fileName)) {
+      log(`${fileName} congelada: no se reescribe`);
+    } else {
+      fs.writeFileSync(path.join(migrationsDir, fileName), sql);
+    }
+  }
+  return 0;
+}
+
+if (require.main === module) process.exitCode = build();
 
 module.exports = {
-  buildSeedSql, isFrozen, readFrozen, FROZEN_MESSAGE, OUTPUT_NAME, SEED_JSON, FROZEN_JSON, MIGRATIONS_DIR,
+  buildSeedSql,
+  buildCoversSql,
+  build,
+  isFrozen,
+  readFrozen,
+  OUTPUT_NAME,
+  COVERS_OUTPUT_NAME,
+  SEED_JSON,
+  FROZEN_JSON,
+  MIGRATIONS_DIR,
 };

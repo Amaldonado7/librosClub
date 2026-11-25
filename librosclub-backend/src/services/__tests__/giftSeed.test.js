@@ -8,13 +8,18 @@ const path = require('node:path');
 const { recommend } = require('../giftRecommender');
 const { ANSWER_VALUES, BOOK_LENGTHS } = require('../giftValues');
 const {
-  buildSeedSql, isFrozen, readFrozen, OUTPUT_NAME, SEED_JSON, FROZEN_JSON, MIGRATIONS_DIR,
+  buildSeedSql, buildCoversSql, build, isFrozen, readFrozen,
+  OUTPUT_NAME, COVERS_OUTPUT_NAME, SEED_JSON, FROZEN_JSON, MIGRATIONS_DIR,
 } = require('../../../scripts/build-gift-seed');
+const { isAllowedCoverUrl } = require('../../../scripts/lib/giftCoverUrl');
 
 const seed = JSON.parse(fs.readFileSync(SEED_JSON, 'utf8'));
 const active = seed.filter((book) => book.active === true);
 
 const LATER_SEED_MIGRATION = /^0(0[4-9]|[1-9]\d)_.*gift_books.*\.sql$/;
+const LATER_COVERS_MIGRATION = /^0(0[5-9]|[1-9]\d)_.*gift_books.*\.sql$/;
+const COVERS_DRIFT_MESSAGE = 'el catálogo cambió portadas pero 004 está congelada: agregá una migración 005+';
+const COVER_UPDATE_LINE = /^UPDATE public\.gift_books SET cover_url = '((?:[^']|'')*)', updated_at = now\(\) WHERE id = (\d+);$/gm;
 const ARRAY_FIELDS = {
   ageRanges: ANSWER_VALUES.age,
   readingLevels: ANSWER_VALUES.readingLevel,
@@ -57,6 +62,29 @@ function frozenViolations(migrationsDir, frozen, generated003) {
   return violations;
 }
 
+function parseCoverUpdates(sql) {
+  return [...sql.matchAll(COVER_UPDATE_LINE)]
+    .map(([, url, id]) => [Number(id), url.replace(/''/g, "'")])
+    .sort(([a], [b]) => a - b);
+}
+
+function coverPairs(books) {
+  return books
+    .filter((book) => book.coverUrl !== null)
+    .map((book) => [book.id, book.coverUrl])
+    .sort(([a], [b]) => a - b);
+}
+
+function coverDriftViolations(migrationsDir, frozen, books) {
+  if (!Object.prototype.hasOwnProperty.call(frozen, COVERS_OUTPUT_NAME)) return [];
+  if (fs.readdirSync(migrationsDir).some((name) => LATER_COVERS_MIGRATION.test(name))) return [];
+  const filePath = path.join(migrationsDir, COVERS_OUTPUT_NAME);
+  if (!fs.existsSync(filePath)) return [];
+  const applied = parseCoverUpdates(fs.readFileSync(filePath, 'utf8'));
+  const changed = JSON.stringify(applied) !== JSON.stringify(coverPairs(books));
+  return changed ? [COVERS_DRIFT_MESSAGE] : [];
+}
+
 function withTempMigrations(files, run) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'gift-seed-'));
   try {
@@ -90,7 +118,7 @@ describe('semilla gift_books: integridad', () => {
       }
       assert.ok(book.shareQuote.length <= 120, `shareQuote tiene ${book.shareQuote.length} caracteres`);
       assert.match(book.coverColor, /^#[0-9A-Fa-f]{6}$/);
-      assert.ok(book.coverUrl === null || /^https:\/\//.test(book.coverUrl));
+      assert.ok(book.coverUrl === null || isAllowedCoverUrl(book.coverUrl), `coverUrl ${book.coverUrl}`);
       assert.ok(BOOK_LENGTHS.includes(book.length), `length ${book.length}`);
       assert.equal(typeof book.active, 'boolean');
       for (const [field, allowed] of Object.entries(ARRAY_FIELDS)) {
@@ -240,5 +268,197 @@ describe('migración 003 generada', () => {
     withTempMigrations({}, (dir) => {
       assert.deepEqual(frozenViolations(dir, { 'x.sql': 'abc' }, ''), ['x.sql figura congelada pero no existe']);
     });
+  });
+});
+
+function captureLogs() {
+  const lines = { log: [], error: [] };
+  return {
+    lines,
+    log: (message) => lines.log.push(message),
+    error: (message) => lines.error.push(message),
+  };
+}
+
+function withBuildFixture({ books, frozen, files = {} }, run) {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'gift-build-'));
+  try {
+    const seedPath = path.join(dir, 'gift_books.json');
+    const frozenPath = path.join(dir, 'frozen.json');
+    fs.writeFileSync(seedPath, typeof books === 'string' ? books : JSON.stringify(books, null, 2));
+    if (frozen) fs.writeFileSync(frozenPath, JSON.stringify(frozen, null, 2));
+    for (const [name, content] of Object.entries(files)) {
+      fs.writeFileSync(path.join(dir, name), content);
+    }
+    return run({ dir, seedPath, frozenPath });
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+}
+
+const COVER_A = 'https://books.google.com/books/content?id=aaa&printsec=frontcover&img=1&zoom=1';
+const COVER_B = 'https://books.googleusercontent.com/books/content?id=bbb&zoom=1';
+
+describe('migración 004 de portadas', () => {
+  const migration003Path = path.join(MIGRATIONS_DIR, OUTPUT_NAME);
+  const migration004Path = path.join(MIGRATIONS_DIR, COVERS_OUTPUT_NAME);
+
+  it('003 está congelada con el sha256 del archivo en disco', () => {
+    assert.equal(readFrozen(FROZEN_JSON)[OUTPUT_NAME], sha256(fs.readFileSync(migration003Path)));
+  });
+
+  it('003 congelada solo difiere del catálogo en las portadas', () => {
+    assert.equal(isFrozen(OUTPUT_NAME), true);
+    assert.equal(
+      fs.readFileSync(migration003Path, 'utf8'),
+      buildSeedSql(seed.map((book) => ({ ...book, coverUrl: null }))),
+    );
+  });
+
+  it('genera un UPDATE por libro con portada, ordenado por id y sin comentarios', () => {
+    const sql = buildCoversSql([
+      { id: 5, coverUrl: COVER_B },
+      { id: 3, coverUrl: null },
+      { id: 2, coverUrl: COVER_A },
+    ]);
+    assert.equal(sql, [
+      'BEGIN;',
+      `UPDATE public.gift_books SET cover_url = '${COVER_A}', updated_at = now() WHERE id = 2;`,
+      `UPDATE public.gift_books SET cover_url = '${COVER_B}', updated_at = now() WHERE id = 5;`,
+      'COMMIT;',
+      '',
+    ].join('\n'));
+    assert.equal((sql.match(/^UPDATE /gm) || []).length, 2);
+    assert.ok(sql.startsWith('BEGIN;\n'));
+    assert.ok(sql.endsWith('COMMIT;\n'));
+    assert.equal(sql.includes('--'), false);
+    assert.equal(sql.includes('/*'), false);
+    assert.equal(buildCoversSql([{ id: 1, coverUrl: null }]), 'BEGIN;\nCOMMIT;\n');
+    assert.equal(buildCoversSql([]), 'BEGIN;\nCOMMIT;\n');
+    const quoted = buildCoversSql([{ id: 7, coverUrl: "https://books.google.com/x?id=a'b" }]);
+    assert.ok(quoted.includes("cover_url = 'https://books.google.com/x?id=a''b'"));
+    assert.deepEqual(parseCoverUpdates(quoted), [[7, "https://books.google.com/x?id=a'b"]]);
+  });
+
+  it('rechaza portadas fuera de la regla informando el id', () => {
+    for (const coverUrl of ['https://example.com/x.jpg', 'http://books.google.com/x']) {
+      assert.throws(
+        () => buildCoversSql([{ id: 2, coverUrl: COVER_A }, { id: 9, coverUrl }]),
+        { message: 'coverUrl inválida en el libro 9' },
+      );
+    }
+    assert.throws(() => buildCoversSql([{ id: 0, coverUrl: COVER_A }]), /libro 0/);
+    assert.throws(() => buildCoversSql([{ id: '3', coverUrl: COVER_A }]), /libro 3/);
+  });
+
+  it('004 en disco coincide con el catálogo mientras no está congelada', (t) => {
+    if (isFrozen(COVERS_OUTPUT_NAME)) {
+      t.skip('004 está congelada: la verifica el test de deriva de portadas');
+      return;
+    }
+    assert.ok(fs.existsSync(migration004Path), `falta ${COVERS_OUTPUT_NAME}: corré npm run seed:gift:build`);
+    const onDisk = fs.readFileSync(migration004Path, 'utf8');
+    assert.equal(onDisk, buildCoversSql(seed), `${COVERS_OUTPUT_NAME} está desactualizada: corré npm run seed:gift:build`);
+    assert.deepEqual(parseCoverUpdates(onDisk), coverPairs(seed));
+    assert.equal(buildCoversSql(seed), buildCoversSql(seed));
+  });
+
+  it('004 en disco no tiene comentarios', () => {
+    const onDisk = fs.readFileSync(migration004Path, 'utf8');
+    assert.equal(onDisk.includes('--'), false);
+    assert.equal(onDisk.includes('/*'), false);
+  });
+
+  it('con 003 congelada no la reescribe, genera 004 y termina con 0', () => {
+    const original003 = fs.readFileSync(migration003Path);
+    const books = [{ ...seed[0], coverUrl: COVER_A }, { ...seed[1], coverUrl: null }];
+    withBuildFixture({
+      books,
+      frozen: { [OUTPUT_NAME]: sha256(original003) },
+      files: { [OUTPUT_NAME]: original003 },
+    }, ({ dir, seedPath, frozenPath }) => {
+      const logs = captureLogs();
+      const code = build({ migrationsDir: dir, seedPath, frozenPath, log: logs.log, error: logs.error });
+      assert.equal(code, 0);
+      assert.equal(sha256(fs.readFileSync(path.join(dir, OUTPUT_NAME))), sha256(original003));
+      const covers = fs.readFileSync(path.join(dir, COVERS_OUTPUT_NAME), 'utf8');
+      assert.equal((covers.match(/^UPDATE /gm) || []).length, 1);
+      assert.deepEqual(parseCoverUpdates(covers), [[seed[0].id, COVER_A]]);
+      assert.ok(logs.lines.log.includes(`${OUTPUT_NAME} congelada: no se reescribe`));
+      assert.deepEqual(logs.lines.error, []);
+    });
+  });
+
+  it('sin salidas congeladas escribe 003 y 004', () => {
+    const books = [{ ...seed[0], coverUrl: COVER_A }, { ...seed[1], coverUrl: null }];
+    withBuildFixture({ books }, ({ dir, seedPath, frozenPath }) => {
+      const logs = captureLogs();
+      assert.equal(build({ migrationsDir: dir, seedPath, frozenPath, log: logs.log, error: logs.error }), 0);
+      assert.equal(fs.readFileSync(path.join(dir, OUTPUT_NAME), 'utf8'), buildSeedSql(books));
+      assert.equal(fs.readFileSync(path.join(dir, COVERS_OUTPUT_NAME), 'utf8'), buildCoversSql(books));
+    });
+  });
+
+  it('con 004 congelada no la reescribe', () => {
+    const books = [{ ...seed[0], coverUrl: COVER_A }];
+    const applied = 'BEGIN;\nCOMMIT;\n';
+    withBuildFixture({
+      books,
+      frozen: { [COVERS_OUTPUT_NAME]: sha256(applied) },
+      files: { [COVERS_OUTPUT_NAME]: applied },
+    }, ({ dir, seedPath, frozenPath }) => {
+      const logs = captureLogs();
+      assert.equal(build({ migrationsDir: dir, seedPath, frozenPath, log: logs.log, error: logs.error }), 0);
+      assert.equal(fs.readFileSync(path.join(dir, COVERS_OUTPUT_NAME), 'utf8'), applied);
+      assert.ok(logs.lines.log.includes(`${COVERS_OUTPUT_NAME} congelada: no se reescribe`));
+    });
+  });
+
+  it('devuelve 1 sin crear 004 si una portada es inválida', () => {
+    const books = [{ ...seed[0], coverUrl: 'https://example.com/x.jpg' }];
+    withBuildFixture({ books }, ({ dir, seedPath, frozenPath }) => {
+      const logs = captureLogs();
+      assert.equal(build({ migrationsDir: dir, seedPath, frozenPath, log: logs.log, error: logs.error }), 1);
+      assert.equal(fs.existsSync(path.join(dir, COVERS_OUTPUT_NAME)), false);
+      assert.deepEqual(logs.lines.error, [`coverUrl inválida en el libro ${seed[0].id}`]);
+    });
+  });
+
+  it('devuelve 1 sin escribir nada si el catálogo es ilegible', () => {
+    withBuildFixture({ books: '{ no es json' }, ({ dir, seedPath, frozenPath }) => {
+      const logs = captureLogs();
+      assert.equal(build({ migrationsDir: dir, seedPath, frozenPath, log: logs.log, error: logs.error }), 1);
+      assert.equal(fs.existsSync(path.join(dir, OUTPUT_NAME)), false);
+      assert.equal(fs.existsSync(path.join(dir, COVERS_OUTPUT_NAME)), false);
+      assert.equal(logs.lines.error.length, 1);
+    });
+  });
+
+  it('detecta deriva de portadas con 004 congelada', () => {
+    const applied = buildCoversSql([{ id: 2, coverUrl: COVER_A }]);
+    const frozen = { [OUTPUT_NAME]: 'abc', [COVERS_OUTPUT_NAME]: sha256(applied) };
+    const base = [{ id: 2, coverUrl: COVER_A }, { id: 5, coverUrl: null }];
+    withTempMigrations({ [COVERS_OUTPUT_NAME]: applied }, (dir) => {
+      assert.deepEqual(coverDriftViolations(dir, frozen, base), []);
+      assert.deepEqual(
+        coverDriftViolations(dir, frozen, [{ id: 2, coverUrl: COVER_B }, { id: 5, coverUrl: null }]),
+        [COVERS_DRIFT_MESSAGE],
+      );
+      assert.deepEqual(
+        coverDriftViolations(dir, frozen, [{ id: 2, coverUrl: COVER_A }, { id: 5, coverUrl: COVER_B }]),
+        [COVERS_DRIFT_MESSAGE],
+      );
+      assert.deepEqual(coverDriftViolations(dir, { [OUTPUT_NAME]: 'abc' }, [{ id: 5, coverUrl: COVER_B }]), []);
+    });
+    withTempMigrations({
+      [COVERS_OUTPUT_NAME]: applied,
+      '005_update_gift_books_covers.sql': 'BEGIN;\nCOMMIT;\n',
+    }, (dir) => {
+      assert.deepEqual(coverDriftViolations(dir, frozen, [{ id: 2, coverUrl: COVER_B }]), []);
+    });
+  });
+
+  it('no hay deriva de portadas en el repositorio', () => {
+    assert.deepEqual(coverDriftViolations(MIGRATIONS_DIR, readFrozen(FROZEN_JSON), seed), []);
   });
 });

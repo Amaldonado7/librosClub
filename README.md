@@ -107,6 +107,7 @@ cd librosclub-backend
 psql -d librosclub -f migrations/001_add_book_type.sql
 psql -d librosclub -f migrations/002_create_gift_books.sql
 psql -d librosclub -f migrations/003_seed_gift_books.sql
+psql -d librosclub -f migrations/004_update_gift_books_covers.sql
 ```
 
 | Tabla | Descripción |
@@ -117,7 +118,22 @@ psql -d librosclub -f migrations/003_seed_gift_books.sql
 
 > Solo en bases **locales**: si ya aplicaste una versión anterior de `002_create_gift_books.sql`, corré `DROP TABLE IF EXISTS public.gift_books;` antes de re-aplicar 002 y 003, porque `CREATE TABLE IF NOT EXISTS` no actualiza los `CHECK` de una tabla que ya existe. **Nunca** lo hagas en producción.
 
-`003_seed_gift_books.sql` se genera desde `migrations/seed/gift_books.json` con `npm run seed:gift:build`; no se edita a mano. Una vez aplicada en producción queda **congelada**: se registra su sha256 en `migrations/seed/frozen.json` (`{ "003_seed_gift_books.sql": "<sha256>" }`), el generador se niega a sobrescribirla y toda curación posterior (alta, edición o desactivación de libros) va en una migración nueva `004+` con `INSERT ... ON CONFLICT (id) DO UPDATE` / `UPDATE ... WHERE id = ...` explícitos.
+`003_seed_gift_books.sql` y `004_update_gift_books_covers.sql` se generan desde `migrations/seed/gift_books.json` con `npm run seed:gift:build`; no se editan a mano. Una migración aplicada en producción queda **congelada**: se registra su sha256 en `migrations/seed/frozen.json` (`{ "003_seed_gift_books.sql": "<sha256>" }`), el generador la omite sin reescribirla y toda curación posterior (alta, edición o desactivación de libros) va en una migración nueva con `INSERT ... ON CONFLICT (id) DO UPDATE` / `UPDATE ... WHERE id = ...` explícitos. 003 ya está congelada. 004 trae un `UPDATE` de `cover_url` por cada libro con portada y se congela recién cuando se aplica en producción con portadas; a partir de ahí, cualquier cambio de portadas va en una migración `005+`.
+
+En producción, 004 se aplica cortando en el primer error, para que un fallo devuelva un código distinto de 0 en lugar de terminar en un `ROLLBACK` silencioso:
+
+```bash
+psql -v ON_ERROR_STOP=1 -d librosclub -f migrations/004_update_gift_books_covers.sql
+```
+
+##### Portadas del catálogo de regalo
+
+Las portadas se buscan en Google Books desde la máquina de desarrollo y se aprueban a mano antes de llegar a la base:
+
+1. Con `GOOGLE_BOOKS_API_KEY` en `librosclub-backend/.env` (solo ahí, nunca en el código ni en el repositorio; preferentemente una key de desarrollo distinta de la de producción), `npm run covers:gift:find` busca hasta 3 candidatos por cada libro sin portada y escribe `scripts/out/gift-cover-candidates.json` y `scripts/out/gift-cover-candidates.html`. `scripts/out/` no se versiona.
+2. Revisá `scripts/out/gift-cover-candidates.html` y completá `approvedVolumeId` en `scripts/out/gift-cover-candidates.json` con el `volumeId` elegido para cada libro (dejá `null` si ninguno sirve).
+3. `npm run covers:gift:apply` copia las portadas aprobadas a `migrations/seed/gift_books.json`, validando de nuevo cada URL.
+4. `npm run seed:gift:build` regenera `migrations/004_update_gift_books_covers.sql` (003 está congelada y no se toca), y `npm test` verifica que 004 y el catálogo coincidan.
 
 ### 4. Frontend
 
