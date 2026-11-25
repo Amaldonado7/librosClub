@@ -13,6 +13,7 @@ const googleBooksRoutes = require('./routes/googleBooks');
 const exchangeRoutes   = require('./routes/exchanges');
 const clubsRoutes      = require('./routes/clubs');
 const giftRoutes       = require('./routes/gift');
+const giftCoversRoutes = require('./routes/giftCovers');
 const errorHandler     = require('./middlewares/errorHandler');
 
 // Crear la instancia de Express
@@ -48,6 +49,11 @@ function isAllowedOrigin(origin) {
   });
 }
 
+app.use('/api/gift/covers', (_req, res, next) => {
+  res.set('Cache-Control', 'no-store');
+  next();
+});
+
 app.use(cors({
   origin: (origin, callback) => {
     if (!origin || isAllowedOrigin(origin)) return callback(null, true);
@@ -72,8 +78,17 @@ const giftLimiter = rateLimit({
   message: { message: 'Demasiadas solicitudes. Probá de nuevo en unos minutos.' },
 });
 
+const giftCoverLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 60,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: 'Demasiadas solicitudes. Probá de nuevo en unos minutos.' },
+});
+
+app.use('/api/gift/covers', giftCoverLimiter, giftCoversRoutes);
 app.use('/api/gift/recommendations', giftLimiter);
-app.use('/api/gift', bodyParser.json({ limit: '2kb', type: () => true }));
+app.use('/api/gift/recommendations', bodyParser.json({ limit: '2kb', type: () => true }));
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));

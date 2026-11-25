@@ -68,6 +68,28 @@ describe('separación del chunk de /regalo', () => {
     ]);
   });
 
+  it('nadie importa estáticamente el generador de la placa', () => {
+    const regaloDir = join(SRC, 'components', 'regalo');
+    const regaloFiles = readdirSync(regaloDir)
+      .filter((entry) => /\.(ts|tsx)$/.test(entry) && !/\.test\./.test(entry))
+      .map((entry) => `components/regalo/${entry}`);
+    const offenders = [...INITIAL_CHUNK_MODULES, ...regaloFiles].flatMap((rel) =>
+      staticSpecifiers(read(rel))
+        .filter((specifier) => /gift-story(-layout)?$/.test(specifier))
+        .map((specifier) => `${rel}: ${specifier}`),
+    );
+    expect(offenders).toEqual([]);
+  });
+
+  it('GiftStoryShare carga el generador con import() dinámico', () => {
+    expect(read('components/regalo/GiftStoryShare.tsx')).toContain("import('@/lib/gift-story')");
+  });
+
+  it.each(['lib/gift-story.ts', 'lib/gift-story-layout.ts'])('%s no importa de utils ni de components', (rel) => {
+    const offenders = staticSpecifiers(read(rel)).filter((specifier) => /(^|\/)(utils|components)\//.test(specifier));
+    expect(offenders).toEqual([]);
+  });
+
   it('ningún componente de /regalo importa AuthModal, AuthContext ni framer-motion', () => {
     const regaloDir = join(SRC, 'components', 'regalo');
     const files = readdirSync(regaloDir).filter((entry) => /\.(ts|tsx)$/.test(entry) && !/\.test\./.test(entry));

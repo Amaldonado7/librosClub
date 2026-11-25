@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import type { GiftResponse } from '@/lib/gift-contract';
 import { recipientFor, resultHeading } from '@/lib/gift-test';
 import GiftBookCard from './GiftBookCard';
+import GiftStoryShare from './GiftStoryShare';
 
 interface GiftResultProps {
   result: GiftResponse;
@@ -38,7 +39,8 @@ const GiftResult: React.FC<GiftResultProps> = ({ result, onRestart }) => {
         ))}
       </ol>
 
-      <div className="px-5 pb-10">
+      <div className="flex flex-col gap-3 px-5 pb-10">
+        <GiftStoryShare books={result.books} relationship={result.profile.relationship} />
         <Button variant="outline" size="lg" className="w-full" onClick={onRestart}>
           Hacer el test para otra persona
         </Button>

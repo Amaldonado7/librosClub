@@ -1,4 +1,4 @@
-const ALLOWED_COVER_HOSTS = ['books.google.com', 'books.googleusercontent.com'];
+const { ALLOWED_COVER_HOSTS, isAllowedCoverUrl } = require('../../src/utils/giftCoverUrl');
 
 function parseUrl(value) {
   if (typeof value !== 'string' || value === '') return null;
@@ -7,17 +7,6 @@ function parseUrl(value) {
   } catch {
     return null;
   }
-}
-
-function isAllowedCoverUrl(url) {
-  const parsed = parseUrl(url);
-  if (!parsed) return false;
-  return parsed.protocol === 'https:'
-    && ALLOWED_COVER_HOSTS.includes(parsed.hostname.toLowerCase())
-    && parsed.username === ''
-    && parsed.password === ''
-    && parsed.port === ''
-    && url.startsWith('https://');
 }
 
 function withoutCurlEdge(url) {

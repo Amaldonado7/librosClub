@@ -1,4 +1,4 @@
-const { describe, it, beforeEach } = require('node:test');
+const { describe, it, beforeEach, afterEach } = require('node:test');
 const assert = require('node:assert/strict');
 const path = require('node:path');
 
@@ -17,7 +17,22 @@ require.cache[dbPath] = {
   },
 };
 
-const { getRecommendations } = require('../giftController');
+const fetcherPath = require.resolve(path.join(__dirname, '..', '..', 'services', 'giftCoverFetcher'));
+const fetcherCalls = [];
+let fetcherResult = async () => ({ ok: false });
+require.cache[fetcherPath] = {
+  id: fetcherPath,
+  filename: fetcherPath,
+  loaded: true,
+  exports: {
+    fetchCoverImage: async (...args) => {
+      fetcherCalls.push(args);
+      return fetcherResult(...args);
+    },
+  },
+};
+
+const { getRecommendations, getCover } = require('../giftController');
 const asyncHandler = require('../../middlewares/asyncHandler');
 
 const VALID = Object.freeze({
@@ -183,5 +198,121 @@ describe('giftController.getRecommendations', () => {
       asyncHandler(getRecommendations)({ body: { ...VALID } }, fakeRes(), resolve);
     });
     assert.match(forwarded.message, /gift_books/);
+  });
+});
+
+const ALLOWED_COVER = 'https://books.google.com/books/content?id=abc&img=1';
+
+function fakeCoverRes() {
+  const res = { statusCode: 200, body: undefined, headers: {}, ended: undefined };
+  res.status = (code) => { res.statusCode = code; return res; };
+  res.json = (body) => { res.body = body; return res; };
+  res.set = (values) => { Object.assign(res.headers, values); return res; };
+  res.end = (body) => { res.ended = body; return res; };
+  return res;
+}
+
+async function callCover(id, extra = {}) {
+  const res = fakeCoverRes();
+  await getCover({ params: { id }, query: {}, body: undefined, headers: {}, ...extra }, res);
+  return res;
+}
+
+describe('giftController.getCover', () => {
+  let warnings;
+  let originalWarn;
+
+  beforeEach(() => {
+    fetcherCalls.length = 0;
+    fetcherResult = async () => ({ ok: false });
+    responder = () => ({ rows: [{ coverUrl: ALLOWED_COVER }] });
+    warnings = [];
+    originalWarn = console.warn;
+    console.warn = (...args) => { warnings.push(args.join(' ')); };
+  });
+
+  afterEach(() => {
+    console.warn = originalWarn;
+  });
+
+  for (const id of ['abc', '0', '-1', '1.5', '01', '99999999999', '2147483648', '', undefined]) {
+    it(`responde 400 sin consultar la base ni Google con id ${JSON.stringify(id)}`, async () => {
+      const res = await callCover(id);
+      assert.equal(res.statusCode, 400);
+      assert.deepEqual(res.body, { message: 'Solicitud inválida.' });
+      assert.equal(queries.length, 0);
+      assert.equal(fetcherCalls.length, 0);
+    });
+  }
+
+  it('acepta el id máximo 2147483647 y consulta la base con el número', async () => {
+    responder = () => ({ rows: [] });
+    const res = await callCover('2147483647');
+    assert.equal(res.statusCode, 404);
+    assert.deepEqual(queries[0].params, [2147483647]);
+  });
+
+  it('responde 404 si el libro no existe, está inactivo o no tiene portada', async () => {
+    responder = () => ({ rows: [] });
+    const missing = await callCover('5');
+    responder = () => ({ rows: [{ coverUrl: null }] });
+    const withoutCover = await callCover('5');
+    for (const res of [missing, withoutCover]) {
+      assert.equal(res.statusCode, 404);
+      assert.deepEqual(res.body, { message: 'Portada no disponible.' });
+    }
+    assert.equal(fetcherCalls.length, 0);
+  });
+
+  for (const coverUrl of ['https://evil.example/x.jpg', 'http://169.254.169.254/latest', 'https://books.google.com:8443/x']) {
+    it(`responde 404 sin llamar a Google si cover_url es ${coverUrl}`, async () => {
+      responder = () => ({ rows: [{ coverUrl }] });
+      const res = await callCover('5');
+      assert.equal(res.statusCode, 404);
+      assert.deepEqual(res.body, { message: 'Portada no disponible.' });
+      assert.equal(fetcherCalls.length, 0);
+    });
+  }
+
+  it('responde 502 y deja una sola línea de log sin URL si Google falla', async () => {
+    const res = await callCover('5', {
+      query: { url: 'https://evil.example/x.png' },
+      headers: { origin: 'https://librosclub.vercel.app', 'x-forwarded-for': '198.51.100.7' },
+    });
+    assert.equal(res.statusCode, 502);
+    assert.deepEqual(res.body, { message: 'No pudimos obtener la portada.' });
+    assert.equal(fetcherCalls.length, 1);
+    assert.deepEqual(fetcherCalls[0], [ALLOWED_COVER]);
+    assert.equal(warnings.length, 1);
+    assert.match(warnings[0], /^gift-cover id=5 status=502 ms=\d+$/);
+  });
+
+  it('responde 200 con los bytes, el tipo, el largo y caché pública', async () => {
+    const body = Buffer.alloc(10240, 1);
+    fetcherResult = async () => ({ ok: true, contentType: 'image/jpeg', body });
+    const res = await callCover('5', { query: { url: 'https://evil.example/x.png' }, body: { url: 'x' } });
+    assert.equal(res.statusCode, 200);
+    assert.equal(res.ended, body);
+    assert.deepEqual(res.headers, {
+      'Content-Type': 'image/jpeg',
+      'Content-Length': '10240',
+      'Cache-Control': 'public, max-age=86400',
+    });
+    assert.deepEqual(fetcherCalls, [[ALLOWED_COVER]]);
+    assert.equal(warnings.length, 0);
+  });
+
+  it('propaga el error de la base a next vía asyncHandler', async () => {
+    responder = () => { throw new Error('connection refused'); };
+    await assert.rejects(callCover('5'), /connection refused/);
+    const forwarded = await new Promise((resolve) => {
+      asyncHandler(getCover)({ params: { id: '5' } }, fakeCoverRes(), resolve);
+    });
+    assert.match(forwarded.message, /connection refused/);
+    assert.equal(fetcherCalls.length, 0);
+  });
+
+  it('exporta getRecommendations y getCover', () => {
+    assert.deepEqual(Object.keys(require('../giftController')).sort(), ['getCover', 'getRecommendations']);
   });
 });

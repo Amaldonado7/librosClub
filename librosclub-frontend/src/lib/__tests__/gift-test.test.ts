@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { ANSWER_VALUES } from '@/lib/gift-contract';
-import { GIFT_QUESTIONS, occasionHeading, recipientFor, resultHeading } from '@/lib/gift-test';
+import { GIFT_QUESTIONS, RECIPIENTS, occasionHeading, recipientFor, resultHeading, storyHeading } from '@/lib/gift-test';
 
 describe('GIFT_QUESTIONS', () => {
   it('tiene las 8 preguntas en el orden de campos del contrato', () => {
@@ -61,5 +61,27 @@ describe('destinatario y encabezado', () => {
     expect(resultHeading({ relationship: 'vecino', occasion: 'navidad' })).toBe('PARA ALGUIEN ESPECIAL · NAVIDAD');
     expect(resultHeading({ relationship: 'mama', occasion: 'graduacion' })).toBe('PARA MAMÁ');
     expect(occasionHeading('graduacion')).toBeNull();
+  });
+});
+
+describe('storyHeading', () => {
+  it.each([
+    ['mama', 'MI REGALO PARA MAMÁ'],
+    ['papa', 'MI REGALO PARA PAPÁ'],
+    ['pareja', 'MI REGALO PARA MI PAREJA'],
+    ['amigo', 'MI REGALO PARA MI AMIGO O AMIGA'],
+    ['hermano', 'MI REGALO PARA MI HERMANO O HERMANA'],
+    ['hijo', 'MI REGALO PARA MI HIJO O HIJA'],
+    ['otro', 'MI REGALO PARA ALGUIEN ESPECIAL'],
+    ['desconocido', 'MI REGALO PARA ALGUIEN ESPECIAL'],
+    ['__proto__', 'MI REGALO PARA ALGUIEN ESPECIAL'],
+  ])('%s → %s', (relationship, expected) => {
+    expect(storyHeading(relationship)).toBe(expected);
+  });
+
+  it('cada vínculo tiene su texto para la placa', () => {
+    for (const entry of Object.values(RECIPIENTS)) {
+      expect(entry.story).toMatch(/^[A-ZÁÉÍÓÚ ]+$/);
+    }
   });
 });

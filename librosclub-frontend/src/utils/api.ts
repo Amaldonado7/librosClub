@@ -577,7 +577,15 @@ const GIFT_ERROR_BY_STATUS: Record<number, GiftErrorKind> = {
   503: 'unavailable',
 };
 
+const GIFT_COVER_TIMEOUT_MS = 2500;
+const GIFT_COVER_MAX_ID = 2147483647;
+const GIFT_COVER_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+
 const giftError = (kind: GiftErrorKind) => new ApiError(GIFT_ERROR_MESSAGE, kind);
+
+const mediaTypeOf = (header: string | null) => (header ?? '').split(';')[0].trim().toLowerCase();
+
+const isValidCoverId = (id: number) => Number.isInteger(id) && id >= 1 && id <= GIFT_COVER_MAX_ID;
 const abortError = () => new DOMException('Aborted', 'AbortError');
 
 export const giftAPI = {
@@ -605,6 +613,33 @@ export const giftAPI = {
       if (signal?.aborted) throw abortError();
       if (err instanceof ApiError) throw err;
       throw giftError('network');
+    } finally {
+      clearTimeout(timer);
+      signal?.removeEventListener('abort', abortFromCaller);
+    }
+  },
+
+  getCover: async (
+    id: number,
+    { timeoutMs = GIFT_COVER_TIMEOUT_MS, signal }: GiftRequestOptions = {},
+  ): Promise<Blob | null> => {
+    if (!isValidCoverId(id) || signal?.aborted) return null;
+    const controller = new AbortController();
+    const abortFromCaller = () => controller.abort();
+    signal?.addEventListener('abort', abortFromCaller);
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      const response = await fetch(`${API_BASE_URL}/gift/covers/${id}`, {
+        mode: 'cors',
+        credentials: 'omit',
+        signal: controller.signal,
+      });
+      if (response.status !== 200) return null;
+      if (!GIFT_COVER_TYPES.includes(mediaTypeOf(response.headers.get('Content-Type')))) return null;
+      const blob = await response.blob();
+      return controller.signal.aborted ? null : blob;
+    } catch {
+      return null;
     } finally {
       clearTimeout(timer);
       signal?.removeEventListener('abort', abortFromCaller);
