@@ -111,4 +111,11 @@ describe('LandingPage', () => {
     expect(sticker).toBeDefined();
     expect(sticker).not.toHaveAttribute('aria-hidden');
   });
+
+  it('tiene un enlace "Regalá un libro" hacia /regalo', () => {
+    renderLanding();
+    const link = screen.getByRole('link', { name: 'Regalá un libro' });
+    expect(link).toHaveAttribute('href', '/regalo');
+    expect(link).toHaveClass('min-h-11');
+  });
 });

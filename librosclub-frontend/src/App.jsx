@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -8,6 +9,8 @@ import { AuthProvider } from "./contexts/AuthContext";
 import Dashboard from "./components/Dashboard";
 import LandingPage from "./components/LandingPage";
 
+const RegaloPage = lazy(() => import('./components/regalo/RegaloPage'));
+
 const queryClient = new QueryClient();
 
 const AppContent = () => (
@@ -15,6 +18,14 @@ const AppContent = () => (
     <Routes>
       <Route path="/" element={<LandingPage />} />
       <Route path="/app/*" element={<Dashboard />} />
+      <Route
+        path="/regalo"
+        element={
+          <Suspense fallback={<div className="min-h-screen bg-background" />}>
+            <RegaloPage />
+          </Suspense>
+        }
+      />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   </BrowserRouter>

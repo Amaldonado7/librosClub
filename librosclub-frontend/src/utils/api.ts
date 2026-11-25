@@ -1,3 +1,6 @@
+import { parseGiftResponse } from '@/lib/gift-contract';
+import type { GiftAnswers, GiftErrorKind, GiftResponse } from '@/lib/gift-contract';
+
 const API_BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000/api';
 
 export class ApiError extends Error {
@@ -557,5 +560,54 @@ export const bookRequestsAPI = {
       throw new Error((body as { message?: string }).message ?? 'Error al enviar mensaje.');
     }
     return r.json();
+  },
+};
+
+export interface GiftRequestOptions {
+  timeoutMs?: number;
+  signal?: AbortSignal;
+}
+
+const GIFT_TIMEOUT_MS = 10000;
+const GIFT_ERROR_MESSAGE = 'No se pudieron obtener las recomendaciones.';
+const GIFT_ERROR_BY_STATUS: Record<number, GiftErrorKind> = {
+  400: 'invalid',
+  413: 'invalid',
+  429: 'rate_limited',
+  503: 'unavailable',
+};
+
+const giftError = (kind: GiftErrorKind) => new ApiError(GIFT_ERROR_MESSAGE, kind);
+const abortError = () => new DOMException('Aborted', 'AbortError');
+
+export const giftAPI = {
+  getRecommendations: async (
+    answers: GiftAnswers,
+    { timeoutMs = GIFT_TIMEOUT_MS, signal }: GiftRequestOptions = {},
+  ): Promise<GiftResponse> => {
+    if (signal?.aborted) throw abortError();
+    const controller = new AbortController();
+    const abortFromCaller = () => controller.abort();
+    signal?.addEventListener('abort', abortFromCaller);
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      const response = await fetch(`${API_BASE_URL}/gift/recommendations`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(answers),
+        signal: controller.signal,
+      });
+      if (!response.ok) throw giftError(GIFT_ERROR_BY_STATUS[response.status] ?? 'network');
+      const parsed = parseGiftResponse(await response.json());
+      if (!parsed) throw giftError('network');
+      return parsed;
+    } catch (err) {
+      if (signal?.aborted) throw abortError();
+      if (err instanceof ApiError) throw err;
+      throw giftError('network');
+    } finally {
+      clearTimeout(timer);
+      signal?.removeEventListener('abort', abortFromCaller);
+    }
   },
 };
