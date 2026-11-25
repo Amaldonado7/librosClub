@@ -31,7 +31,7 @@ describe('GiftBookCard', () => {
     const titles = screen.getAllByText('El misterio del faro');
     const coverBlock = titles.map((node) => node.parentElement as HTMLElement).find((node) => node.style.backgroundColor);
     expect(coverBlock?.style.backgroundColor).toBe('rgb(145, 85, 31)');
-    expect(screen.getByRole('heading', { level: 3, name: 'El misterio del faro' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 2, name: 'El misterio del faro' })).toBeInTheDocument();
     expect(screen.getByText('Misterio cozy')).toBeInTheDocument();
     expect(screen.getByText('Ana Pérez')).toBeInTheDocument();
   });
@@ -96,5 +96,15 @@ describe('GiftBookCard', () => {
     });
     expect(consoleError).not.toHaveBeenCalled();
     consoleError.mockRestore();
+  });
+
+  it('Comprar, Copiar dedicatoria, género y título siguen el estilo de la tarjeta', () => {
+    setClipboard({ writeText: vi.fn().mockResolvedValue(undefined) });
+    render(<GiftBookCard book={BOOK} />);
+    expect(screen.getByRole('link', { name: 'Comprar' })).toHaveClass('min-h-11', 'bg-terracotta');
+    expect(screen.getByRole('button', { name: 'Copiar dedicatoria' })).toHaveClass('h-11');
+    expect(screen.getByText('Misterio cozy')).toHaveClass('pill', 'pill-sun');
+    const title = screen.getByRole('heading', { level: 2, name: 'El misterio del faro' });
+    expect(title).toHaveClass('font-serif', 'text-[22px]', 'text-forest');
   });
 });

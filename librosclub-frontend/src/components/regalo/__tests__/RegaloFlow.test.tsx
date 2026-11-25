@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, act } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
 import RegaloPage from '../RegaloPage';
 
 const mocks = vi.hoisted(() => {
@@ -14,27 +13,13 @@ const mocks = vi.hoisted(() => {
   }
   return {
     ApiError,
-    auth: {
-      isAuthenticated: false,
-      isPremium: false,
-      username: null as string | null,
-      token: null as string | null,
-      plan: null,
-      login: () => {},
-      logout: () => {},
-    },
     getRecommendations: vi.fn(),
   };
 });
 
-vi.mock('@/contexts/AuthContext', () => ({
-  useAuth: () => mocks.auth,
-}));
-
 vi.mock('@/utils/api', () => ({
   ApiError: mocks.ApiError,
   giftAPI: { getRecommendations: mocks.getRecommendations },
-  authAPI: { login: vi.fn(), register: vi.fn() },
 }));
 
 const ANSWERS = {
@@ -77,12 +62,7 @@ const RESULT = { profile: { relationship: 'mama', occasion: 'navidad' }, books: 
 const LOADING_TEXT = 'Buscando entre los estantes…';
 const NETWORK_TEXT = 'No pudimos buscar libros ahora. Revisá tu conexión y probá de nuevo.';
 
-const renderPage = () =>
-  render(
-    <MemoryRouter>
-      <RegaloPage />
-    </MemoryRouter>,
-  );
+const renderPage = () => render(<RegaloPage />);
 
 const completeTest = () => {
   fireEvent.click(screen.getByRole('button', { name: 'Empezar el test' }));
@@ -108,7 +88,6 @@ describe('RegaloPage — envío, carga y errores', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     mocks.getRecommendations.mockReset();
-    mocks.auth.isAuthenticated = false;
   });
 
   afterEach(() => {
@@ -246,5 +225,20 @@ describe('RegaloPage — envío, carga y errores', () => {
     await advance(2000);
     expect(consoleError).not.toHaveBeenCalled();
     consoleError.mockRestore();
+  });
+
+  it('la carga tiene fondo marrón y el resultado fondo crema', async () => {
+    mocks.getRecommendations.mockImplementation(() => resolveAfter(200, RESULT));
+    const { container } = renderPage();
+    completeTest();
+
+    const page = () => container.querySelector('[data-screen]');
+    expect(page()).toHaveAttribute('data-screen', 'loading');
+    expect(page()).toHaveClass('bg-wood-dark', 'text-warm-cream');
+
+    await advance(1500);
+    expect(page()).toHaveAttribute('data-screen', 'result');
+    expect(page()).toHaveClass('bg-warm-cream', 'text-wood-dark');
+    expect(screen.queryByRole('dialog')).toBeNull();
   });
 });

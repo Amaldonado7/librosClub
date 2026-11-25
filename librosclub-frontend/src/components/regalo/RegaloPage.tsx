@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { ApiError, giftAPI } from '@/utils/api';
 import type { GiftAnswers, GiftErrorKind, GiftResponse } from '@/lib/gift-contract';
 import { GIFT_QUESTIONS, recipientFor } from '@/lib/gift-test';
+import { cn } from '@/lib/utils';
 import GiftIntro from './GiftIntro';
 import GiftQuestion from './GiftQuestion';
 import GiftLoading from './GiftLoading';
@@ -9,6 +10,14 @@ import GiftError from './GiftError';
 import GiftResult from './GiftResult';
 
 type Screen = 'intro' | 'question' | 'loading' | 'result' | 'error';
+
+const SCREEN_THEME: Record<Screen, string> = {
+  intro: 'bg-forest text-warm-cream',
+  question: 'bg-warm-cream text-wood-dark',
+  loading: 'bg-wood-dark text-warm-cream',
+  result: 'bg-warm-cream text-wood-dark',
+  error: 'bg-warm-cream text-wood-dark',
+};
 
 const LAST_STEP = GIFT_QUESTIONS.length - 1;
 const MIN_LOADING_MS = 1500;
@@ -100,8 +109,8 @@ const RegaloPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <main className="mx-auto flex min-h-screen w-full max-w-[480px] flex-col bg-background px-4 py-10 text-foreground">
+    <div data-screen={screen} className={cn('min-h-screen', SCREEN_THEME[screen])}>
+      <main className={cn('mx-auto flex min-h-screen w-full max-w-[480px] flex-col', SCREEN_THEME[screen])}>
         {screen === 'intro' && <GiftIntro onStart={start} />}
         {screen === 'question' && (
           <GiftQuestion

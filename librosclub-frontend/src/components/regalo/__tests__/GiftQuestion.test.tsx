@@ -110,8 +110,35 @@ describe('GiftQuestion', () => {
 
   it('opciones y botones tienen área táctil de al menos 44 px', () => {
     renderQuestion(0);
-    screen.getAllByRole('radio').forEach((option) => expect(option).toHaveClass('min-h-11', 'w-full'));
-    expect(screen.getByRole('button', { name: 'Siguiente' })).toHaveClass('h-11');
-    expect(screen.getByRole('button', { name: 'Volver' })).toHaveClass('h-11');
+    screen.getAllByRole('radio').forEach((option) => expect(option).toHaveClass('min-h-16', 'w-full'));
+    expect(screen.getByRole('button', { name: 'Siguiente' })).toHaveClass('h-14');
+    expect(screen.getByRole('button', { name: 'Volver' })).toHaveClass('h-11', 'w-11');
+  });
+
+  it('pregunta 5 con una opción elegida sigue el estilo del canvas', () => {
+    const elegida = GIFT_QUESTIONS[4].options[1];
+    renderQuestion(4, { value: elegida.value });
+
+    screen.getAllByRole('radio').forEach((option) => {
+      expect(option).toHaveClass('min-h-16', 'focus-visible:ring-2', 'focus-visible:ring-ring', 'focus-visible:ring-offset-2');
+      if (option.textContent === elegida.label) {
+        expect(option).toHaveClass('bg-forest', 'text-warm-cream');
+      } else {
+        expect(option).toHaveClass('bg-surface', 'border-line-strong', 'text-wood-dark');
+      }
+    });
+
+    const segments = Array.from(screen.getByTestId('gift-progress').children);
+    expect(segments.filter((segment) => segment.classList.contains('bg-forest'))).toHaveLength(4);
+    expect(segments.filter((segment) => segment.classList.contains('bg-sunlight'))).toHaveLength(1);
+    expect(segments.filter((segment) => segment.classList.contains('bg-[#E6DCC6]'))).toHaveLength(3);
+
+    expect(screen.getByRole('heading', { level: 2 })).toHaveClass('text-[34px]', 'text-forest');
+    expect(screen.getByText('PREGUNTA 5 DE 8')).toHaveClass('label-mono', 'text-forest');
+
+    const volver = screen.getByRole('button', { name: 'Volver' });
+    expect(volver).toHaveClass('h-11', 'w-11', 'rounded-pill');
+    expect(volver.querySelector('svg')).toHaveAttribute('aria-hidden', 'true');
+    expect(screen.getByRole('button', { name: 'Siguiente' })).toHaveClass('h-14', 'w-full', 'bg-terracotta');
   });
 });

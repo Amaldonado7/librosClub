@@ -67,4 +67,18 @@ describe('separación del chunk de /regalo', () => {
       './regalo/estilos.css',
     ]);
   });
+
+  it('ningún componente de /regalo importa AuthModal, AuthContext ni framer-motion', () => {
+    const regaloDir = join(SRC, 'components', 'regalo');
+    const files = readdirSync(regaloDir).filter((entry) => /\.(ts|tsx)$/.test(entry) && !/\.test\./.test(entry));
+    expect(files.length).toBeGreaterThan(0);
+    const forbidden = /^(@\/components\/AuthModal|\.\.\/AuthModal|@\/contexts\/AuthContext|framer-motion)$/;
+    const offenders = files.flatMap((entry) =>
+      staticSpecifiers(read(`components/regalo/${entry}`))
+        .filter((specifier) => forbidden.test(specifier))
+        .map((specifier) => `${entry}: ${specifier}`),
+    );
+    expect(offenders).toEqual([]);
+  });
 });
+

@@ -23,12 +23,12 @@ const GiftError: React.FC<GiftErrorProps> = ({ kind, onRetry, onRestart }) => {
   }, []);
 
   return (
-    <section className="flex flex-1 flex-col justify-center gap-6">
+    <section className="flex flex-1 flex-col justify-center gap-6 px-6 py-10">
       <div role="alert">
         <h1
           ref={titleRef}
           tabIndex={-1}
-          className="font-serif text-[28px] font-normal leading-tight break-words focus:outline-none"
+          className="font-serif text-[28px] font-normal leading-tight text-forest break-words focus:outline-none"
         >
           {ERROR_MESSAGES[kind]}
         </h1>

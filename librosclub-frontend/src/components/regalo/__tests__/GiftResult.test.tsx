@@ -1,28 +1,7 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent, within } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
 import GiftResult from '../GiftResult';
 import type { GiftResponse } from '@/lib/gift-contract';
-
-const mocks = vi.hoisted(() => ({
-  auth: {
-    isAuthenticated: false,
-    isPremium: false,
-    username: null as string | null,
-    token: null as string | null,
-    plan: null,
-    login: () => {},
-    logout: () => {},
-  },
-}));
-
-vi.mock('@/contexts/AuthContext', () => ({
-  useAuth: () => mocks.auth,
-}));
-
-vi.mock('@/utils/api', () => ({
-  authAPI: { login: vi.fn(), register: vi.fn() },
-}));
 
 const book = (id: number) => ({
   id,
@@ -42,23 +21,15 @@ const RESULT: GiftResponse = {
   books: [book(1), book(2), book(3)],
 };
 
-const renderResult = (onRestart = vi.fn()) =>
-  render(
-    <MemoryRouter>
-      <GiftResult result={RESULT} onRestart={onRestart} />
-    </MemoryRouter>,
-  );
+const renderResult = (onRestart = vi.fn()) => render(<GiftResult result={RESULT} onRestart={onRestart} />);
 
 describe('GiftResult', () => {
-  beforeEach(() => {
-    mocks.auth.isAuthenticated = false;
-  });
-
   it('muestra encabezado, título enfocado y leyenda', () => {
     renderResult();
     expect(screen.getByText('PARA MAMÁ · NAVIDAD')).toHaveClass('label-mono');
     const title = screen.getByRole('heading', { level: 1, name: 'Tres libros para tu mamá' });
     expect(document.activeElement).toBe(title);
+    expect(title).toHaveClass('font-serif', 'text-[34px]', 'leading-[1.1]');
     expect(screen.getByText('elegidos con cariño')).toHaveClass('accent-hand');
   });
 
@@ -69,7 +40,7 @@ describe('GiftResult', () => {
     items.forEach((item, index) => {
       const n = index + 1;
       const scoped = within(item);
-      expect(scoped.getByRole('heading', { level: 3, name: `Libro ${n}` })).toBeInTheDocument();
+      expect(scoped.getByRole('heading', { level: 2, name: `Libro ${n}` })).toBeInTheDocument();
       expect(scoped.getByText(`Género ${n}`)).toBeInTheDocument();
       expect(scoped.getByText(`Autora ${n}`)).toBeInTheDocument();
       expect(scoped.getByText(`Por qué ${n}`)).toBeInTheDocument();
@@ -83,26 +54,36 @@ describe('GiftResult', () => {
     const onRestart = vi.fn();
     renderResult(onRestart);
     const button = screen.getByRole('button', { name: 'Hacer el test para otra persona' });
-    expect(button).toHaveClass('h-14');
+    expect(button).toHaveClass('h-14', 'w-full');
     fireEvent.click(button);
     expect(onRestart).toHaveBeenCalledTimes(1);
   });
 
-  it('sin sesión, Registrarme abre el modal en modo registro', () => {
+  it('se renderiza sin router ni sesión y no ofrece registro ni acceso a LibrosClub', () => {
     renderResult();
-    expect(screen.getByRole('heading', { name: 'Sumate a LibrosClub' })).toBeInTheDocument();
+    expect(screen.queryByText('Registrarme')).toBeNull();
+    expect(screen.queryByText('Ir a LibrosClub')).toBeNull();
+    expect(screen.queryByText('Sumate a LibrosClub')).toBeNull();
     expect(screen.queryByRole('dialog')).toBeNull();
-    fireEvent.click(screen.getByRole('button', { name: 'Registrarme' }));
-    const dialog = screen.getByRole('dialog');
-    expect(within(dialog).getByRole('heading', { name: 'Crear cuenta' })).toBeInTheDocument();
   });
 
-  it('con sesión, muestra Ir a LibrosClub hacia /app y no Registrarme', () => {
-    mocks.auth.isAuthenticated = true;
-    renderResult();
-    expect(screen.queryByRole('button', { name: 'Registrarme' })).toBeNull();
-    const link = screen.getByRole('link', { name: 'Ir a LibrosClub' });
-    expect(link).toHaveAttribute('href', '/app');
-    expect(link).toHaveClass('min-h-11');
+  it('aplica el estilo del canvas al encabezado y a cada tarjeta', () => {
+    const { container } = renderResult();
+    expect(container.querySelector('header')).toHaveClass('bg-forest');
+    expect(screen.getByText('elegidos con cariño')).toHaveClass('text-sunlight');
+
+    const articles = container.querySelectorAll('article');
+    expect(articles).toHaveLength(3);
+    articles.forEach((article, index) => {
+      expect(article).toHaveClass('card-surface');
+      const cover = article.querySelector('.cover-spine');
+      expect(cover).toHaveClass('w-[92px]', 'h-[136px]');
+      const dedicationBox = within(article as HTMLElement).getByText('Dedicatoria sugerida').parentElement;
+      expect(dedicationBox).toHaveClass('bg-warm-cream');
+      expect(within(article as HTMLElement).getByText(`Dedicatoria ${index + 1}`)).toBeInTheDocument();
+    });
+    screen.getAllByRole('link', { name: 'Comprar' }).forEach((link) => expect(link).toHaveClass('bg-terracotta'));
+    expect(screen.queryByText(/Precio de referencia/)).toBeNull();
+    expect(screen.queryByText(/Compartir en historias/)).toBeNull();
   });
 });

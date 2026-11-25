@@ -39,21 +39,21 @@ const GiftBookCard: React.FC<GiftBookCardProps> = ({ book }) => {
   };
 
   return (
-    <article className="card-surface flex flex-col gap-4 p-4">
-      <div className="grid grid-cols-[96px_minmax(0,1fr)] gap-4">
-        <CoverArt src={book.coverUrl} title={book.title} fallbackColor={book.coverColor} />
+    <article className="card-surface flex flex-col gap-3.5 p-[18px]">
+      <div className="flex gap-4">
+        <CoverArt size="compact" src={book.coverUrl} title={book.title} fallbackColor={book.coverColor} />
         <div className="flex min-w-0 flex-col items-start gap-2">
-          <span className="pill pill-outline break-words">{book.genreLabel}</span>
-          <h3 className="font-serif text-xl font-normal leading-tight break-words">{book.title}</h3>
+          <span className="pill pill-sun break-words">{book.genreLabel}</span>
+          <h2 className="font-serif text-[22px] font-normal leading-tight text-forest break-words">{book.title}</h2>
           <p className="font-serif italic break-words">{book.author}</p>
         </div>
       </div>
 
-      <p className="font-serif leading-relaxed break-words">{book.why}</p>
+      <p className="font-serif text-[17px] leading-[1.45] break-words">{book.why}</p>
 
-      <div className="flex flex-col gap-2 rounded-btn border-[1.5px] border-line bg-background p-3">
-        <p className="label-mono">Dedicatoria sugerida</p>
-        <p className="font-serif italic leading-relaxed break-words">{book.dedication}</p>
+      <div className="flex flex-col gap-2 rounded-md bg-warm-cream px-3.5 py-3">
+        <p className="label-mono text-terracotta">Dedicatoria sugerida</p>
+        <p className="accent-hand text-base leading-[1.7] text-forest break-words">{book.dedication}</p>
         {canCopyToClipboard() && (
           <Button variant="outline" className="self-start" onClick={copyDedication}>
             <span aria-live="polite">{copied ? '¡Copiada!' : 'Copiar dedicatoria'}</span>
@@ -66,7 +66,7 @@ const GiftBookCard: React.FC<GiftBookCardProps> = ({ book }) => {
           href={book.buyUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className={cn(buttonVariants({ variant: 'accent' }), 'min-h-11 self-start')}
+          className={cn(buttonVariants({ variant: 'accent' }), 'min-h-11 h-12 self-end')}
         >
           Comprar
         </a>

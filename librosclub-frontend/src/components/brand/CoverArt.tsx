@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { coverPaletteFor } from '@/lib/cover-palette';
 
-export type CoverArtSize = 'card' | 'thumb';
+export type CoverArtSize = 'card' | 'thumb' | 'compact';
 
 export interface CoverArtProps {
   src?: string | null;
@@ -19,6 +19,7 @@ const FALLBACK_TEXT_COLOR = '#F7F0E2';
 const SIZE_CLASSES: Record<CoverArtSize, string> = {
   card: 'w-full aspect-[2/3]',
   thumb: 'w-10 h-14 shrink-0',
+  compact: 'w-[92px] h-[136px] shrink-0',
 };
 
 const CoverArt: React.FC<CoverArtProps> = ({
@@ -60,6 +61,13 @@ const CoverArt: React.FC<CoverArtProps> = ({
           style={{ backgroundColor: palette.bg, color: palette.fg }}
         >
           <span aria-hidden="true">{title.trim().charAt(0).toUpperCase()}</span>
+        </div>
+      ) : size === 'compact' ? (
+        <div
+          className="flex h-full w-full flex-col justify-end"
+          style={{ backgroundColor: palette.bg, color: palette.fg, padding: '12px 10px' }}
+        >
+          <p className="font-serif text-[13px] leading-tight line-clamp-5">{title}</p>
         </div>
       ) : (
         <div

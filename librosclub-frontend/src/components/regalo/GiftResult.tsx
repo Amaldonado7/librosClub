@@ -1,9 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Button, buttonVariants } from '@/components/ui/button';
-import AuthModal from '@/components/AuthModal';
-import { useAuth } from '@/contexts/AuthContext';
-import { cn } from '@/lib/utils';
+import React, { useEffect, useRef } from 'react';
+import { Button } from '@/components/ui/button';
 import type { GiftResponse } from '@/lib/gift-contract';
 import { recipientFor, resultHeading } from '@/lib/gift-test';
 import GiftBookCard from './GiftBookCard';
@@ -14,8 +10,6 @@ interface GiftResultProps {
 }
 
 const GiftResult: React.FC<GiftResultProps> = ({ result, onRestart }) => {
-  const { isAuthenticated } = useAuth();
-  const [authOpen, setAuthOpen] = useState(false);
   const titleRef = useRef<HTMLHeadingElement>(null);
 
   useEffect(() => {
@@ -23,20 +17,20 @@ const GiftResult: React.FC<GiftResultProps> = ({ result, onRestart }) => {
   }, []);
 
   return (
-    <section className="flex flex-col gap-8">
-      <header className="flex flex-col gap-2">
+    <section className="flex flex-col">
+      <header className="flex flex-col gap-3 bg-forest px-6 pt-12 pb-9 text-warm-cream">
         <p className="label-mono break-words">{resultHeading(result.profile)}</p>
         <h1
           ref={titleRef}
           tabIndex={-1}
-          className="font-serif text-[36px] font-normal leading-[1.05] break-words focus:outline-none"
+          className="font-serif text-[34px] font-normal leading-[1.1] break-words focus:outline-none"
         >
           Tres libros para {recipientFor(result.profile.relationship)}
         </h1>
-        <p className="accent-hand text-xl text-terracotta">elegidos con cariño</p>
+        <p className="accent-hand text-lg text-sunlight">elegidos con cariño</p>
       </header>
 
-      <ol className="flex flex-col gap-6">
+      <ol className="flex flex-col gap-5 px-5 py-6">
         {result.books.map((book, index) => (
           <li key={`${book.id}-${index}`}>
             <GiftBookCard book={book} />
@@ -44,27 +38,11 @@ const GiftResult: React.FC<GiftResultProps> = ({ result, onRestart }) => {
         ))}
       </ol>
 
-      <Button variant="outline" size="lg" onClick={onRestart}>
-        Hacer el test para otra persona
-      </Button>
-
-      {isAuthenticated ? (
-        <Link to="/app" className={cn(buttonVariants({ variant: 'default' }), 'min-h-11 self-start')}>
-          Ir a LibrosClub
-        </Link>
-      ) : (
-        <aside className="card-surface flex flex-col items-start gap-3 p-5">
-          <h2 className="font-serif text-2xl font-normal">Sumate a LibrosClub</h2>
-          <p className="font-serif leading-relaxed break-words">
-            Intercambiá libros, unite a clubes de lectura y encontrá tu próxima historia.
-          </p>
-          <Button variant="accent" onClick={() => setAuthOpen(true)}>
-            Registrarme
-          </Button>
-        </aside>
-      )}
-
-      <AuthModal open={authOpen} defaultMode="register" onClose={() => setAuthOpen(false)} />
+      <div className="px-5 pb-10">
+        <Button variant="outline" size="lg" className="w-full" onClick={onRestart}>
+          Hacer el test para otra persona
+        </Button>
+      </div>
     </section>
   );
 };

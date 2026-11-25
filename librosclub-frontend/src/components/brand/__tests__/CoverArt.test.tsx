@@ -70,4 +70,24 @@ describe('CoverArt', () => {
     rerender(<CoverArt src="https://example.com/b.jpg" title="Rayuela" />);
     expect(container.querySelector('img')).toHaveAttribute('src', 'https://example.com/b.jpg');
   });
+
+  it('compact sin src mide 92 × 136 px y muestra el título con fallbackColor', () => {
+    render(<CoverArt size="compact" title="Rayuela" fallbackColor="#91551F" />);
+    const title = screen.getByText('Rayuela');
+    expect(title).toHaveClass('font-serif', 'text-[13px]', 'line-clamp-5');
+    const fallback = title.parentElement as HTMLElement;
+    expect(fallback.style.backgroundColor).toBe('rgb(145, 85, 31)');
+    expect(fallback.style.color).toBe(hexToRgb('#F7F0E2'));
+    expect(fallback.style.padding).toBe('12px 10px');
+    const frame = fallback.parentElement as HTMLElement;
+    expect(frame).toHaveClass('cover-spine', 'w-[92px]', 'h-[136px]', 'shrink-0');
+    expect(frame).not.toHaveAttribute('role');
+  });
+
+  it('compact sin fallbackColor usa la paleta del título y no muestra el subtítulo', () => {
+    render(<CoverArt size="compact" title="Ficciones" subtitle="Borges" />);
+    const fallback = screen.getByText('Ficciones').parentElement as HTMLElement;
+    expect(fallback.style.backgroundColor).toBe(hexToRgb(coverPaletteFor('Ficciones').bg));
+    expect(screen.queryByText('Borges')).toBeNull();
+  });
 });

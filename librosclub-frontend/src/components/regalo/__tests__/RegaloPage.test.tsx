@@ -1,23 +1,9 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
 import RegaloPage from '../RegaloPage';
 
 const mocks = vi.hoisted(() => ({
-  auth: {
-    isAuthenticated: false,
-    isPremium: false,
-    username: null as string | null,
-    token: null as string | null,
-    plan: null,
-    login: () => {},
-    logout: () => {},
-  },
   getRecommendations: vi.fn(),
-}));
-
-vi.mock('@/contexts/AuthContext', () => ({
-  useAuth: () => mocks.auth,
 }));
 
 vi.mock('@/utils/api', () => ({
@@ -29,15 +15,9 @@ vi.mock('@/utils/api', () => ({
     }
   },
   giftAPI: { getRecommendations: mocks.getRecommendations },
-  authAPI: { login: vi.fn(), register: vi.fn() },
 }));
 
-const renderPage = () =>
-  render(
-    <MemoryRouter>
-      <RegaloPage />
-    </MemoryRouter>,
-  );
+const renderPage = () => render(<RegaloPage />);
 
 const choose = (label: string) => {
   fireEvent.click(screen.getByRole('radio', { name: label }));
@@ -115,5 +95,28 @@ describe('RegaloPage — inicio y preguntas', () => {
   it('el contenedor principal se centra con ancho máximo de 480 px', () => {
     renderPage();
     expect(screen.getByRole('main')).toHaveClass('max-w-[480px]', 'w-full', 'mx-auto');
+  });
+
+  it('el inicio tiene fondo oliva, logo de 250 px y la acción a todo el ancho', () => {
+    const { container } = renderPage();
+    const page = container.querySelector('[data-screen]');
+    expect(page).toHaveAttribute('data-screen', 'intro');
+    expect(page).toHaveClass('bg-forest', 'text-warm-cream');
+    expect(screen.getByRole('main')).toHaveClass('bg-forest');
+    expect(screen.getByRole('heading', { level: 1 })).toHaveClass('font-serif', 'text-[40px]');
+    expect(screen.getByRole('button', { name: 'Empezar el test' })).toHaveClass('bg-terracotta', 'h-14', 'w-full');
+    expect(screen.getByRole('img', { name: 'LibrosClub' })).toHaveAttribute('width', '250');
+    expect(screen.getByText('Regalá un libro')).toBeInTheDocument();
+    expect(screen.getByText('hola libro nuevo')).toHaveClass('text-sunlight');
+    expect(screen.getByText('Olor a libro nuevo')).toHaveClass('pill-sun');
+  });
+
+  it('al empezar el test el fondo pasa a crema', () => {
+    const { container } = renderPage();
+    start();
+    const page = container.querySelector('[data-screen]');
+    expect(page).toHaveAttribute('data-screen', 'question');
+    expect(page).toHaveClass('bg-warm-cream', 'text-wood-dark');
+    expect(screen.getByRole('main')).toHaveClass('bg-warm-cream');
   });
 });
