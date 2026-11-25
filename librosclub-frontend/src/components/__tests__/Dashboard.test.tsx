@@ -14,7 +14,16 @@ const mocks = vi.hoisted(() => ({
   respond: vi.fn(),
   getMessages: vi.fn(),
   getClubs: vi.fn(),
+  ApiError: class extends Error {
+    code?: string;
+    constructor(message: string, code?: string) {
+      super(message);
+      this.code = code;
+    }
+  },
 }));
+
+const RATE_LIMITED_MESSAGE = 'Hiciste muchas búsquedas seguidas. Probá de nuevo en unos minutos.';
 
 vi.mock('../../contexts/AuthContext', () => ({
   useAuth: () => mocks.auth,
@@ -40,7 +49,7 @@ vi.mock('../../utils/api', () => ({
   },
   authAPI: {},
   clubsAPI: { getClubs: mocks.getClubs },
-  ApiError: class extends Error {},
+  ApiError: mocks.ApiError,
 }));
 
 const base64Url = (value: object) =>
@@ -146,6 +155,29 @@ describe('Dashboard', () => {
     );
   });
 
+  it('si el feed responde 429 muestra el toast de rate limit', async () => {
+    mocks.getGoogleFeed.mockRejectedValue(new mocks.ApiError('x', 'rate_limited'));
+    renderDashboard();
+    await waitFor(() =>
+      expect(mocks.toast).toHaveBeenCalledWith(
+        expect.objectContaining({ variant: 'destructive', description: RATE_LIMITED_MESSAGE }),
+      ),
+    );
+    expect(mocks.toast).not.toHaveBeenCalledWith(
+      expect.objectContaining({ description: 'No se pudo cargar el feed de Google Books.' }),
+    );
+  });
+
+  it('si el feed falla con otro ApiError muestra el mensaje de siempre', async () => {
+    mocks.getGoogleFeed.mockRejectedValue(new mocks.ApiError('x', 'network'));
+    renderDashboard();
+    await waitFor(() =>
+      expect(mocks.toast).toHaveBeenCalledWith(
+        expect.objectContaining({ description: 'No se pudo cargar el feed de Google Books.' }),
+      ),
+    );
+  });
+
   it('sidebar: tiene un enlace "Regalá un libro" hacia /regalo', () => {
     renderDashboard();
     const link = within(screen.getByRole('navigation', { name: 'Secciones' })).getByRole('link', { name: 'Regalá un libro' });
@@ -207,6 +239,22 @@ describe('Dashboard — otras pestañas', () => {
     await waitFor(() =>
       expect(mocks.toast).toHaveBeenCalledWith(expect.objectContaining({ description: 'Error en la búsqueda.' })),
     );
+  });
+
+  it('buscar con 429 muestra el toast de rate limit', async () => {
+    mocks.searchGoogleBooks.mockRejectedValueOnce(new mocks.ApiError('x', 'rate_limited'));
+    renderDashboard();
+    goTo('Buscar');
+    const input = await screen.findByRole('textbox', { name: 'Título, autor, saga o ISBN...' });
+    fireEvent.change(input, { target: { value: 'borges' } });
+    fireEvent.submit(input.closest('form') as HTMLFormElement);
+
+    await waitFor(() =>
+      expect(mocks.toast).toHaveBeenCalledWith(
+        expect.objectContaining({ variant: 'destructive', description: RATE_LIMITED_MESSAGE }),
+      ),
+    );
+    expect(mocks.toast).not.toHaveBeenCalledWith(expect.objectContaining({ description: 'Error en la búsqueda.' }));
   });
 
   it('libros disponibles carga el catálogo y reporta errores', async () => {

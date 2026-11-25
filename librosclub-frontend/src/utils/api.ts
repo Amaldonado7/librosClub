@@ -23,6 +23,8 @@ async function handleResponse(res: Response): Promise<Response> {
   return res;
 }
 
+const googleBooksRateLimited = () => new ApiError('Demasiadas solicitudes a Google Books.', 'rate_limited');
+
 export interface Book {
   id: string;
   title: string;
@@ -163,6 +165,7 @@ export const booksAPI = {
     const response = await fetch(
       `${API_BASE_URL}/google-books/search?q=${encodeURIComponent(q)}&page=${page}&pageSize=${pageSize}&lang=es`
     );
+    if (response.status === 429) throw googleBooksRateLimited();
     if (!response.ok) throw new Error('Failed to search Google Books');
     return response.json();
   },
@@ -172,6 +175,7 @@ export const booksAPI = {
       `${API_BASE_URL}/google-books/feed?topic=${encodeURIComponent(topic)}&page=${page}&limit=${limit}&lang=es`
     );
 
+    if (response.status === 429) throw googleBooksRateLimited();
     if (!response.ok) {
       throw new Error('Failed to fetch Google Books feed');
     }

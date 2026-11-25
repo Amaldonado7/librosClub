@@ -26,14 +26,13 @@ function redact(text, key) {
   return key ? String(text).split(key).join('[redactado]') : String(text);
 }
 
-function buildSearchUrl({ title, author, apiKey, langRestrict }) {
+function buildSearchUrl({ title, author, langRestrict }) {
   const clean = (value) => String(value).replace(/"/g, '');
   const params = new URLSearchParams({
     q: `intitle:"${clean(title)}" inauthor:"${clean(author)}"`,
     maxResults: '10',
     printType: 'books',
     fields: FIELDS,
-    key: apiKey,
   });
   if (langRestrict) params.set('langRestrict', langRestrict);
   return `${VOLUMES_URL}?${params.toString()}`;
@@ -96,7 +95,7 @@ function isFatal(result) {
   return result.kind === 'http' && result.status >= 400 && result.status < 500 && result.status !== 429;
 }
 
-function createRequester({ fetchImpl, sleep, timeoutMs, createAbortController, budget }) {
+function createRequester({ fetchImpl, sleep, timeoutMs, createAbortController, budget, apiKey }) {
   let made = 0;
   async function request(url) {
     if (made >= budget) return { kind: 'budget' };
@@ -105,7 +104,10 @@ function createRequester({ fetchImpl, sleep, timeoutMs, createAbortController, b
     const controller = createAbortController();
     const timer = setTimeout(() => controller.abort(), timeoutMs);
     try {
-      const response = await fetchImpl(url, { signal: controller.signal });
+      const response = await fetchImpl(url, {
+        signal: controller.signal,
+        headers: { 'X-Goog-Api-Key': apiKey },
+      });
       if (response.status < 200 || response.status > 299) return { kind: 'http', status: response.status };
       const body = await response.text();
       try {
@@ -136,8 +138,8 @@ function failureOf(result) {
   return { httpStatus: null, detail: result.timeout ? 'timeout' : 'error de red' };
 }
 
-async function searchBook(book, { attempt, apiKey }) {
-  const base = { title: book.title, author: book.author, apiKey };
+async function searchBook(book, { attempt }) {
+  const base = { title: book.title, author: book.author };
   let result = await attempt(buildSearchUrl({ ...base, langRestrict: 'es' }));
   if (result.kind === 'ok' && !result.items.some(thumbnailOf)) {
     result = await attempt(buildSearchUrl({ ...base, langRestrict: null }));
@@ -181,13 +183,13 @@ async function run({
 
   const pending = books.filter((book) => book && book.coverUrl === null).sort((a, b) => a.id - b.id);
   const attempt = createRequester({
-    fetchImpl, sleep, timeoutMs, createAbortController, budget: 2 * pending.length,
+    fetchImpl, sleep, timeoutMs, createAbortController, budget: 2 * pending.length, apiKey,
   });
   const entries = [];
   const counts = { found: 0, not_found: 0, error: 0 };
 
   for (const book of pending) {
-    const result = await searchBook(book, { attempt, apiKey });
+    const result = await searchBook(book, { attempt });
     if (isFatal(result)) {
       warn(`Google Books respondió ${result.status}: se corta la corrida`);
       writeOutputs(outDir, entries, apiKey);

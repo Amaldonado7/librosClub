@@ -186,7 +186,8 @@ describe('find-gift-covers: consulta', () => {
     assert.equal(url.searchParams.get('langRestrict'), 'es');
     assert.equal(url.searchParams.get('maxResults'), '10');
     assert.equal(url.searchParams.get('printType'), 'books');
-    assert.equal(url.searchParams.get('key'), API_KEY);
+    assert.equal(url.searchParams.has('key'), false);
+    assert.equal(url.toString().includes(API_KEY), false);
     assert.equal(
       url.searchParams.get('fields'),
       'items(id,volumeInfo(title,authors,language,publishedDate,imageLinks/thumbnail,infoLink))',
@@ -194,9 +195,25 @@ describe('find-gift-covers: consulta', () => {
   });
 
   it('quita comillas del título y autor', () => {
-    const url = new URL(buildSearchUrl({ title: 'El "gran" libro', author: 'A "B"', apiKey: 'k', langRestrict: null }));
+    const url = new URL(buildSearchUrl({ title: 'El "gran" libro', author: 'A "B"', langRestrict: null }));
     assert.equal(url.searchParams.get('q'), 'intitle:"El gran libro" inauthor:"A B"');
     assert.equal(url.searchParams.has('langRestrict'), false);
+    assert.equal(url.searchParams.has('key'), false);
+  });
+
+  it('manda la key solo en el header X-Goog-Api-Key, también en la repetición y el reintento', async () => {
+    const noImage = { id: 'sin', volumeInfo: { title: 'x', imageLinks: { thumbnail: '' } } };
+    const result = await runWith({
+      books: [book(1, 'Uno', 'A'), book(2, 'Dos', 'B')],
+      responders: [status(503), ok([noImage]), ok([volume('v1')]), ok([volume('v2')])],
+    });
+    assert.equal(result.calls.length, 4);
+    result.calls.forEach(({ url, options }) => {
+      assert.equal(url.searchParams.has('key'), false);
+      assert.equal(url.toString().includes(API_KEY), false);
+      assert.equal(options.headers['X-Goog-Api-Key'], API_KEY);
+      assert.ok(options.signal);
+    });
   });
 
   it('repite sin idioma solo si la primera no trae resultados con imagen', async () => {

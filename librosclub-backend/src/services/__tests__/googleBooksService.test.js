@@ -7,15 +7,27 @@ const calls = [];
 const okResponse = (body) => ({ ok: true, status: 200, text: async () => JSON.stringify(body) });
 let responder = () => okResponse({ items: [] });
 
+const headers = [];
+
 const originalFetch = globalThis.fetch;
-globalThis.fetch = async (url) => {
+const fetchStub = async (url, options = {}) => {
   calls.push(new URL(url));
+  headers.push(options.headers ?? {});
   return responder(url);
 };
+globalThis.fetch = fetchStub;
 
 after(() => {
   globalThis.fetch = originalFetch;
 });
+
+const assertKeyOnlyInHeader = () => {
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0].searchParams.has('key'), false);
+  assert.equal(calls[0].toString().includes('key='), false);
+  assert.equal(calls[0].toString().includes('test-key'), false);
+  assert.equal(headers[0]['X-Goog-Api-Key'], 'test-key');
+};
 
 const { getGoogleFeed, searchVolumes } = require('../googleBooksService');
 
@@ -25,7 +37,9 @@ const volume = (id, publishedDate) => ({
 });
 
 beforeEach(() => {
+  assert.equal(globalThis.fetch, fetchStub);
   calls.length = 0;
+  headers.length = 0;
   responder = () => okResponse({ items: [] });
 });
 
@@ -40,8 +54,13 @@ describe('googleBooksService.getGoogleFeed', () => {
     assert.equal(params.get('startIndex'), '20');
     assert.equal(params.get('langRestrict'), 'es');
     assert.equal(params.get('printType'), 'books');
-    assert.equal(params.get('key'), 'test-key');
     assert.equal(params.has('orderBy'), false);
+  });
+
+  it('manda la key solo en el header X-Goog-Api-Key', async () => {
+    await getGoogleFeed({ topic: 'fiction', limit: 10, lang: 'es', page: 0 });
+
+    assertKeyOnlyInHeader();
   });
 
   it('ordena por fecha de publicación descendente con nulos al final', async () => {
@@ -113,6 +132,39 @@ describe('googleBooksService.getGoogleFeed', () => {
 });
 
 describe('googleBooksService.searchVolumes', () => {
+  it('manda la key solo en el header X-Goog-Api-Key', async () => {
+    await searchVolumes({ q: 'rayuela', page: 0, pageSize: 20, lang: 'es' });
+
+    assertKeyOnlyInHeader();
+  });
+
+  it('propaga el status cuando Google Books responde con error', async () => {
+    responder = () => ({ ok: false, status: 403, text: async () => 'Forbidden' });
+
+    await assert.rejects(searchVolumes({ q: 'rayuela' }), (err) => err.status === 403);
+  });
+
+  it('lanza un error cuando la respuesta no es JSON válido', async () => {
+    responder = () => ({ ok: true, status: 200, text: async () => '<html>no json</html>' });
+
+    await assert.rejects(searchVolumes({ q: 'rayuela' }));
+  });
+
+  it('no expone la URL ni la key cuando falla la red', async () => {
+    responder = (url) => {
+      throw new TypeError(`fetch failed ${url}`, { cause: new Error(`connect ECONNREFUSED ${url}`) });
+    };
+
+    await assert.rejects(searchVolumes({ q: 'rayuela' }), (err) => {
+      [err.message, String(err.cause ?? '')].forEach((text) => {
+        assert.equal(text.includes('test-key'), false);
+        assert.equal(text.includes('googleapis.com'), false);
+      });
+      assert.equal(err.cause, undefined);
+      return true;
+    });
+  });
+
   it('devuelve el shape esperado con los campos de cada volumen', async () => {
     responder = () =>
       okResponse({
