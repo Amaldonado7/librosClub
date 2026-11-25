@@ -10,9 +10,17 @@ const FIND_ACTIVE_FOR_AGES_SQL = `
   ORDER BY id
 `;
 
+const FIND_ACTIVE_COVER_URL_SQL = 'SELECT cover_url AS "coverUrl" FROM public.gift_books WHERE id = $1 AND active = true';
+
 async function findActiveForAges(ages) {
   const { rows } = await pool.query(FIND_ACTIVE_FOR_AGES_SQL, [ages]);
   return rows;
 }
 
-module.exports = { findActiveForAges };
+async function findActiveCoverUrl(id) {
+  const { rows } = await pool.query(FIND_ACTIVE_COVER_URL_SQL, [id]);
+  if (rows.length === 0) return null;
+  return rows[0].coverUrl ?? null;
+}
+
+module.exports = { findActiveForAges, findActiveCoverUrl };

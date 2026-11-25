@@ -147,3 +147,115 @@ describe('giftAPI.getRecommendations', () => {
     expect((err as ApiError).code).toBe('network');
   });
 });
+
+describe('giftAPI.getCover', () => {
+  const EXPECTED_BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:3000/api';
+  const imageResponse = (type = 'image/jpeg', status = 200) =>
+    new Response(new Uint8Array([1, 2, 3]), { status, headers: { 'Content-Type': type } });
+
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+  });
+
+  it('hace un único GET sin cuerpo ni Authorization a /gift/covers/{id} en modo cors y devuelve el blob', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(imageResponse());
+    vi.stubGlobal('fetch', fetchMock);
+    localStorage.setItem('libros_token', 'token-de-sesion');
+
+    const blob = await giftAPI.getCover(5);
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(url).toBe(`${EXPECTED_BASE}/gift/covers/5`);
+    expect(url).not.toContain('books.google.com');
+    expect(init.mode).toBe('cors');
+    expect(init.credentials).toBe('omit');
+    expect(init.method ?? 'GET').toBe('GET');
+    expect(init.body).toBeUndefined();
+    expect(init.headers).toBeUndefined();
+    expect(init.signal).toBeInstanceOf(AbortSignal);
+    expect(blob).not.toBeNull();
+    expect(blob?.size).toBe(3);
+    localStorage.removeItem('libros_token');
+  });
+
+  it.each(['image/png', 'image/webp; charset=binary', 'IMAGE/JPEG'])('acepta %s', async (type) => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(imageResponse(type)));
+    const blob = await giftAPI.getCover(5);
+    expect(blob?.size).toBe(3);
+  });
+
+  it.each([0, -1, 1.5, Number.NaN, 2147483648])('devuelve null sin llamar a fetch con id %s', async (id) => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+    expect(await giftAPI.getCover(id)).toBeNull();
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('devuelve null ante 502', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(jsonResponse(502, { message: 'No pudimos obtener la portada.' })));
+    expect(await giftAPI.getCover(5)).toBeNull();
+  });
+
+  it.each(['text/html', 'image/svg+xml', ''])('devuelve null ante 200 con tipo %s', async (type) => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(imageResponse(type)));
+    expect(await giftAPI.getCover(5)).toBeNull();
+  });
+
+  it('devuelve null a los 2,5 s si fetch se cuelga', async () => {
+    const fetchMock = hangingFetch();
+    vi.stubGlobal('fetch', fetchMock);
+    let settled = false;
+    const pending = giftAPI.getCover(5).then((value) => {
+      settled = true;
+      return value;
+    });
+    await vi.advanceTimersByTimeAsync(2499);
+    expect(settled).toBe(false);
+    await vi.advanceTimersByTimeAsync(1);
+    expect(await pending).toBeNull();
+    const init = fetchMock.mock.calls[0][1] as RequestInit;
+    expect(init.signal?.aborted).toBe(true);
+  });
+
+  it('respeta un timeoutMs propio', async () => {
+    vi.stubGlobal('fetch', hangingFetch());
+    const pending = giftAPI.getCover(5, { timeoutMs: 100 });
+    await vi.advanceTimersByTimeAsync(100);
+    expect(await pending).toBeNull();
+  });
+
+  it('devuelve null si fetch rechaza', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('Failed to fetch')));
+    expect(await giftAPI.getCover(5)).toBeNull();
+  });
+
+  it('devuelve null si el llamador aborta', async () => {
+    vi.stubGlobal('fetch', hangingFetch());
+    const controller = new AbortController();
+    const pending = giftAPI.getCover(5, { signal: controller.signal });
+    controller.abort();
+    expect(await pending).toBeNull();
+  });
+
+  it('devuelve null sin llamar a fetch si la señal ya está abortada', async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+    const controller = new AbortController();
+    controller.abort();
+    expect(await giftAPI.getCover(5, { signal: controller.signal })).toBeNull();
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('devuelve null si leer el cuerpo falla', async () => {
+    const response = imageResponse();
+    vi.spyOn(response, 'blob').mockRejectedValue(new DOMException('Aborted', 'AbortError'));
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(response));
+    expect(await giftAPI.getCover(5)).toBeNull();
+  });
+});

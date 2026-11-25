@@ -99,16 +99,17 @@ export const GIFT_QUESTIONS: GiftQuestionList = [
 export interface Recipient {
   recipient: string;
   heading: string;
+  story: string;
 }
 
 export const RECIPIENTS: Record<GiftAnswers['relationship'], Recipient> = {
-  mama: { recipient: 'tu mamá', heading: 'MAMÁ' },
-  papa: { recipient: 'tu papá', heading: 'PAPÁ' },
-  pareja: { recipient: 'tu pareja', heading: 'TU PAREJA' },
-  amigo: { recipient: 'tu amigo o amiga', heading: 'TU AMIGO O AMIGA' },
-  hermano: { recipient: 'tu hermano o hermana', heading: 'TU HERMANO O HERMANA' },
-  hijo: { recipient: 'tu hijo o hija', heading: 'TU HIJO O HIJA' },
-  otro: { recipient: 'esa persona', heading: 'ALGUIEN ESPECIAL' },
+  mama: { recipient: 'tu mamá', heading: 'MAMÁ', story: 'MAMÁ' },
+  papa: { recipient: 'tu papá', heading: 'PAPÁ', story: 'PAPÁ' },
+  pareja: { recipient: 'tu pareja', heading: 'TU PAREJA', story: 'MI PAREJA' },
+  amigo: { recipient: 'tu amigo o amiga', heading: 'TU AMIGO O AMIGA', story: 'MI AMIGO O AMIGA' },
+  hermano: { recipient: 'tu hermano o hermana', heading: 'TU HERMANO O HERMANA', story: 'MI HERMANO O HERMANA' },
+  hijo: { recipient: 'tu hijo o hija', heading: 'TU HIJO O HIJA', story: 'MI HIJO O HIJA' },
+  otro: { recipient: 'esa persona', heading: 'ALGUIEN ESPECIAL', story: 'ALGUIEN ESPECIAL' },
 };
 
 const recipientEntry = (relationship: string): Recipient =>
@@ -118,6 +119,10 @@ const recipientEntry = (relationship: string): Recipient =>
 
 export function recipientFor(relationship: string): string {
   return recipientEntry(relationship).recipient;
+}
+
+export function storyHeading(relationship: string): string {
+  return `MI REGALO PARA ${recipientEntry(relationship).story}`;
 }
 
 const OCCASION_QUESTION = GIFT_QUESTIONS.find((question) => question.field === 'occasion');

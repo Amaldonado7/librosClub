@@ -8,7 +8,9 @@ const DIST = join(ROOT, 'dist');
 const ASSETS = join(DIST, 'assets');
 const MAX_GZIP_BYTES = 61440;
 const REGALO_MARKER = 'El libro justo para cada persona';
-const FORBIDDEN_IN_INITIAL = [REGALO_MARKER, '¿Para quién es el regalo?', 'Buscando entre los estantes'];
+const STORY_MAX_GZIP_BYTES = 40960;
+const STORY_MARKER = 'OLOR A LIBRO NUEVO';
+const FORBIDDEN_IN_INITIAL = [REGALO_MARKER, '¿Para quién es el regalo?', 'Buscando entre los estantes', STORY_MARKER];
 
 const fail = (message) => {
   console.error(`check-regalo-chunk: ${message}`);
@@ -55,3 +57,18 @@ for (const entry of initialChunk) {
 const gzipBytes = gzipSync(Buffer.from(contents.get(regaloChunk), 'utf8')).length;
 console.log(`check-regalo-chunk: ${regaloChunk} ocupa ${gzipBytes} bytes gzip (máximo ${MAX_GZIP_BYTES}).`);
 if (gzipBytes > MAX_GZIP_BYTES) fail(`${regaloChunk} supera el máximo de ${MAX_GZIP_BYTES} bytes gzip.`);
+
+const storyCandidates = jsFiles.filter((entry) => contents.get(entry).includes(STORY_MARKER));
+if (storyCandidates.length !== 1) {
+  fail(`se esperaba exactamente 1 chunk con el marcador de la placa y hay ${storyCandidates.length}.`);
+}
+const [storyChunk] = storyCandidates;
+
+if (initialChunk.has(storyChunk)) fail(`${storyChunk} (placa) es parte del chunk inicial.`);
+if (storyChunk === regaloChunk) fail(`la placa está dentro del chunk de /regalo (${regaloChunk}).`);
+
+const storyGzipBytes = gzipSync(Buffer.from(contents.get(storyChunk), 'utf8')).length;
+console.log(`check-regalo-chunk: ${storyChunk} (placa) ocupa ${storyGzipBytes} bytes gzip (máximo ${STORY_MAX_GZIP_BYTES}).`);
+if (storyGzipBytes > STORY_MAX_GZIP_BYTES) {
+  fail(`${storyChunk} (placa) supera el máximo de ${STORY_MAX_GZIP_BYTES} bytes gzip.`);
+}
