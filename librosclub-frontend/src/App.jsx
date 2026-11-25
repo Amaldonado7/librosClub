@@ -14,7 +14,7 @@ const RegaloPage = lazy(() => import('./components/regalo/RegaloPage'));
 const queryClient = new QueryClient();
 
 const AppContent = () => (
-  <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+  <BrowserRouter>
     <Routes>
       <Route path="/" element={<LandingPage />} />
       <Route path="/app/*" element={<Dashboard />} />
